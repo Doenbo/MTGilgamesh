@@ -134,3 +134,32 @@ $RECYCLE.BIN/
 .DS_Store
 
 _NCrunch*
+
+# --- Visual Studio & C# Ignored Files ---
+# Build Folders
+bin/
+obj/
+# Visual Studio Temp Data
+.vs/
+*.user
+*.suo
+
+# --- Godot Ignored Files ---
+# Internal Godot Cache
+.godot/
+/android/
+# Exporting Builds
+export_presets.cfg
+build/
+
+# --- Godot Build & Cache ---
+*.jsc
+*.cmd
+
+# --- Godot Mono / .NET spezifics ---
+.mono/
+data_*/
+
+# --- OS-Stuff ---
+Thumbs.db
+.DS_Store
