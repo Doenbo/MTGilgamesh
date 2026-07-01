@@ -15,6 +15,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\MTG.Core\MTG.Core.csproj" />
+    <ProjectReference Include="..\MTG.Engine\MTG.Engine.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
 

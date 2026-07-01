@@ -15,10 +15,10 @@ public class GameEngine
         _inputProvider = inputProvider;
     }
 
-    public void StartGameLoop()
+    public async void StartGameLoop()
     {
         _context.ActivePlayer = _context.Players[0];
-        _context.PriorityPlayer = _context.Players[1];
+        _context.PriorityPlayer = _context.Players[0];
 
         _context.Initialize(_display);
 
@@ -26,7 +26,7 @@ public class GameEngine
 
         while (!IsGameOver())
         {
-            PlayerAction action = _inputProvider.GetNextAction(_context, _context.PriorityPlayer);
+            PlayerAction action = await _inputProvider.GetNextAction(_context, _context.PriorityPlayer);
             _context.HandleIncomingAction(action);
             CheckStateBasedActions();
         }

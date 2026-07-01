@@ -56,6 +56,9 @@ public static class CardFactory
             return Result<Color>.Success(result);
         }
 
+        //ToStrings
+        public override string ToString() => $"{FullName} - {Set.ToUpper()}({CollectorNumber})";
+
         public string ToStringConsole()
         {
             var sb = new StringBuilder();

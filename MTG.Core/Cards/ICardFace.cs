@@ -39,6 +39,6 @@ public interface ICardFace
     bool TryGetComponent<T>(out T component) where T : class, ICardComponent;
 
     //ToStrings
-    public string ToString() => Name;
+    public string ToString();
     public string ToStringConsole();
 }

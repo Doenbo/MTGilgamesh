@@ -6,7 +6,7 @@ using System.Diagnostics.Eventing.Reader;
 
 namespace MTG.Run;
 
-public class ConsoleInputProvider : IPlayerInputProvider
+public class ConsoleInputProvider //: IPlayerInputProvider
 {
     public PlayerAction GetNextAction(GameContext context, CommanderPlayer player)
     {

@@ -70,6 +70,9 @@ public class CardFaceFactory
             return false;
         }
 
+        //ToStrings
+        public override string ToString() => Name;
+
         public string ToStringConsole()
         {
             var sb = new StringBuilder();

@@ -20,12 +20,12 @@ public class Program
         WriteLinePlayer(p2);
         context.AddPlayer(p2.Value);
 
-        IGameDisplay consoleDisplay = new ConsoleGameDisplay();
-        IPlayerInputProvider consoleInput = new ConsoleInputProvider();
+        //IGameDisplay consoleDisplay = new ConsoleGameDisplay();
+        //IPlayerInputProvider consoleInput = new ConsoleInputProvider();
 
-        var engine = new GameEngine(context, consoleDisplay, consoleInput);
+        //var engine = new GameEngine(context, consoleDisplay, consoleInput);
 
-        engine.StartGameLoop();
+        //engine.StartGameLoop();
     }
 
     private static async Task SomeTests(CommanderPlayer player)

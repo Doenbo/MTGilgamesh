@@ -2,14 +2,13 @@
   <Project Path="MTG.Core.Tests/MTG.Core.Tests.csproj" />
   <Project Path="MTG.Core/MTG.Core.csproj" />
   <Project Path="MTG.DB/MTG.DB.csproj" />
+  <Project Path="MTG.Engine.Tests/MTG.Engine.Tests.csproj" Id="17960207-4fb2-4842-9fab-fcc552c2c04d" />
   <Project Path="MTG.Engine/MTG.Engine.csproj" />
   <Project Path="MTG.Frontend/MTG.Frontend.csproj">
     <BuildType Solution="Release|*" Project="ExportDebug" />
   </Project>
   <Project Path="MTG.Resources.Tests/MTG.Resources.Tests.csproj" />
   <Project Path="MTG.Resources/MTG.Resources.csproj" />
-  <Project Path="MTG.Run.Tests/MTG.Run.Tests.csproj" />
-  <Project Path="MTG.Run/MTG.Run.csproj" />
   <Project Path="MTG.Scryfall.Tests/MTG.Scryfall.Tests.csproj" />
   <Project Path="MTG.Scryfall/MTG.Scryfall.csproj" />
 </Solution>

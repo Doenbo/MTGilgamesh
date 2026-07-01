@@ -42,7 +42,7 @@ public interface ICard
     public bool IsMultifaced() => Faces.Count > 1;
 
     //ToStrings
-    public string ToString() => $"{FullName} - {Set.ToUpper()}({CollectorNumber})";
+    public string ToString();
     public string ToStringConsole();
 
 }

@@ -3,7 +3,7 @@ using MTG.Engine.Gameplay;
 
 namespace MTG.Run;
 
-public class ConsoleGameDisplay : IGameDisplay
+public class ConsoleGameDisplay //: IGameDisplay
 {
     public void LogMessage(string message) => Console.WriteLine(message);
 
