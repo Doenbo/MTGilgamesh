@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>MTG.Scryfall</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="API\Bulk Data\**" />
+    <Compile Remove="API\Card Symbols\**" />
+    <EmbeddedResource Remove="API\Bulk Data\**" />
+    <EmbeddedResource Remove="API\Card Symbols\**" />
+    <None Remove="API\Bulk Data\**" />
+    <None Remove="API\Card Symbols\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MTG.Core\MTG.Core.csproj" />
+  </ItemGroup>
+
+</Project>

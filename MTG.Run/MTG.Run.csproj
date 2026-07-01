@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>MTG.Run</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MTG.Core\MTG.Core.csproj" />
+    <ProjectReference Include="..\MTG.DB\MTG.DB.csproj" />
+    <ProjectReference Include="..\MTG.Engine\MTG.Engine.csproj" />
+    <ProjectReference Include="..\MTG.Resources\MTG.Resources.csproj" />
+    <ProjectReference Include="..\MTG.Scryfall\MTG.Scryfall.csproj" />
+  </ItemGroup>
+
+</Project>

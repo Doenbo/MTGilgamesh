@@ -1,0 +1,12 @@
+<Solution>
+  <Project Path="MTG.Core.Tests/MTG.Core.Tests.csproj" />
+  <Project Path="MTG.Core/MTG.Core.csproj" />
+  <Project Path="MTG.DB/MTG.DB.csproj" />
+  <Project Path="MTG.Engine/MTG.Engine.csproj" />
+  <Project Path="MTG.Resources.Tests/MTG.Resources.Tests.csproj" />
+  <Project Path="MTG.Resources/MTG.Resources.csproj" />
+  <Project Path="MTG.Run.Tests/MTG.Run.Tests.csproj" />
+  <Project Path="MTG.Run/MTG.Run.csproj" />
+  <Project Path="MTG.Scryfall.Tests/MTG.Scryfall.Tests.csproj" />
+  <Project Path="MTG.Scryfall/MTG.Scryfall.csproj" />
+</Solution>
