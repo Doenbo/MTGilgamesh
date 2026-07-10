@@ -4,27 +4,42 @@
 
 public enum CommanderPrecon
 {
-    //Starter Commander Decks (2022)
-    FirstFlight,
-    GraveDanger,
-    ChaosIncarnate,
-    DraconicDestruction,
-    TokenTriumph,
+    //Marvel Super Heroes (2026)
+    AvengersAssemble,
+    DoomPrevails,
+    TheFantasticFour,
+    WakandaForever,
 
-    // ...
+    //Secrets of Strixhaven (2026)
+    LoreholdSpirit,
+    PrismariArtistry,
+    QuandrixUnlimited,
+    SilverquillInfluence,
+    WitherbloomPestilence,
 
-    //Final Fantasy Commander Decks (2025)
-    RevivalTrance,
-    LimitBreak,
+    //TMNT (2026)
+    TurtlePower,
+
+    //Lorwyn Eclipsed (2026)
+    BlightCurse,
+    DanceOfTheElements,
+
+    //Edge of Eternities (2025)
+    CounterIntelligence,
+    WorldShaper,
+
+    //Final Fantasy (2025)
     CounterBlitz,
+    LimitBreak,
+    RevivalTrance,
     ScionsAndSpellcraft,
 
     // ...
 
-    //Secrets of Strixhaven Commander Decks (2026)
-    SilverquillInfluence,
-    PrismariArtistry,
-    WitherbloomPestilence,
-    LoreholdSpirit,
-    QuandrixUnlimited,
+    //Starter (2022)
+    ChaosIncarnate,
+    DraconicDestruction,
+    FirstFlight,
+    GraveDanger,
+    TokenTriumph,
 }

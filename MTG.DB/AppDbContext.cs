@@ -37,8 +37,8 @@ public class AppDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        string current_path = Directory.GetCurrentDirectory();
-        string db_path = Path.GetFullPath(Path.Combine(current_path, @"..\..\..\..\MTG.DB\MTG.DB.mdf"));
+        //TODO Fix path
+        string db_path = Path.GetFullPath(@"C:\Git\MTGilgamesh\MTG.DB\MTG.DB.mdf");
         string connectionString = $@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename={db_path};Integrated Security=True;Connect Timeout=30";
 
         optionsBuilder.UseSqlServer(connectionString);

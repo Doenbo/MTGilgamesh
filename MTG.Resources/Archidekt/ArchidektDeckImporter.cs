@@ -12,8 +12,8 @@ public static class ArchidektDeckImporter
 
     public static Result<List<CardRef>> ImportCommanderPrecon(CommanderPrecon cp)
     {
-        string current_path = Directory.GetCurrentDirectory();
-        string precon_path = Path.GetFullPath(Path.Combine(current_path, $@"..\..\..\..\MTG.Resources\Archidekt\PreconsText\{cp}.txt"));
+        //TODO Fix path
+        string precon_path = Path.GetFullPath($@"C:\Git\MTGilgamesh\MTG.Resources\Archidekt\PreconsText\{cp}.txt");
 
         return ImportDeckFromText(precon_path);
     }

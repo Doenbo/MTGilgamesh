@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MTG.Core.Helper;
 using MTG.Engine.Enums;
 using MTG.Engine.TurnSteps;
+using MTG.Resources.Enums;
 using System.Numerics;
 using System.Text;
 
@@ -9,6 +11,8 @@ namespace MTG.Engine.Gameplay;
 
 public class GameContext
 {
+    private static readonly ILogger<GameContext> _logger = LogManager.GetLogger<GameContext>();
+
     //Player
     private readonly List<CommanderPlayer> _players = [];
     public IReadOnlyList<CommanderPlayer> Players => _players;
@@ -38,9 +42,22 @@ public class GameContext
 
     private GameContext() { }
 
-    public static Result<GameContext> Create()
+    public async static Task<Result<GameContext>> Create()
     {
-        return Result<GameContext>.Success(new GameContext());
+        var context = new GameContext();
+        var p1 = await CommanderPlayer.Create("Dön", 40, CommanderPrecon.TokenTriumph);
+        context.AddPlayer(p1.Value);
+        
+        var p2 = await CommanderPlayer.Create("Nüs", 40, CommanderPrecon.ScionsAndSpellcraft);
+        context.AddPlayer(p2.Value);
+
+        var p3 = await CommanderPlayer.Create("Zag", 40, CommanderPrecon.BlightCurse);
+        context.AddPlayer(p3.Value);
+
+        var p4 = await CommanderPlayer.Create("Mel", 40, CommanderPrecon.DoomPrevails);
+        context.AddPlayer(p4.Value);
+
+        return Result<GameContext>.Success(context);
     }
 
     public void Initialize(IGameDisplay display)

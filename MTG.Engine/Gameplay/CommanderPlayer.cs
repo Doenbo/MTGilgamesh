@@ -1,4 +1,5 @@
-﻿using MTG.Core.Cards;
+﻿using Microsoft.Extensions.Logging;
+using MTG.Core.Cards;
 using MTG.Core.Decks;
 using MTG.Core.Helper;
 using MTG.Engine.Factories;
@@ -10,6 +11,8 @@ namespace MTG.Engine.Gameplay;
 
 public class CommanderPlayer
 {
+    private static readonly ILogger<CommanderPlayer> _logger = LogManager.GetLogger<CommanderPlayer>();
+
     public string Name { get; init; }
     public int LifeTotal { get; set; }
     public bool IsEliminated { get; set; }
@@ -51,6 +54,7 @@ public class CommanderPlayer
 
         player.InitializePlayer(deck.Value);
 
+        _logger.LogInformation($"Player {player} created");
         return Result<CommanderPlayer>.Success(player);
     }
 
@@ -121,4 +125,6 @@ public class CommanderPlayer
     {
         return _library.Peek();
     }
+
+    public override string ToString() => $"{Name} ({LifeTotal})";
 }

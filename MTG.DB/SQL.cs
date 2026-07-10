@@ -6,8 +6,8 @@
 
 //    public SQL()
 //    {
-//        string current_path = Directory.GetCurrentDirectory();
-//        string db_path = Path.GetFullPath(Path.Combine(current_path, @"..\..\..\..\MTG.DB\MTG.mdf"));
+//        
+//        string db_path = Path.GetFullPath(@"C:\Git\MTGilgamesh\MTG.DB\MTG.DB.mdf");
 //        connectionString = $@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename={db_path};Integrated Security=True;Connect Timeout=30";
 //    }
 

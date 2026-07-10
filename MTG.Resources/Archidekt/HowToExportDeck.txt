@@ -2,10 +2,11 @@
 ---------
 
 -Select cards by: All cards
--Include out of deck cards: no
+-Include out of deck cards: No
 -Export type: Text
 -Export options: Check all
 -Section header: Card Type
+-Use front name only for MDFC cards: No
 
 Example:
 1x Ellie, Brick Master (sld) 2197 [Commander{top}]

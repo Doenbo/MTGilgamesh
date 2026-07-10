@@ -1,9 +1,10 @@
+using Godot;
 using MTG.Core.Cards;
 using MTG.Core.Enums;
 using MTG.Engine.Enums;
 using MTG.Engine.Gameplay;
 
-internal class GodotGameDisplay : IGameDisplay
+public class GodotGameDisplay : IGameDisplay
 {
 	public void InitializeVisuals(GameContext context)
 	{
