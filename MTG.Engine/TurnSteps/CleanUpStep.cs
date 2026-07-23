@@ -11,18 +11,11 @@ public class CleanUpStep : ITurnStep
     {
         context.Display.LogStepTransition(Name, context.ActivePlayer.Name);
         context.PriorityPlayer = context.ActivePlayer;
+
+        context.AdvanceToNextStep();
     }
 
-    public void HandleAction(GameContext context, PlayerAction action)
-    {
-        if (action.Type == ActionType.GoToNextPhase) //TODO do we need this if??
-        {
-            context.AdvanceToNextPlayersTurn();
-        }
-    }
+    public void HandleAction(GameContext context, PlayerAction action) { }
 
-    public void OnStepExit(GameContext context)
-    {
-
-    }
+    public void OnStepExit(GameContext context) { }
 }

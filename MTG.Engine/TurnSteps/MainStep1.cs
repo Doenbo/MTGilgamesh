@@ -37,7 +37,8 @@ public class MainStep1 : ITurnStep
                     context.Display.LogMessage("You cannot change phases while objects are on the stack!");
                     return;
                 }
-
+                //TODO SHOULD I HOLD PRIORITY HERE TOO???
+                context.Display.LogMessage($"{action.Player.Name} wants to end Phase {Name}.");
                 context.IsPhaseTransition = true;
                 context.PriorityRoundInitiator = action.Player;
                 context.PassPriority();

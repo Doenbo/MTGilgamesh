@@ -3,7 +3,7 @@ using MTG.Engine.Gameplay;
 
 namespace MTG.Engine.TurnSteps;
 
-public  class EndStep : ITurnStep
+public class EndStep : ITurnStep
 {
     public TurnStep Name { get; } = TurnStep.EndStep;
 
@@ -11,15 +11,11 @@ public  class EndStep : ITurnStep
     {
         context.Display.LogStepTransition(Name, context.ActivePlayer.Name);
         context.PriorityPlayer = context.ActivePlayer;
+
+        context.AdvanceToNextStep();
     }
 
-    public void HandleAction(GameContext context, PlayerAction action) 
-    {
-        context.TransitionTo(new CleanUpStep());
-    }
+    public void HandleAction(GameContext context, PlayerAction action) { }
 
-    public void OnStepExit(GameContext context)
-    {
-
-    }
+    public void OnStepExit(GameContext context) { }
 }

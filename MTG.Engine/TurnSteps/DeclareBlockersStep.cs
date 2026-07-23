@@ -11,12 +11,11 @@ public class DeclareBlockersStep : ITurnStep
     {
         context.Display.LogStepTransition(Name, context.ActivePlayer.Name);
         context.PriorityPlayer = context.ActivePlayer;
+
+        context.AdvanceToNextStep();
     }
 
-    public void HandleAction(GameContext context, PlayerAction action)
-    {
-        context.TransitionTo(new CombatDamageStep());
-    }
+    public void HandleAction(GameContext context, PlayerAction action)    {    }
 
     public void OnStepExit(GameContext context)
     {

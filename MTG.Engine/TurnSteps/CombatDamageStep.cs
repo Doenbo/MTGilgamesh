@@ -11,15 +11,11 @@ public class CombatDamageStep : ITurnStep
     {
         context.Display.LogStepTransition(Name, context.ActivePlayer.Name);
         context.PriorityPlayer = context.ActivePlayer;
+
+        context.AdvanceToNextStep();
     }
 
-    public void HandleAction(GameContext context, PlayerAction action) 
-    {
-        context.TransitionTo(new EndOfCombatStep());
-    }
+    public void HandleAction(GameContext context, PlayerAction action) { }
 
-    public void OnStepExit(GameContext context)
-    {
-
-    }
+    public void OnStepExit(GameContext context) { }
 }

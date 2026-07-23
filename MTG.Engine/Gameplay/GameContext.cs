@@ -121,15 +121,79 @@ public class GameContext
 
         PriorityPlayer = _players[nextIndex];
 
+        Display?.LogMessage($"Priority switches to: {PriorityPlayer.Name}");
+
         if (PriorityPlayer == PriorityRoundInitiator)
         {
-            if (IsPhaseTransition)
-                TransitionTo(new CombatBeginStep()); //????????????
-            else
+            if (StackCount > 0)
+            {
                 ResolveTopStackObject();
-        }
+            }
+            else if (IsPhaseTransition)
+            {
+                IsPhaseTransition = false;
+                PriorityRoundInitiator = null;
 
-        Display?.LogMessage($"Priorität wechselt zu: {PriorityPlayer.Name}");
+                AdvanceToNextStep();
+            }
+        }
+    }
+
+    public void AdvanceToNextStep()
+    {
+        switch (TurnStep)
+        {
+            case TurnStep.Untap:
+                TransitionTo(new UpkeepStep());
+                break;
+
+            case TurnStep.Upkeep:
+                TransitionTo(new DrawStep());
+                break;
+
+            case TurnStep.Draw:
+                TransitionTo(new MainStep1());
+                break;
+
+            case TurnStep.Main1:
+                TransitionTo(new CombatBeginStep());
+                break;
+
+            case TurnStep.CombatBegin:
+                TransitionTo(new DeclareAttackersStep());
+                break;
+
+            case TurnStep.DeclareAttackers:
+                TransitionTo(new DeclareBlockersStep());
+                break;
+
+            case TurnStep.DeclareBlockers:
+                TransitionTo(new CombatDamageStep());
+                break;
+
+            case TurnStep.CombatDamage:
+                TransitionTo(new EndOfCombatStep());
+                break;
+
+            case TurnStep.EndOfCombat:
+                TransitionTo(new MainStep2()); //TODO GET RID OFF SECOND CLASS???
+                break;
+
+            case TurnStep.Main2:
+                TransitionTo(new EndStep());
+                break;
+
+            case TurnStep.EndStep:
+                TransitionTo(new CleanUpStep());
+                break;
+
+            case TurnStep.CleanupStep:
+                AdvanceToNextPlayersTurn();
+                break;
+
+            default:
+                throw new ArgumentOutOfRangeException(nameof(TurnStep), $"Unknown TurnStep: {TurnStep}");
+        }
     }
 
     public void TransitionTo(ITurnStep nextStep)

@@ -10,12 +10,9 @@ public class UntapStep : ITurnStep
     public void OnStepEnter(GameContext context)
     {
         context.Display.LogStepTransition(Name, context.ActivePlayer.Name);
-        context.PriorityPlayer = context.ActivePlayer;
-
-        var playerPermanents = context.Battlefield.Where(card => card.Controller == context.ActivePlayer);
 
         int untappedCount = 0;
-        foreach (var card in playerPermanents)
+        foreach (var card in context.GetBoardOf(context.ActivePlayer))
         {
             if (card.IsTapped)
             {
@@ -25,15 +22,11 @@ public class UntapStep : ITurnStep
         }
 
         context.Display.LogMessage($"{context.ActivePlayer.Name} has untapped {untappedCount} Cards");
+
+        context.AdvanceToNextStep();
     }
 
-    public void HandleAction(GameContext context, PlayerAction action) 
-    {
-        context.TransitionTo(new UpkeepStep());
-    }
+    public void HandleAction(GameContext context, PlayerAction action) { }
 
-    public void OnStepExit(GameContext context)
-    {
-
-    }
+    public void OnStepExit(GameContext context) { }
 }

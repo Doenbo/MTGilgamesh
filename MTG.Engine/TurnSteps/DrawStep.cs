@@ -14,15 +14,11 @@ public class DrawStep : ITurnStep
 
         context.ActivePlayer.DrawCard();
         context.Display.LogMessage($"{context.ActivePlayer.Name} has drawn a card");
+
+        context.AdvanceToNextStep();
     }
 
-    public void HandleAction(GameContext context, PlayerAction action)
-    {
-        context.TransitionTo(new MainStep1());
-    }
+    public void HandleAction(GameContext context, PlayerAction action) { }
 
-    public void OnStepExit(GameContext context)
-    {
-
-    }
+    public void OnStepExit(GameContext context) { }
 }
