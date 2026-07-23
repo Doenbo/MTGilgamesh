@@ -28,13 +28,14 @@ public class GameContext
 
 
     public TurnStep TurnStep { get; set; } = TurnStep.Untap;
+    public TurnStep NextStep { get; set; } = TurnStep.Upkeep;
     public CommanderPlayer ActivePlayer { get; set; }
     public CommanderPlayer PriorityPlayer { get; set; }
     public CommanderPlayer PriorityRoundInitiator { get; set; }
 
 
     public bool HasPlayedLandThisTurn { get; set; }
-    public bool IsEndingTheStep { get; set; }
+    public bool IsPhaseTransition { get; set; }
 
 
     public IGameDisplay Display { get; private set; }
@@ -120,6 +121,14 @@ public class GameContext
 
         PriorityPlayer = _players[nextIndex];
 
+        if (PriorityPlayer == PriorityRoundInitiator)
+        {
+            if (IsPhaseTransition)
+                TransitionTo(new CombatBeginStep()); //????????????
+            else
+                ResolveTopStackObject();
+        }
+
         Display?.LogMessage($"Priorität wechselt zu: {PriorityPlayer.Name}");
     }
 
@@ -142,7 +151,7 @@ public class GameContext
         PushToStack(card);
         Display.LogMessage($"{player.Name} casts {card.CardData.FullName} (Object is on the STACK!)");
 
-        IsEndingTheStep = true;
+        IsPhaseTransition = false;
         PriorityRoundInitiator = player;
 
         //TODO? Caster holds Priority!
@@ -167,7 +176,6 @@ public class GameContext
 
         PriorityPlayer = ActivePlayer;
         PriorityRoundInitiator = ActivePlayer;
-        IsEndingTheStep = true;
     }
 
     public void HandleReactionCast(PlayerAction action)

@@ -18,7 +18,7 @@ public class MainStep1 : ITurnStep
         switch (action.Type)
         {
             case ActionType.PlayCard:
-                bool isReactionTime = context.StackCount > 0 || context.IsEndingTheStep;
+                bool isReactionTime = context.StackCount > 0 || context.IsPhaseTransition;
                 
                 if (isReactionTime)
                     context.HandleReactionCast(action);
@@ -29,16 +29,6 @@ public class MainStep1 : ITurnStep
             case ActionType.PassPriority:
                 context.Display.LogMessage($"{action.Player.Name} passes priority.");
                 context.PassPriority();
-
-                if (context.PriorityPlayer == context.PriorityRoundInitiator)
-                {
-                    context.IsEndingTheStep = false;
-
-                    if (context.StackCount > 0)
-                        context.ResolveTopStackObject();
-                    else
-                        context.TransitionTo(new CombatBeginStep());
-                }
                 break;
 
             case ActionType.GoToNextPhase:
@@ -48,7 +38,7 @@ public class MainStep1 : ITurnStep
                     return;
                 }
 
-                context.IsEndingTheStep = true;
+                context.IsPhaseTransition = true;
                 context.PriorityRoundInitiator = action.Player;
                 context.PassPriority();
                 break;

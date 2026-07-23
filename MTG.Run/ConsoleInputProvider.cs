@@ -6,12 +6,12 @@ using System.Diagnostics.Eventing.Reader;
 
 namespace MTG.Run;
 
-public class ConsoleInputProvider //: IPlayerInputProvider
+public class ConsoleInputProvider : IPlayerInputProvider
 {
-    public PlayerAction GetNextAction(GameContext context, CommanderPlayer player)
+    public async Task<PlayerAction> GetNextAction(GameContext context, CommanderPlayer player)
     {
         bool holdsStackPriority = context.StackCount > 0;
-        bool isPhaseTransition = context.IsEndingTheStep;
+        bool isPhaseTransition = context.IsPhaseTransition;
 
         if (context.TurnStep == TurnStep.Untap ||
             context.TurnStep == TurnStep.Upkeep ||
@@ -78,7 +78,10 @@ public class ConsoleInputProvider //: IPlayerInputProvider
     {
         while (true)
         {
-            Console.WriteLine($"\n[{context.PriorityRoundInitiator.Name}] has casted {context.PeekStack().CardData.FullName}");
+            var topStackCard = context.PeekStack();
+            string casterName = context.PriorityRoundInitiator?.Name ?? topStackCard.Controller.Name;
+
+            Console.WriteLine($"\n[{casterName}] has casted {topStackCard.CardData.FullName}");
             Console.WriteLine($"[{player.Name}] How do you react?");
             Console.WriteLine("1: Play a Card from your Hand | 2: Show Stack | 3: Do not react");
 

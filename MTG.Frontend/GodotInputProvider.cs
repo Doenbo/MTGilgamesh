@@ -21,7 +21,7 @@ public class GodotInputProvider : IPlayerInputProvider
     public async Task<PlayerAction> GetNextAction(GameContext context, CommanderPlayer player)
     {
         bool holdsStackPriority = context.StackCount > 0;
-        bool isPhaseTransition = context.IsEndingTheStep;
+        bool isPhaseTransition = context.IsPhaseTransition;
 
         if (context.TurnStep == TurnStep.Untap ||
             context.TurnStep == TurnStep.Upkeep ||
