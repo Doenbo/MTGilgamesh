@@ -1,4 +1,6 @@
 <Solution>
+  <Project Path="../MTG-Sandbox/MTG.Run.Tests/MTG.Run.Tests.csproj" />
+  <Project Path="../MTG-Sandbox/MTG.Run/MTG.Run.csproj" />
   <Project Path="MTG.Core.Tests/MTG.Core.Tests.csproj" />
   <Project Path="MTG.Core/MTG.Core.csproj" />
   <Project Path="MTG.DB/MTG.DB.csproj" />

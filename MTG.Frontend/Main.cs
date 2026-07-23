@@ -76,7 +76,7 @@ public partial class Main : Node2D
 		// 6. Assignment to the 4 quadrants
 		ConfigureAndAdd(grid, GameLog);          // Quadrant 1: Top-Left
 		ConfigureAndAdd(grid, DevLog);           // Quadrant 2: Top-Right
-		ConfigureAndAdd(grid, PlayerInputCommand);  // Quadrant 3: Bottom-Left
+		ConfigureAndAdd(grid, PlayerInputCommand    );  // Quadrant 3: Bottom-Left
 		ConfigureAndAdd(grid, PlayerInput);      // Quadrant 4: Bottom-Right
 
 		// Grab focus for input field on startup

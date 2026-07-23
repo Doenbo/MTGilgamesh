@@ -41,20 +41,38 @@ public class ManaSymbol
 
     public Result<float> GetCMC()
     {
-        if(Value == "X")
+        string[] parts = Value.Split('/');
+        float maxCmc = -1f;
+
+        foreach (string part in parts)
+        {
+            Result<float> partResult = GetSingleSymbolCmc(part);
+            if (partResult.IsFailure)
+            {
+                return Result<float>.Failure("Cannot calculate CMC!");
+            }
+
+            maxCmc = Math.Max(maxCmc, partResult.Value);
+        }
+
+        return Result<float>.Success(maxCmc);
+    }
+
+    private Result<float> GetSingleSymbolCmc(string symbol)
+    {
+        if (symbol.Length == 1 && symbol[0] == 'X')
         {
             return Result<float>.Success(0);
         }
-        else if (ValidManaSymbols.Contains(Value[0]))
+        if (symbol.Length == 1 && ValidManaSymbols.Contains(symbol[0]))
         {
             return Result<float>.Success(1);
         }
-        else if (int.TryParse(Value, out int numericValue) && numericValue >= 0)
+        if (int.TryParse(symbol, out int numericValue) && numericValue >= 0)
         {
             return Result<float>.Success(numericValue);
         }
-        else
-            return Result<float>.Failure("Cannot calculate CMC!");
+        return Result<float>.Failure($"Cannot calculate CMC of pattern {this}!");
     }
 
     public override string ToString() => $"{{{Value}}}";

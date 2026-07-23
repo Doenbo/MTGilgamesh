@@ -71,7 +71,7 @@ public class ScryfallCardConverter
 
         //CMC
         if (cmc != -1 && cmc.IsNotEqualTo(mana.Value.CMC))
-            return Result<ICardFace>.Failure($"CMC conversion error!");
+            return Result<ICardFace>.Failure($"CMCs do not match for the card {name}!");
 
         //Color
         var colorComponent = ColorComponent.Create(colorIdentity, colorIndicator, colors);

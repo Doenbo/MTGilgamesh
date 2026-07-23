@@ -6,7 +6,7 @@ namespace MTG.Core;
 
 public partial class Mana
 {
-    [GeneratedRegex(@"\{([WUBRGXCD/\d]+)\}")]
+    [GeneratedRegex(@"\{([WUBRGCXSP/\d]+)\}")]
     private static partial Regex CreateManaRegex();
 
     //Factory Pattern
@@ -61,7 +61,10 @@ public partial class Mana
         float count = 0;
         foreach (ManaSymbol symbol in Values)
         {
-            count += symbol.GetCMC().Value;
+            var cmc = symbol.GetCMC();
+            if (cmc.IsFailure)
+                return cmc.ToFailure<float>();
+            count += cmc.Value;
         }
         return Result<float>.Success(count);
     }

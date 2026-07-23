@@ -17,6 +17,7 @@ public enum Format
     Oathbreaker,
     Standardbrawl,
     Brawl,
+    Competitivebrawl,
     Alchemy,
     Paupercommander,
     Duel,

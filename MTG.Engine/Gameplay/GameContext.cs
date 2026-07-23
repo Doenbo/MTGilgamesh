@@ -46,15 +46,23 @@ public class GameContext
     {
         var context = new GameContext();
         var p1 = await CommanderPlayer.Create("Dön", 40, CommanderPrecon.TokenTriumph);
+        if (p1.IsFailure)
+            return p1.ToFailure<GameContext>();
         context.AddPlayer(p1.Value);
-        
+
         var p2 = await CommanderPlayer.Create("Nüs", 40, CommanderPrecon.ScionsAndSpellcraft);
+        if (p2.IsFailure)
+            return p2.ToFailure<GameContext>();
         context.AddPlayer(p2.Value);
 
         var p3 = await CommanderPlayer.Create("Zag", 40, CommanderPrecon.BlightCurse);
+        if (p3.IsFailure)
+            return p3.ToFailure<GameContext>();
         context.AddPlayer(p3.Value);
 
         var p4 = await CommanderPlayer.Create("Mel", 40, CommanderPrecon.DoomPrevails);
+        if (p4.IsFailure)
+            return p4.ToFailure<GameContext>();
         context.AddPlayer(p4.Value);
 
         return Result<GameContext>.Success(context);
