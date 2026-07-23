@@ -108,6 +108,11 @@ public class GameContext
         return _stack.Peek();
     }
 
+    public int GetPlayerIndex(CommanderPlayer player)
+    {
+        return _players.IndexOf(player);
+    }
+
     public void PassPriority()
     {
         int currentIndex = _players.IndexOf(PriorityPlayer);
@@ -140,7 +145,8 @@ public class GameContext
         IsEndingTheStep = true;
         PriorityRoundInitiator = player;
 
-        PassPriority();
+        //TODO? Caster holds Priority!
+        //PassPriority();
     }
 
     public void ResolveTopStackObject()

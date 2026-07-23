@@ -10,6 +10,7 @@ public enum EnchantmentType
     Case,
     Class,
     Curse,
+    Plan,
     Role,
     Room,
     Rune,

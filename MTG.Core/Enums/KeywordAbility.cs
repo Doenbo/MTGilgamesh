@@ -167,7 +167,6 @@ public enum KeywordAbility
     Flashback,
     Cycling,
     Equip,
-    Hagneia, //TODO added manually. is this the correct spot?
     Buyback,
     HexproofFrom,
     MoreThanMeetsTheEye,
@@ -224,4 +223,14 @@ public enum KeywordAbility
     Paradigm,
     PowerUp,
     Firebendin,
+
+
+    //TODO these are added manually. is this the correct spot?
+    Hagneia,
+    Mary,
+    TyphoidMary,
+    BloodyMary,
+    HireAMercenary,
+    SellContraband,
+    BuyInformation,
 }

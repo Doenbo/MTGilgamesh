@@ -1,6 +1,5 @@
 ﻿using MTG.Engine.Enums;
 using MTG.Engine.Gameplay;
-using System.Numerics;
 
 namespace MTG.Engine.TurnSteps;
 
@@ -88,6 +87,8 @@ public class MainStep1 : ITurnStep
 
     public void OnStepExit(GameContext context)
     {
-
+        //zB
+        //context.ClearUnspentMana();
+        //context.ResetStepFlags();
     }
 }
