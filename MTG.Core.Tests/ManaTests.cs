@@ -1,8 +1,8 @@
 ﻿namespace MTG.Core.Tests;
 
-public class ManaTests
+public class ManaCostTests
 {
-    public static IEnumerable<object[]> ValidManaStrings =>
+    public static IEnumerable<object[]> ValidManaCostStrings =>
         new List<object[]>
         {
             new object[] { "{14}{W/U}{B}", 16 },
@@ -12,19 +12,19 @@ public class ManaTests
         };
 
     [Theory]
-    [MemberData(nameof(ValidManaStrings))]
+    [MemberData(nameof(ValidManaCostStrings))]
     public void TestCreateValid(string exp, float _)
     {
-        var act = Mana.Create(exp);
+        var act = ManaCost.Create(exp);
         Assert.True(act.IsSuccess);
         Assert.Equal(exp, act.Value.ToString());
     }
 
     [Theory]
-    [MemberData(nameof(ValidManaStrings))]
+    [MemberData(nameof(ValidManaCostStrings))]
     public void TestGetCMC(string exp, float exp2)
     {
-        var act = Mana.Create(exp);
+        var act = ManaCost.Create(exp);
         Assert.True(act.IsSuccess);
         var cmc = act.Value.GetCMC();
         Assert.True(cmc.IsSuccess);

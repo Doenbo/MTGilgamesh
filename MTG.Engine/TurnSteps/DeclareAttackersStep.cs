@@ -5,7 +5,7 @@ namespace MTG.Engine.TurnSteps;
 
 public class DeclareAttackersStep : ITurnStep
 {
-    public TurnStep Name { get; } = TurnStep.DeclareAttackers;
+    public TurnStep Name { get; init; } = TurnStep.DeclareAttackers;
 
     public void OnStepEnter(GameContext context)
     {

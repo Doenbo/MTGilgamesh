@@ -77,7 +77,7 @@ public class CardFaceFactory
         {
             var sb = new StringBuilder();
             sb.AppendLine($"/------------------------------------\\");
-            if (TryGetComponent<ManaComponent>(out var manaComp))
+            if (TryGetComponent<ManaCostComponent>(out var manaComp))
             {
                 sb.AppendLine($"|{Name} {manaComp.ManaCost.ToString()}");
             }

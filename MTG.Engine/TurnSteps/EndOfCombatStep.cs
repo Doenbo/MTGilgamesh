@@ -5,7 +5,7 @@ namespace MTG.Engine.TurnSteps;
 
 public class EndOfCombatStep : ITurnStep
 {
-    public TurnStep Name { get; } = TurnStep.EndOfCombat;
+    public TurnStep Name { get; init; } = TurnStep.EndOfCombat;
 
     public void OnStepEnter(GameContext context)
     {

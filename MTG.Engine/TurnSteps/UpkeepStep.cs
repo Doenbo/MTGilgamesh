@@ -5,7 +5,7 @@ namespace MTG.Engine.TurnSteps;
 
 public class UpkeepStep : ITurnStep
 {
-    public TurnStep Name { get; } = TurnStep.Upkeep;
+    public TurnStep Name { get; init; } = TurnStep.Upkeep;
 
     public void OnStepEnter(GameContext context)
     {

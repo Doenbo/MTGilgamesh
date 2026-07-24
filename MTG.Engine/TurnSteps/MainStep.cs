@@ -3,9 +3,14 @@ using MTG.Engine.Gameplay;
 
 namespace MTG.Engine.TurnSteps;
 
-public class MainStep1 : ITurnStep
+public class MainStep : ITurnStep
 {
-    public TurnStep Name { get; } = TurnStep.Main1;
+    public MainStep(TurnStep ts)
+    {
+        Name = ts;
+    }
+
+    public TurnStep Name { get; init; }
 
     public void OnStepEnter(GameContext context)
     {
@@ -32,12 +37,6 @@ public class MainStep1 : ITurnStep
                 break;
 
             case ActionType.GoToNextPhase:
-                if (context.StackCount > 0)
-                {
-                    context.Display.LogMessage("You cannot change phases while objects are on the stack!");
-                    return;
-                }
-                //TODO SHOULD I HOLD PRIORITY HERE TOO???
                 context.Display.LogMessage($"{action.Player.Name} wants to end Phase {Name}.");
                 context.IsPhaseTransition = true;
                 context.PriorityRoundInitiator = action.Player;

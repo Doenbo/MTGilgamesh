@@ -5,8 +5,8 @@ namespace MTG.Engine.TurnSteps;
 
 public interface ITurnStep
 {
-    TurnStep Name { get; }
-    void OnStepEnter(GameContext gc);
-    void HandleAction(GameContext gc, PlayerAction action);
-    void OnStepExit(GameContext gc);
+    public TurnStep Name { get; init; }
+    public void OnStepEnter(GameContext gc);
+    public void HandleAction(GameContext gc, PlayerAction action);
+    public void OnStepExit(GameContext gc);
 }

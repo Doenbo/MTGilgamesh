@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace MTG.Core;
 
-public partial class Mana
+public partial class ManaCost
 {
     [GeneratedRegex(@"\{([WUBRGCXSP/\d]+)\}")]
     private static partial Regex CreateManaRegex();
@@ -13,22 +13,22 @@ public partial class Mana
     private string Value { get; set; }
     public List<ManaSymbol> Values { get; init; }
 
-    private Mana(string mana)
+    private ManaCost(string mana)
     {
         Value = mana;
         Values = [];
     }
 
-    public static Result<Mana> Create(string mana)
+    public static Result<ManaCost> Create(string mana)
     {
         if (mana == null)
-            return Result<Mana>.Failure("Null is not allowed for mana creation!");
+            return Result<ManaCost>.Failure("Null is not allowed for mana creation!");
 
-        var result = new Mana(mana);
+        var result = new ManaCost(mana);
 
         //Empty Mana is allowed
         if (mana == string.Empty)
-            return Result<Mana>.Success(result);
+            return Result<ManaCost>.Success(result);
 
         //Split for Two-Faced Cards
         //var values = new List<ManaSymbol>();
@@ -39,7 +39,7 @@ public partial class Mana
             var matches = CreateManaRegex().Matches(face);
 
             if (matches.Count == 0)
-                return Result<Mana>.Failure("Not a convertible mana string!");
+                return Result<ManaCost>.Failure("Not a convertible mana string!");
 
             foreach (Match match in matches)
             {
@@ -47,13 +47,13 @@ public partial class Mana
 
                 var symbolResult = ManaSymbol.Create(bubbleContent);
                 if (symbolResult.IsFailure)
-                    return symbolResult.ToFailure<Mana>();
+                    return symbolResult.ToFailure<ManaCost>();
 
                 result.Values.Add(symbolResult.Value);
             }
         }
 
-        return Result<Mana>.Success(result);
+        return Result<ManaCost>.Success(result);
     }
 
     public Result<float> GetCMC()

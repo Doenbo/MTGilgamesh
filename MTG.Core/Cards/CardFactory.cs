@@ -33,7 +33,7 @@ public static class CardFactory
         public List<ICardFace> Faces { get; set; } = [];
         ICardFace MainFace => Faces[0];
         public Dictionary<Format, Legality> Legalities { get; set; } = [];
-        public List<Color> ProducedMana { get; set; } = [];
+        public List<ManaType> ProducedMana { get; set; } = [];
         //TODO FullOracleText ?
 
         //Print
@@ -44,16 +44,16 @@ public static class CardFactory
         public Rarity Rarity { get; set; }
 
         //Simple Getter
-        public Result<Color> GetCardColorIdentity()
+        public Result<ManaType> GetCardColorIdentity()
         {
-            Color result = 0;
+            ManaType result = 0;
             foreach (var face in Faces)
             {
                 if (!face.TryGetComponent<ColorComponent>(out var ident))
-                    return Result<Color>.Failure("No Color Component?");
+                    return Result<ManaType>.Failure("No Color Component?");
                 result |= ident.ColorIdentity; // Bitwise Operation | mean OR
             }
-            return Result<Color>.Success(result);
+            return Result<ManaType>.Success(result);
         }
 
         //ToStrings
@@ -63,7 +63,7 @@ public static class CardFactory
         {
             var sb = new StringBuilder();
             sb.AppendLine($"/------------------------------------\\");
-            if (MainFace.TryGetComponent<ManaComponent>(out var manaComp))
+            if (MainFace.TryGetComponent<ManaCostComponent>(out var manaComp))
             {
                 sb.AppendLine($"|{MainFace.Name} {manaComp.ManaCost.ToString()}");
             }

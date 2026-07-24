@@ -28,10 +28,9 @@ public class GameContext
 
 
     public TurnStep TurnStep { get; set; } = TurnStep.Untap;
-    public TurnStep NextStep { get; set; } = TurnStep.Upkeep;
     public CommanderPlayer ActivePlayer { get; set; }
     public CommanderPlayer PriorityPlayer { get; set; }
-    public CommanderPlayer PriorityRoundInitiator { get; set; }
+    public CommanderPlayer? PriorityRoundInitiator { get; set; }
 
 
     public bool HasPlayedLandThisTurn { get; set; }
@@ -135,6 +134,7 @@ public class GameContext
                 PriorityRoundInitiator = null;
 
                 AdvanceToNextStep();
+                return;
             }
         }
     }
@@ -152,7 +152,7 @@ public class GameContext
                 break;
 
             case TurnStep.Draw:
-                TransitionTo(new MainStep1());
+                TransitionTo(new MainStep(TurnStep.Main1));
                 break;
 
             case TurnStep.Main1:
@@ -176,7 +176,7 @@ public class GameContext
                 break;
 
             case TurnStep.EndOfCombat:
-                TransitionTo(new MainStep2()); //TODO GET RID OFF SECOND CLASS???
+                TransitionTo(new MainStep(TurnStep.Main2)); //TODO GET RID OFF SECOND CLASS???
                 break;
 
             case TurnStep.Main2:
@@ -216,10 +216,10 @@ public class GameContext
         Display.LogMessage($"{player.Name} casts {card.CardData.FullName} (Object is on the STACK!)");
 
         IsPhaseTransition = false;
-        PriorityRoundInitiator = player;
 
-        //TODO? Caster holds Priority!
-        //PassPriority();
+        //Actvie Player HOLDS Priority
+        PriorityRoundInitiator = player;
+        PriorityPlayer = player;
     }
 
     public void ResolveTopStackObject()
@@ -240,6 +240,7 @@ public class GameContext
 
         PriorityPlayer = ActivePlayer;
         PriorityRoundInitiator = ActivePlayer;
+        IsPhaseTransition = false;
     }
 
     public void HandleReactionCast(PlayerAction action)

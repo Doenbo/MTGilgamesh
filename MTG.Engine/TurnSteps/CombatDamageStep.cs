@@ -5,7 +5,7 @@ namespace MTG.Engine.TurnSteps;
 
 public class CombatDamageStep : ITurnStep
 {
-    public TurnStep Name { get; } = TurnStep.CombatDamage;
+    public TurnStep Name { get; init; } = TurnStep.CombatDamage;
 
     public void OnStepEnter(GameContext context)
     {

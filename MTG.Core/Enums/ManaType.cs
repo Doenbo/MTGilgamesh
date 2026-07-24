@@ -1,7 +1,7 @@
 ﻿namespace MTG.Core.Enums;
 
 [Flags]
-public enum Color : byte
+public enum ManaType : byte
 {
     Colorless = 0,
     White     = 1 << 0, // 1

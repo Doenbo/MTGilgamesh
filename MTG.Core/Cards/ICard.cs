@@ -23,7 +23,7 @@ public interface ICard
     public List<ICardFace> Faces { get; }
     ICardFace MainFace => Faces[0];
     public Dictionary<Format, Legality> Legalities { get; }
-    public List<Color> ProducedMana { get; }
+    public List<ManaType> ProducedMana { get; }
 
     //Print
     public string CollectorNumber { get; }
@@ -33,7 +33,7 @@ public interface ICard
     public Rarity Rarity { get; }
 
     //Simple Getter
-    public Result<Color> GetCardColorIdentity();
+    public Result<ManaType> GetCardColorIdentity();
 
     //Simple Yes/No Checks
     public bool IsPermanent() => MainFace.IsPermanent();

@@ -5,11 +5,11 @@ namespace MTG.Core.Components;
 
 public class ColorComponent : ICardComponent
 {
-    public Color ColorIdentity { get; init; }
-    public Color ColorIndicator { get; private set; }
-    public Color Colors { get; private set; }
+    public ManaType ColorIdentity { get; init; }
+    public ManaType ColorIndicator { get; private set; }
+    public ManaType Colors { get; private set; }
 
-    private ColorComponent(Color colorIdentity, Color colorIndicator, Color colors)
+    private ColorComponent(ManaType colorIdentity, ManaType colorIndicator, ManaType colors)
     {
         ColorIdentity = colorIdentity;
         ColorIndicator = colorIndicator;
@@ -50,9 +50,9 @@ public class ColorComponent : ICardComponent
     //    return Result<ColorComponent>.Success(new ColorComponent(new Color() /*TODO*/, indicatorResult.Value, colorResult.Value));
     //}
 
-    private static Result<Color> ParseStringToEnum(List<string> colorStrings)
+    private static Result<ManaType> ParseStringToEnum(List<string> colorStrings)
     {
-        Color result = Color.Colorless;
+        ManaType result = ManaType.Colorless;
 
         foreach (var str in colorStrings)
         {
@@ -60,19 +60,19 @@ public class ColorComponent : ICardComponent
 
             switch (upperStr)
             {
-                case "W": result |= Color.White; break;
-                case "U": result |= Color.Blue; break;
-                case "B": result |= Color.Black; break;
-                case "R": result |= Color.Red; break;
-                case "G": result |= Color.Green; break;
+                case "W": result |= ManaType.White; break;
+                case "U": result |= ManaType.Blue; break;
+                case "B": result |= ManaType.Black; break;
+                case "R": result |= ManaType.Red; break;
+                case "G": result |= ManaType.Green; break;
                 default:
-                    return Result<Color>.Failure($"Color '{str}' is invalid!");
+                    return Result<ManaType>.Failure($"Color '{str}' is invalid!");
             }
         }
 
-        return Result<Color>.Success(result);
+        return Result<ManaType>.Success(result);
     }
 
-    private static Result<Color> ParseOptionalColors(List<string>? colorStrings) =>
-        colorStrings == null || colorStrings.Count == 0 ? Result<Color>.Success(Color.Colorless) : ParseStringToEnum(colorStrings);
+    private static Result<ManaType> ParseOptionalColors(List<string>? colorStrings) =>
+        colorStrings == null || colorStrings.Count == 0 ? Result<ManaType>.Success(ManaType.Colorless) : ParseStringToEnum(colorStrings);
 }

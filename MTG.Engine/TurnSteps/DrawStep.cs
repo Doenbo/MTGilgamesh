@@ -5,7 +5,7 @@ namespace MTG.Engine.TurnSteps;
 
 public class DrawStep : ITurnStep
 {
-    public TurnStep Name { get; } = TurnStep.Draw;
+    public TurnStep Name { get; init; } = TurnStep.Draw;
 
     public void OnStepEnter(GameContext context)
     {

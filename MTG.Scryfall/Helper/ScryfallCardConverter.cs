@@ -63,14 +63,14 @@ public class ScryfallCardConverter
         cardface.OracleText = oracleText;
 
         //ManaCost
-        var mana = ManaComponent.Create(manaCost);
-        if (mana.IsFailure)
-            return mana.ToFailure<ICardFace>();
+        var manaCostComponent = ManaCostComponent.Create(manaCost);
+        if (manaCostComponent.IsFailure)
+            return manaCostComponent.ToFailure<ICardFace>();
 
-        cardface.AddComponent(mana.Value);
+        cardface.AddComponent(manaCostComponent.Value);
 
         //CMC
-        if (cmc != -1 && cmc.IsNotEqualTo(mana.Value.CMC))
+        if (cmc != -1 && cmc.IsNotEqualTo(manaCostComponent.Value.CMC))
             return Result<ICardFace>.Failure($"CMCs do not match for the card {name}!");
 
         //Color

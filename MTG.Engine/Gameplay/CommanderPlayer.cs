@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using MTG.Core;
 using MTG.Core.Cards;
 using MTG.Core.Decks;
 using MTG.Core.Helper;
@@ -15,6 +16,7 @@ public class CommanderPlayer
 
     public string Name { get; init; }
     public int LifeTotal { get; set; }
+    public ManaCost ManaPool { get; set; } //TODO NOT MANACOST
     public bool IsEliminated { get; set; }
 
     private CommanderDeck Deck { get; init; } //just to hold the data

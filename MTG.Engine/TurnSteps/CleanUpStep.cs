@@ -5,7 +5,7 @@ namespace MTG.Engine.TurnSteps;
 
 public class CleanUpStep : ITurnStep
 {
-    public TurnStep Name { get; } = TurnStep.CleanupStep;
+    public TurnStep Name { get; init; } = TurnStep.CleanupStep;
 
     public void OnStepEnter(GameContext context)
     {

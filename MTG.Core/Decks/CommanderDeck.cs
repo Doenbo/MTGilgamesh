@@ -42,25 +42,25 @@ public class CommanderDeck : Deck
 
     public Result<ICard> GetRandomCard() => Result<ICard>.Success(Cards[new Random().Next(1, Cards.Count) - 1]);
 
-    public Result<Color> GetDeckColorIdentity()
+    public Result<ManaType> GetDeckColorIdentity()
     {
-        Color result = 0;
+        ManaType result = 0;
         var fc = FirstCommander.GetCardColorIdentity();
         if (fc.IsFailure)
-            return fc.ToFailure<Color>();
+            return fc.ToFailure<ManaType>();
 
         result = result | fc.Value;
 
         if (SecondCommander == null)
-            return Result<Color>.Success(result);
+            return Result<ManaType>.Success(result);
 
         var sc = SecondCommander.GetCardColorIdentity();
         if (sc.IsFailure)
-            return sc.ToFailure<Color>();
+            return sc.ToFailure<ManaType>();
 
         result = result | sc.Value;
 
-        return Result<Color>.Success(result);
+        return Result<ManaType>.Success(result);
     }
 
     public Result<bool> IsValidCommanderDeck()
@@ -88,7 +88,7 @@ public class CommanderDeck : Deck
                 if (!face.TryGetComponent<ColorComponent>(out var ident))
                     return Result<bool>.Failure("No Color Component?");
 
-                var isLegal = (ident.ColorIdentity & ~deckColor.Value) == Color.Colorless;
+                var isLegal = (ident.ColorIdentity & ~deckColor.Value) == ManaType.Colorless;
                 if (!isLegal)
                     return Result<bool>.Failure($"Illegal Card: {card}");
             }

@@ -5,7 +5,7 @@ namespace MTG.Engine.TurnSteps;
 
 public class UntapStep : ITurnStep
 {
-    public TurnStep Name { get; } = TurnStep.Untap;
+    public TurnStep Name { get; init; } = TurnStep.Untap;
 
     public void OnStepEnter(GameContext context)
     {

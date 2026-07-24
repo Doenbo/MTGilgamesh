@@ -18,18 +18,18 @@ public class ColorComponentTests
 
         var act = result.Value;
         Assert.NotNull(act);
-        Assert.Equal(new Color(), act.ColorIdentity);
-        Assert.Equal(new Color(), act.ColorIndicator);
-        Assert.Equal(new Color(), act.Colors);
+        Assert.Equal(new ManaType(), act.ColorIdentity);
+        Assert.Equal(new ManaType(), act.ColorIndicator);
+        Assert.Equal(new ManaType(), act.Colors);
     }
 
     [Theory]
-    [InlineData("W", Color.White)]
-    [InlineData("U", Color.Blue)]
-    [InlineData("B", Color.Black)]
-    [InlineData("R", Color.Red)]
-    [InlineData("G", Color.Green)]
-    public void CreateValidSingle(string s, Color c)
+    [InlineData("W", ManaType.White)]
+    [InlineData("U", ManaType.Blue)]
+    [InlineData("B", ManaType.Black)]
+    [InlineData("R", ManaType.Red)]
+    [InlineData("G", ManaType.Green)]
+    public void CreateValidSingle(string s, ManaType c)
     {
         var identity = new List<string> { s };
         var colors = new List<string> { s };
@@ -52,8 +52,8 @@ public class ColorComponentTests
     }
 
     [Theory]
-    [InlineData("W", Color.White, "B", Color.Black)]
-    public void CreateValidMultiple(string s1, Color c1, string s2, Color c2)
+    [InlineData("W", ManaType.White, "B", ManaType.Black)]
+    public void CreateValidMultiple(string s1, ManaType c1, string s2, ManaType c2)
     {
         var identity = new List<string> { s1, s2 };
         var colors = new List<string> { s1, s2 };

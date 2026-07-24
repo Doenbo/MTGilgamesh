@@ -5,7 +5,7 @@ namespace MTG.Engine.TurnSteps;
 
 public class DeclareBlockersStep : ITurnStep
 {
-    public TurnStep Name { get; } = TurnStep.DeclareBlockers;
+    public TurnStep Name { get; init; } = TurnStep.DeclareBlockers;
 
     public void OnStepEnter(GameContext context)
     {
