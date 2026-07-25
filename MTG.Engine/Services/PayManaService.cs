@@ -13,7 +13,10 @@ public class PayManaService
 {
     public bool CanAfford(ManaPool pool, ManaCostComponent mcComponent)
     {
-        throw new NotImplementedException();
+        if(mcComponent.CMC > pool.TotalMana)
+            return false;
+
+        return true;
     }
 
     public bool CanPayCost(CommanderPlayer player, CardInstance card, GameContext context)

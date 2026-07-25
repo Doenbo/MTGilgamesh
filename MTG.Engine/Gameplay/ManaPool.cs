@@ -29,6 +29,19 @@ public class ManaPool
         }
     }
 
+    public void RemoveMana(ManaType type, int amount = 1)
+    {
+        switch (type)
+        {
+            case ManaType.White: White -= amount; break;
+            case ManaType.Blue: Blue -= amount; break;
+            case ManaType.Black: Black -= amount; break;
+            case ManaType.Red: Red -= amount; break;
+            case ManaType.Green: Green -= amount; break;
+            case ManaType.Colorless: Colorless -= amount; break;
+        }
+    }
+
     public void Clear()
     {
         White = 0;

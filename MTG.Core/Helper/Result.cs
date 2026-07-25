@@ -1,4 +1,7 @@
-﻿namespace MTG.Core.Helper;
+﻿using Microsoft.Extensions.Logging;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+
+namespace MTG.Core.Helper;
 
 public interface IResult
 {
@@ -7,6 +10,8 @@ public interface IResult
 
 public class Result
 {
+    private static readonly ILogger<Result> _logger = LogManager.GetLogger<Result>();
+
     public bool IsSuccess { get; }
     public bool IsFailure => !IsSuccess;
     public string Error { get; }
@@ -15,6 +20,9 @@ public class Result
     {
         IsSuccess = isSuccess;
         Error = error;
+
+        if (IsFailure)
+            _logger.LogError($"{GetType}: {error}"); //TODO first bracket?
     }
 
     public static Result Success() => new(true, string.Empty);
@@ -25,6 +33,7 @@ public class Result
 public class Result<T> : Result, IResult
 {
     private readonly T? _value;
+    private static readonly ILogger<Result> _logger = LogManager.GetLogger<Result>();
 
     private Result(T? value, bool isSuccess, string error) : base(isSuccess, error)
     {
@@ -41,6 +50,7 @@ public class Result<T> : Result, IResult
             }
             else
             {
+                _logger.LogError($"{typeof(T)}: {Error}"); //TODO first bracket?
                 throw new InvalidOperationException("Cannot access Value of a failed result!");
             }
         }
