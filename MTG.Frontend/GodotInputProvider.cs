@@ -4,6 +4,8 @@ using MTG.Engine.Gameplay;
 using System;
 using System.Threading.Tasks;
 
+namespace MTG.Frontend;
+
 public class GodotInputProvider : IPlayerInputProvider
 {
     private readonly RichTextLabel _gameLog;
@@ -12,170 +14,213 @@ public class GodotInputProvider : IPlayerInputProvider
 
     public GodotInputProvider(RichTextLabel gameLog, LineEdit playerInput)
     {
-        _gameLog = gameLog;
-        _playerInput = playerInput;
+        _gameLog = gameLog ?? throw new ArgumentNullException(nameof(gameLog));
+        _playerInput = playerInput ?? throw new ArgumentNullException(nameof(playerInput));
 
-        _playerInput.TextSubmitted += OnTextSubmitted;
+        Callable.From(() =>
+        {
+            _playerInput.TextSubmitted += OnTextSubmitted;
+            _playerInput.FocusExited += OnFocusExited;
+        }).CallDeferred();
+    }
+
+    private void OnFocusExited()
+    {
+        Callable.From(() => _playerInput?.GrabFocus()).CallDeferred();
     }
 
     public async Task<PlayerAction> GetNextAction(GameContext context, CommanderPlayer player)
     {
-        bool holdsStackPriority = context.StackCount > 0;
-
         if (context.TurnStep == TurnStep.Untap)
         {
             return new PlayerAction(player, ActionType.PassPriority);
         }
 
-        if (holdsStackPriority) return GetCastSpellReaction(context, player);
-        if (player == context.ActivePlayer && (context.TurnStep == TurnStep.Main1 || context.TurnStep == TurnStep.Main2))
+        bool holdsStackPriority = context.StackCount > 0;
+
+        if (holdsStackPriority)
         {
-            return await GetMainStepAction(context, player);
+            return await GetCastSpellReactionAsync(context, player);
         }
 
-        return GetPriorityAction(context, player);
+        if (player == context.ActivePlayer && (context.TurnStep == TurnStep.Main1 || context.TurnStep == TurnStep.Main2))
+        {
+            return await GetMainStepActionAsync(context, player);
+        }
+
+        return await GetPriorityActionAsync(context, player);
     }
 
-    private async Task<PlayerAction> GetMainStepAction(GameContext context, CommanderPlayer player)
+    private async Task<PlayerAction> GetMainStepActionAsync(GameContext context, CommanderPlayer player)
     {
         while (true)
         {
-            _gameLog.AppendText($"\n[{context.TurnStep}] {context.PriorityPlayer.Name}, it's your main phase. What do you do?\n");
-            _gameLog.AppendText("1: Play a Card from your Hand | 2: Show Board | 3: Pass Priority (End Phase)\n");
+            LogUi($"\n[color=green]► [{context.TurnStep}] {player.Name}, it's your main phase.[/color]\n" +
+                  $"[color=gray]1: Play a Card from Hand | 2: Show Board | 3: Pass Priority (End Phase)[/color]\n");
 
             string input = await WaitForUserInputAsync();
 
-            switch (input)
+            switch (input.Trim())
             {
                 case "1":
-                    var input2 = ChooseHandCard(context, player);
-                    if (!int.TryParse(input2, out int j) || j < 1 || j > player.Hand.Count + 1)
+                    var selectedCard = await ChooseHandCardAsync(context, player);
+                    if (selectedCard != null)
                     {
-                        _gameLog.AppendText("Could not process input. Try again!\n");
-                        continue;
+                        return new PlayerAction(player, ActionType.PlayCard, selectedCard);
                     }
-
-                    if (j == player.Hand.Count + 1)
-                        continue;
-
-                    return new PlayerAction(player, ActionType.PlayCard, player.Hand[j - 1]);
+                    continue;
 
                 case "2":
-                    _gameLog.AppendText($"{context.ToConsoleBattlefield()}\n");
+                    LogUi($"[color=light_blue]{context.ToConsoleBattlefield()}[/color]\n");
                     continue;
+
                 case "3":
                     return new PlayerAction(player, ActionType.PassPriority);
+
                 default:
-                    _gameLog.AppendText("Could not process input. Try again!\n");
+                    LogUi("[color=orange]Invalid selection. Type 1, 2, or 3.[/color]\n");
                     continue;
             }
         }
     }
 
-    private PlayerAction GetCastSpellReaction(GameContext context, CommanderPlayer player)
+    private async Task<PlayerAction> GetCastSpellReactionAsync(GameContext context, CommanderPlayer player)
     {
         while (true)
         {
             var topStackCard = context.PeekStack();
             string casterName = topStackCard.Owner.Name;
 
-            _gameLog.AppendText($"\n[{casterName}] has casted {topStackCard.CardData.FullName}\n");
-            _gameLog.AppendText($"[{player.Name}] How do you react?\n");
-            _gameLog.AppendText("1: Play a Card from your Hand | 2: Show Stack | 3: Pass Priority\n");
+            LogUi($"\n[color=magenta]⚡ [{casterName}] casted {topStackCard.CardData.FullName}[/color]\n" +
+                  $"[color=yellow][{player.Name}] How do you react?[/color]\n" +
+                  $"[color=gray]1: Play a Card from Hand | 2: Show Stack | 3: Pass Priority[/color]\n");
 
-            var input = _playerInput.Text;
+            string input = await WaitForUserInputAsync();
 
-            if (input == "1")
+            switch (input.Trim())
             {
-                var input2 = ChooseHandCard(context, player);
-                if (!int.TryParse(input2, out int j) || j < 1 || j > player.Hand.Count + 1)
-                {
-                    _gameLog.AppendText("Could not process input. Try again!\n");
-                    continue;
-                }
-
-                if (j == player.Hand.Count + 1)
+                case "1":
+                    var selectedCard = await ChooseHandCardAsync(context, player);
+                    if (selectedCard != null)
+                    {
+                        return new PlayerAction(player, ActionType.PlayCard, selectedCard);
+                    }
                     continue;
 
-                return new PlayerAction(player, ActionType.PlayCard, player.Hand[j - 1]);
-            }
-            if (input == "2")
-            {
-                _gameLog.AppendText($"{context.ToConsoleStack()}\n");
-                continue;
-            }
-            if (input == "3")
-            {
-                return new PlayerAction(player, ActionType.PassPriority);
-            }
+                case "2":
+                    LogUi($"[color=light_blue]{context.ToConsoleStack()}[/color]\n");
+                    continue;
 
-            _gameLog.AppendText("Could not process input. Try again!\n");
+                case "3":
+                    return new PlayerAction(player, ActionType.PassPriority);
+
+                default:
+                    LogUi("[color=orange]Invalid selection. Type 1, 2, or 3.[/color]\n");
+                    continue;
+            }
         }
     }
 
-    private PlayerAction GetPriorityAction(GameContext context, CommanderPlayer player)
+    private async Task<PlayerAction> GetPriorityActionAsync(GameContext context, CommanderPlayer player)
     {
         while (true)
         {
-            _gameLog.AppendText($"\n[{context.TurnStep}] Priority: {player.Name}. What do you do?\n");
-            _gameLog.AppendText("1: Activate Instant / Ability | 2: Pass Priority\n");
+            LogUi($"\n[color=yellow]► [{context.TurnStep}] Priority: {player.Name}[/color]\n" +
+                  $"[color=gray]1: Activate Instant / Ability | 2: Show Board | 3: Pass Priority[/color]\n");
 
-            var input = _playerInput.Text;
+            string input = await WaitForUserInputAsync();
 
-            if (input == "1")
+            switch (input.Trim())
             {
-                var input2 = ChooseHandCard(context, player);
-                if (!int.TryParse(input2, out int j) || j < 1 || j > player.Hand.Count + 1)
-                {
-                    _gameLog.AppendText("Could not process input. Try again!\n");
-                    continue;
-                }
-
-                if (j == player.Hand.Count + 1)
+                case "1":
+                    var selectedCard = await ChooseHandCardAsync(context, player);
+                    if (selectedCard != null)
+                    {
+                        return new PlayerAction(player, ActionType.PlayCard, selectedCard);
+                    }
                     continue;
 
-                return new PlayerAction(player, ActionType.PlayCard, player.Hand[j - 1]);
-            }
-            if (input == "2")
-            {
-                return new PlayerAction(player, ActionType.PassPriority);
-            }
+                case "2":
+                    LogUi($"[color=light_blue]{context.ToConsoleBattlefield()}[/color]\n");
+                    continue;
 
-            _gameLog.AppendText("Could not process input. Try again!\n");
+                case "3":
+                    return new PlayerAction(player, ActionType.PassPriority);
+
+                default:
+                    LogUi("[color=orange]Invalid selection. Type 1, 2, or 3.[/color]\n");
+                    continue;
+            }
         }
     }
 
-    private string ChooseHandCard(GameContext context, CommanderPlayer player)
+    private async Task<CardInstance?> ChooseHandCardAsync(GameContext context, CommanderPlayer player)
     {
-        _gameLog.AppendText($"\n{context.PriorityPlayer.Name}, which card would you like to play from your hand?\n");
-        for (int i = 0; i < player.Hand.Count; i++)
+        if (player.Hand.Count == 0)
         {
-            var c = player.Hand[i];
-            _gameLog.AppendText($"{i + 1}: {c.CardData.FullName} | ");
+            LogUi("[color=orange]Your hand is empty![/color]\n");
+            return null;
         }
-        _gameLog.AppendText($"{player.Hand.Count + 1}: Return\n");
 
-        return _playerInput.Text;
+        while (true)
+        {
+            LogUi($"\n[color=white]{player.Name}, select a card to play:[/color]\n");
+            for (int i = 0; i < player.Hand.Count; i++)
+            {
+                var card = player.Hand[i];
+                LogUi($"[color=green]{i + 1}:[/color] {card.CardData.FullName} | ");
+            }
+            LogUi($"[color=red]{player.Hand.Count + 1}: Return[/color]\n");
+
+            string input = await WaitForUserInputAsync();
+
+            if (int.TryParse(input.Trim(), out int choice) && choice >= 1 && choice <= player.Hand.Count + 1)
+            {
+                if (choice == player.Hand.Count + 1)
+                {
+                    return null;
+                }
+                return player.Hand[choice - 1];
+            }
+
+            LogUi("[color=orange]Invalid card index. Try again.[/color]\n");
+        }
     }
 
     private Task<string> WaitForUserInputAsync()
     {
         _inputTcs = new TaskCompletionSource<string>();
 
-        _playerInput.Editable = true;
-        _playerInput.GrabFocus();
+        Callable.From(() =>
+        {
+            _playerInput.Editable = true;
+            _playerInput.GrabFocus();
+        }).CallDeferred();
 
         return _inputTcs.Task;
     }
 
     private void OnTextSubmitted(string text)
     {
-        if (string.IsNullOrWhiteSpace(text))
-            return;
+        if (string.IsNullOrWhiteSpace(text)) return;
 
-        _gameLog.AppendText($"[color=cyan]> {text}[/color]\n");
-        _playerInput.Clear();
+        LogUi($"[color=green]> {text}[/color]\n");
+
+        Callable.From(() =>
+        {
+            _playerInput.Clear();
+            _playerInput.GrabFocus();
+        }).CallDeferred();
 
         _inputTcs?.TrySetResult(text);
+    }
+
+    private void LogUi(string text)
+    {
+        Callable.From(() =>
+        {
+            _gameLog?.AppendText(text);
+            _gameLog?.ScrollToLine(_gameLog.GetLineCount());
+        }).CallDeferred();
     }
 }

@@ -1,48 +1,41 @@
 using Godot;
-using MTG.Core.Cards;
-using MTG.Core.Enums;
 using MTG.Engine.Enums;
 using MTG.Engine.Gameplay;
 
+namespace MTG.Frontend;
+
 public class GodotGameDisplay : IGameDisplay
 {
-	public void InitializeVisuals(GameContext context)
-	{
-		throw new System.NotImplementedException();
-	}
+    private readonly RichTextLabel _gameLog;
 
-	public void LogElimination(string playerName)
-	{
-		throw new System.NotImplementedException();
-	}
+    public GodotGameDisplay(RichTextLabel gameLog)
+    {
+        _gameLog = gameLog ?? throw new System.ArgumentNullException(nameof(gameLog));
+    }
 
-	public void LogMessage(string message)
-	{
-		throw new System.NotImplementedException();
-	}
+    public void LogMessage(string message)
+    {
+        AppendBbcode($"[color=gainsboro]{message}[/color]\n");
+    }
 
-	public void LogStepTransition(TurnStep name, string playerName)
-	{
-		throw new System.NotImplementedException();
-	}
+    public void LogStepTransition(TurnStep name, string playerName)
+    {
+        AppendBbcode($"\n[color=cyan]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/color]\n" +
+                     $"[color=yellow]► [{name}] — {playerName}'s Turn[/color]\n" +
+                     $"[color=cyan]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/color]\n");
+    }
 
-	public void OnCardMovedZone(ICard card, PlayZone fromZone, PlayZone toZone)
-	{
-		throw new System.NotImplementedException();
-	}
+    public void LogElimination(string playerName)
+    {
+        AppendBbcode($"\n[color=red][bold]☠ {playerName} has been ELIMINATED! ☠[/bold][/color]\n");
+    }
 
-	public void OnCardPlayed(CommanderPlayer player, ICard card)
-	{
-		throw new System.NotImplementedException();
-	}
-
-	public void OnCardTapped(ICard card, bool isTapped)
-	{
-		throw new System.NotImplementedException();
-	}
-
-	public void OnLifeTotalChanged(CommanderPlayer player, int oldLife, int newLife)
-	{
-		throw new System.NotImplementedException();
-	}
+    private void AppendBbcode(string bbcode)
+    {
+        Callable.From(() =>
+        {
+            _gameLog?.AppendText(bbcode);
+            _gameLog?.ScrollToLine(_gameLog.GetLineCount());
+        }).CallDeferred();
+    }
 }
