@@ -1,4 +1,5 @@
-﻿using MTG.Core.Helper;
+﻿using MTG.Core.Enums;
+using MTG.Core.Helper;
 using System.Collections.Immutable;
 
 namespace MTG.Core.Properties;
@@ -12,9 +13,15 @@ public class ManaSymbol
     //Factory Pattern
     private string Value { get; set; }
 
+    public List<ManaType> AcceptedColors { get; private set; } = new();
+
+    public int GenericCost { get; private set; } = 0;
+    public bool IsGenericOnly => AcceptedColors.Count == 0 && GenericCost > 0;
+
     private ManaSymbol(string value)
     {
         Value = value;
+        ParseValue();
     }
 
     public static Result<ManaSymbol> Create(string value)
@@ -38,6 +45,43 @@ public class ManaSymbol
 
         return Result<ManaSymbol>.Success(new ManaSymbol(value));
     }
+
+    private void ParseValue()
+    {
+        if (int.TryParse(Value, out int numeric))
+        {
+            GenericCost = numeric;
+            return;
+        }
+
+        var parts = Value.Split('/');
+        foreach (var part in parts)
+        {
+            if (int.TryParse(part, out int num))
+            {
+                GenericCost = num;
+            }
+            else if (part.Length == 1)
+            {
+                var color = CharToManaType(part[0]);
+                if (color.HasValue)
+                {
+                    AcceptedColors.Add(color.Value);
+                }
+            }
+        }
+    }
+
+    private static ManaType? CharToManaType(char c) => c switch
+    {
+        'W' => ManaType.White,
+        'U' => ManaType.Blue,
+        'B' => ManaType.Black,
+        'R' => ManaType.Red,
+        'G' => ManaType.Green,
+        'C' => ManaType.Colorless,
+        _ => null
+    };
 
     public Result<float> GetCMC()
     {

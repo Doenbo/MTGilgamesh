@@ -21,39 +21,27 @@ public class GodotInputProvider : IPlayerInputProvider
     public async Task<PlayerAction> GetNextAction(GameContext context, CommanderPlayer player)
     {
         bool holdsStackPriority = context.StackCount > 0;
-        bool isPhaseTransition = context.IsPhaseTransition;
 
-        if (context.TurnStep == TurnStep.Untap ||
-            context.TurnStep == TurnStep.Upkeep ||
-            context.TurnStep == TurnStep.Draw ||
-            context.TurnStep == TurnStep.EndStep ||
-            context.TurnStep == TurnStep.CleanupStep)
+        if (context.TurnStep == TurnStep.Untap)
         {
-            return new PlayerAction(player, ActionType.GoToNextPhase);
-        }
-
-        if (context.TurnStep == TurnStep.CombatBegin ||
-            context.TurnStep == TurnStep.DeclareAttackers ||
-            context.TurnStep == TurnStep.DeclareBlockers ||
-            context.TurnStep == TurnStep.CombatDamage ||
-            context.TurnStep == TurnStep.EndOfCombat)
-        {
-            return new PlayerAction(player, ActionType.GoToNextPhase);
+            return new PlayerAction(player, ActionType.PassPriority);
         }
 
         if (holdsStackPriority) return GetCastSpellReaction(context, player);
-        if (isPhaseTransition) return GetPhaseTransitionReaction(context, player);
-        if (player == context.ActivePlayer) return await GetMainStepAction(context, player);
+        if (player == context.ActivePlayer && (context.TurnStep == TurnStep.Main1 || context.TurnStep == TurnStep.Main2))
+        {
+            return await GetMainStepAction(context, player);
+        }
 
-        throw new Exception("Unexpected game state.");
+        return GetPriorityAction(context, player);
     }
 
     private async Task<PlayerAction> GetMainStepAction(GameContext context, CommanderPlayer player)
     {
         while (true)
         {
-            _gameLog.AppendText("$\"\\n[{context.TurnStep}] {context.PriorityPlayer.Name}, it's your turn. What do you do?\"");
-            _gameLog.AppendText("1: Play a Card from your Hand | 2: Show Board | 3: Go to next Phase");
+            _gameLog.AppendText($"\n[{context.TurnStep}] {context.PriorityPlayer.Name}, it's your main phase. What do you do?\n");
+            _gameLog.AppendText("1: Play a Card from your Hand | 2: Show Board | 3: Pass Priority (End Phase)\n");
 
             string input = await WaitForUserInputAsync();
 
@@ -63,7 +51,7 @@ public class GodotInputProvider : IPlayerInputProvider
                     var input2 = ChooseHandCard(context, player);
                     if (!int.TryParse(input2, out int j) || j < 1 || j > player.Hand.Count + 1)
                     {
-                        _gameLog.AppendText("Could not process input. Try again!");
+                        _gameLog.AppendText("Could not process input. Try again!\n");
                         continue;
                     }
 
@@ -73,12 +61,12 @@ public class GodotInputProvider : IPlayerInputProvider
                     return new PlayerAction(player, ActionType.PlayCard, player.Hand[j - 1]);
 
                 case "2":
-                    _gameLog.AppendText($"{context.ToConsoleBattlefield()}");
+                    _gameLog.AppendText($"{context.ToConsoleBattlefield()}\n");
                     continue;
                 case "3":
-                    return new PlayerAction(player, ActionType.GoToNextPhase);
+                    return new PlayerAction(player, ActionType.PassPriority);
                 default:
-                    _gameLog.AppendText("Could not process input. Try again!");
+                    _gameLog.AppendText("Could not process input. Try again!\n");
                     continue;
             }
         }
@@ -88,11 +76,13 @@ public class GodotInputProvider : IPlayerInputProvider
     {
         while (true)
         {
-            _gameLog.AppendText($"\n[{context.PriorityRoundInitiator.Name}] has casted {context.PeekStack().CardData.FullName}");
-            _gameLog.AppendText($"[{player.Name}] How do you react?");
-            _gameLog.AppendText("1: Play a Card from your Hand | 2: Show Stack | 3: Do not react");
+            var topStackCard = context.PeekStack();
+            string casterName = topStackCard.Owner.Name;
 
-            //TODO
+            _gameLog.AppendText($"\n[{casterName}] has casted {topStackCard.CardData.FullName}\n");
+            _gameLog.AppendText($"[{player.Name}] How do you react?\n");
+            _gameLog.AppendText("1: Play a Card from your Hand | 2: Show Stack | 3: Pass Priority\n");
+
             var input = _playerInput.Text;
 
             if (input == "1")
@@ -100,7 +90,7 @@ public class GodotInputProvider : IPlayerInputProvider
                 var input2 = ChooseHandCard(context, player);
                 if (!int.TryParse(input2, out int j) || j < 1 || j > player.Hand.Count + 1)
                 {
-                    _gameLog.AppendText("Could not process input. Try again!");
+                    _gameLog.AppendText("Could not process input. Try again!\n");
                     continue;
                 }
 
@@ -111,7 +101,7 @@ public class GodotInputProvider : IPlayerInputProvider
             }
             if (input == "2")
             {
-                _gameLog.AppendText($"{context.ToConsoleStack()}");
+                _gameLog.AppendText($"{context.ToConsoleStack()}\n");
                 continue;
             }
             if (input == "3")
@@ -119,19 +109,17 @@ public class GodotInputProvider : IPlayerInputProvider
                 return new PlayerAction(player, ActionType.PassPriority);
             }
 
-            _gameLog.AppendText("Could not process input. Try again!");
+            _gameLog.AppendText("Could not process input. Try again!\n");
         }
     }
 
-    private PlayerAction GetPhaseTransitionReaction(GameContext context, CommanderPlayer player)
+    private PlayerAction GetPriorityAction(GameContext context, CommanderPlayer player)
     {
         while (true)
         {
-            _gameLog.AppendText($"\n[REACTION] {context.ActivePlayer.Name} wants to end '{context.TurnStep}'.");
-            _gameLog.AppendText($"{player.Name}, how would you like to react?");
-            _gameLog.AppendText("1: Activate Instant / Ability | 2: Pass");
+            _gameLog.AppendText($"\n[{context.TurnStep}] Priority: {player.Name}. What do you do?\n");
+            _gameLog.AppendText("1: Activate Instant / Ability | 2: Pass Priority\n");
 
-            //TODO
             var input = _playerInput.Text;
 
             if (input == "1")
@@ -139,7 +127,7 @@ public class GodotInputProvider : IPlayerInputProvider
                 var input2 = ChooseHandCard(context, player);
                 if (!int.TryParse(input2, out int j) || j < 1 || j > player.Hand.Count + 1)
                 {
-                    _gameLog.AppendText("Could not process input. Try again!");
+                    _gameLog.AppendText("Could not process input. Try again!\n");
                     continue;
                 }
 
@@ -153,7 +141,7 @@ public class GodotInputProvider : IPlayerInputProvider
                 return new PlayerAction(player, ActionType.PassPriority);
             }
 
-            _gameLog.AppendText("Could not process input. Try again!");
+            _gameLog.AppendText("Could not process input. Try again!\n");
         }
     }
 
@@ -167,18 +155,13 @@ public class GodotInputProvider : IPlayerInputProvider
         }
         _gameLog.AppendText($"{player.Hand.Count + 1}: Return\n");
 
-        //TODO
         return _playerInput.Text;
     }
 
-    /// <summary>
-    /// Helper method that pauses execution until the user submits text via LineEdit.
-    /// </summary>
     private Task<string> WaitForUserInputAsync()
     {
         _inputTcs = new TaskCompletionSource<string>();
 
-        // Ensure input field is ready and focused
         _playerInput.Editable = true;
         _playerInput.GrabFocus();
 
@@ -190,11 +173,9 @@ public class GodotInputProvider : IPlayerInputProvider
         if (string.IsNullOrWhiteSpace(text))
             return;
 
-        // Echo submitted command into log and clear input field
         _gameLog.AppendText($"[color=cyan]> {text}[/color]\n");
         _playerInput.Clear();
 
-        // Complete the waiting Task with the entered text
         _inputTcs?.TrySetResult(text);
     }
 }

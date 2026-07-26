@@ -11,12 +11,22 @@ namespace MTG.Engine.Services;
 
 public class PayManaService
 {
-    public bool CanAfford(ManaPool pool, ManaCostComponent mcComponent)
+    public bool CanPaySymbol(ManaSymbol symbol, ManaPool pool)
     {
-        if(mcComponent.CMC > pool.TotalMana)
-            return false;
+        foreach (var color in symbol.AcceptedColors)
+        {
+            if (pool.Get(color) >= 1)
+            {
+                return true;
+            }
+        }
 
-        return true;
+        if (symbol.GenericCost > 0 && pool.TotalMana >= symbol.GenericCost)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public bool CanPayCost(CommanderPlayer player, CardInstance card, GameContext context)

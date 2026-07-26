@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MTG.Core.Helper;
 using MTG.Engine.Enums;
@@ -30,11 +30,10 @@ public class GameContext
     public TurnStep TurnStep { get; set; } = TurnStep.Untap;
     public CommanderPlayer ActivePlayer { get; set; }
     public CommanderPlayer PriorityPlayer { get; set; }
-    public CommanderPlayer? PriorityRoundInitiator { get; set; }
-
+    public int ConsecutivePasses { get; set; }
+    public int ActivePlayerCount => _players.Count(p => !p.IsEliminated);
 
     public bool HasPlayedLandThisTurn { get; set; }
-    public bool IsPhaseTransition { get; set; }
 
 
     public IGameDisplay Display { get; private set; }
@@ -115,28 +114,37 @@ public class GameContext
 
     public void PassPriority()
     {
-        int currentIndex = _players.IndexOf(PriorityPlayer);
-        int nextIndex = (currentIndex + 1) % _players.Count;
+        ConsecutivePasses++;
 
-        PriorityPlayer = _players[nextIndex];
-
-        Display?.LogMessage($"Priority switches to: {PriorityPlayer.Name}");
-
-        if (PriorityPlayer == PriorityRoundInitiator)
+        if (ConsecutivePasses >= ActivePlayerCount)
         {
+            ConsecutivePasses = 0;
+
             if (StackCount > 0)
             {
                 ResolveTopStackObject();
+                PriorityPlayer = ActivePlayer;
             }
-            else if (IsPhaseTransition)
+            else
             {
-                IsPhaseTransition = false;
-                PriorityRoundInitiator = null;
-
                 AdvanceToNextStep();
-                return;
             }
+            return;
         }
+
+        int currentIndex = _players.IndexOf(PriorityPlayer);
+        do
+        {
+            currentIndex = (currentIndex + 1) % _players.Count;
+        } while (_players[currentIndex].IsEliminated);
+
+        PriorityPlayer = _players[currentIndex];
+        Display?.LogMessage($"Priority switches to: {PriorityPlayer.Name}");
+    }
+
+    public void OnPlayerTookAction()
+    {
+        ConsecutivePasses = 0;
     }
 
     public void AdvanceToNextStep()
@@ -176,7 +184,7 @@ public class GameContext
                 break;
 
             case TurnStep.EndOfCombat:
-                TransitionTo(new MainStep(TurnStep.Main2)); //TODO GET RID OFF SECOND CLASS???
+                TransitionTo(new MainStep(TurnStep.Main2));
                 break;
 
             case TurnStep.Main2:
@@ -211,49 +219,34 @@ public class GameContext
         var card = action.TargetCardInstance;
         var player = action.Player;
 
+        if (card == null) return;
+
         player.RemoveFromHand(card);
         PushToStack(card);
-        Display.LogMessage($"{player.Name} casts {card.CardData.FullName} (Object is on the STACK!)");
+        Display?.LogMessage($"{player.Name} casts {card.CardData.FullName} (Object is on the STACK!)");
 
-        IsPhaseTransition = false;
-
-        //Actvie Player HOLDS Priority
-        PriorityRoundInitiator = player;
         PriorityPlayer = player;
+        ConsecutivePasses = 0;
     }
 
     public void ResolveTopStackObject()
     {
         var resolvedCard = PopFromStack();
-        Display.LogMessage($"\n=== RESOLVING: {resolvedCard.CardData.FullName} ===");
+        Display?.LogMessage($"\n=== RESOLVING: {resolvedCard.CardData.FullName} ===");
 
         if (resolvedCard.CardData.IsPermanent())
         {
             MoveToBattlefield(resolvedCard);
-            Display.LogMessage($"{resolvedCard.CardData.FullName} enters the battlefield.");
+            Display?.LogMessage($"{resolvedCard.CardData.FullName} enters the battlefield.");
         }
         else
         {
             resolvedCard.Owner.AddToGraveyard(resolvedCard);
-            Display.LogMessage($"{resolvedCard.CardData.FullName} finishes resolving and goes to Graveyard.");
+            Display?.LogMessage($"{resolvedCard.CardData.FullName} finishes resolving and goes to Graveyard.");
         }
 
         PriorityPlayer = ActivePlayer;
-        PriorityRoundInitiator = ActivePlayer;
-        IsPhaseTransition = false;
-    }
-
-    public void HandleReactionCast(PlayerAction action)
-    {
-        var card = action.TargetCardInstance;
-
-        if (card.CardData.IsLand() || !card.CardData.IsInstant())
-        {
-            Display.LogMessage($"You cannot play {card.CardData.FullName} as a reaction! (Stuck or phase transition in progress)");
-            return;
-        }
-
-        CastSpellAndStartPriorityRound(action);
+        ConsecutivePasses = 0;
     }
 
     public void AdvanceToNextPlayersTurn()

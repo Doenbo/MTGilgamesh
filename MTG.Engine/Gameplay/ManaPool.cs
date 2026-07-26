@@ -16,6 +16,17 @@ public class ManaPool
 
     public int TotalMana => White + Blue + Black + Red + Green + Colorless;
 
+    public int Get(ManaType type) => type switch
+    {
+        ManaType.White => White,
+        ManaType.Blue => Blue,
+        ManaType.Black => Black,
+        ManaType.Red => Red,
+        ManaType.Green => Green,
+        ManaType.Colorless => Colorless,
+        _ => 0
+    };
+
     public void AddMana(ManaType type, int amount = 1)
     {
         switch (type)
@@ -29,8 +40,10 @@ public class ManaPool
         }
     }
 
-    public void RemoveMana(ManaType type, int amount = 1)
+    public bool TryDeduct(ManaType type, int amount = 1)
     {
+        if (Get(type) < amount) return false;
+
         switch (type)
         {
             case ManaType.White: White -= amount; break;
@@ -40,6 +53,31 @@ public class ManaPool
             case ManaType.Green: Green -= amount; break;
             case ManaType.Colorless: Colorless -= amount; break;
         }
+        return true;
+    }
+
+    public bool TryDeductGeneric(int amount)
+    {
+        if (TotalMana < amount) return false;
+
+        int remainingToPay = amount;
+
+        ManaType[] priority = [
+            ManaType.Colorless, ManaType.Green, ManaType.Red,
+            ManaType.Black, ManaType.Blue, ManaType.White
+        ];
+
+        foreach (var type in priority)
+        {
+            while (Get(type) > 0 && remainingToPay > 0)
+            {
+                TryDeduct(type, 1);
+                remainingToPay--;
+            }
+            if (remainingToPay == 0) break;
+        }
+
+        return remainingToPay == 0;
     }
 
     public void Clear()
