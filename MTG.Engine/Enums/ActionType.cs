@@ -4,6 +4,7 @@ public enum ActionType
 {
     PlayCard,
 
+    TapCard,
     ActivateCardAbility,
 
     GoToNextPhase,

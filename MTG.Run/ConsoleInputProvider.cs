@@ -1,4 +1,5 @@
 using MTG.Core.Cards;
+using MTG.Core.Helper;
 using MTG.Engine.Enums;
 using MTG.Engine.Gameplay;
 using System;
@@ -10,7 +11,7 @@ public class ConsoleInputProvider : IPlayerInputProvider
 {
     private const string s_passp = "0: Pass Priority";
     private const string s_endph = "0: End Phase";
-    private const string s_return = "0: Return";
+    private const string s_retur = "0: Return";
 
     public async Task<PlayerAction> GetNextAction(GameContext context, CommanderPlayer player)
     {
@@ -32,6 +33,8 @@ public class ConsoleInputProvider : IPlayerInputProvider
 
     private PlayerAction GetMainStepAction(GameContext context, CommanderPlayer player)
     {
+        Result<CardInstance> chosenCard;
+
         while (true)
         {
             Console.WriteLine($"\n[{context.TurnStep}] {context.PriorityPlayer.Name}, it's your main phase. What do you do?");
@@ -42,26 +45,28 @@ public class ConsoleInputProvider : IPlayerInputProvider
             switch (input)
             {
                 case "1":
-                    var input1 = ChooseHandCard(context, player);
-                    if (!int.TryParse(input1, out int j) || j < 1 || j > player.Hand.Count + 1)
-                    {
-                        Console.WriteLine("Could not process input. Try again!");
-                        continue;
-                    }
+                    chosenCard = ChooseHandCard(context, player);
 
-                    if (j == player.Hand.Count + 1)
+                    if (chosenCard.IsFailure)
                         continue;
 
-                    return new PlayerAction(player, ActionType.PlayCard, player.Hand[j - 1]);
+                    return new PlayerAction(player, ActionType.PlayCard, chosenCard.Value);
+
                 case "2":
-                    var input2 = ChooseBoardCard(context, player);
-                    //TODO
-                    continue;
+                    chosenCard = ChooseOwnBoardCard(context, player);
+
+                    if (chosenCard.IsFailure)
+                        continue;
+
+                    return new PlayerAction(player, ActionType.PlayCard, chosenCard.Value);
+
                 case "9":
                     Console.WriteLine($"{context.ToConsoleBattlefield()}");
                     continue;
+
                 case "0":
                     return new PlayerAction(player, ActionType.PassPriority);
+
                 default:
                     Console.WriteLine("Could not process input. Try again!");
                     continue;
@@ -71,6 +76,8 @@ public class ConsoleInputProvider : IPlayerInputProvider
 
     private PlayerAction GetCastSpellReaction(GameContext context, CommanderPlayer player)
     {
+        Result<CardInstance> chosenCard;
+
         while (true)
         {
             var topStackCard = context.PeekStack();
@@ -78,99 +85,139 @@ public class ConsoleInputProvider : IPlayerInputProvider
 
             Console.WriteLine($"\n[{casterName}] has casted {topStackCard.CardData.FullName}");
             Console.WriteLine($"[{player.Name}] How do you react?");
-            Console.WriteLine("1: Play a Card from your Hand | 2: Show Stack | " + s_passp);
+            Console.WriteLine("1: Play a Card from your Hand | 9: Show Stack | " + s_passp);
 
             string? input = Console.ReadLine();
 
-            if (input == "1")
+            switch (input)
             {
-                var input2 = ChooseHandCard(context, player);
-                if (!int.TryParse(input2, out int j) || j < 1 || j > player.Hand.Count + 1)
-                {
+                case "1":
+                    chosenCard = ChooseHandCard(context, player);
+
+                    if (chosenCard.IsFailure)
+                        continue;
+
+                    return new PlayerAction(player, ActionType.PlayCard, chosenCard.Value);
+
+                case "2":
+                    chosenCard = ChooseOwnBoardCard(context, player);
+
+                    if (chosenCard.IsFailure)
+                        continue;
+
+                    return new PlayerAction(player, ActionType.PlayCard, chosenCard.Value);
+
+                case "9":
+                    Console.WriteLine($"{context.ToConsoleStack()}");
+                    continue;
+
+                case "0":
+                    return new PlayerAction(player, ActionType.PassPriority);
+
+                default:
                     Console.WriteLine("Could not process input. Try again!");
                     continue;
-                }
-
-                if (j == player.Hand.Count + 1)
-                    continue;
-
-                return new PlayerAction(player, ActionType.PlayCard, player.Hand[j - 1]);
             }
-            if (input == "2")
-            {
-                Console.WriteLine($"{context.ToConsoleStack()}");
-                continue;
-            }
-            if (input == "0")
-            {
-                return new PlayerAction(player, ActionType.PassPriority);
-            }
-
-            Console.WriteLine("Could not process input. Try again!");
         }
     }
 
     private PlayerAction GetPriorityAction(GameContext context, CommanderPlayer player)
     {
+        Result<CardInstance> chosenCard;
+
         while (true)
         {
             Console.WriteLine($"\n[{context.TurnStep}] Priority: {player.Name}. What do you do?");
-            Console.WriteLine("1: Play an Instant / Ability | 2: Show Board | " + s_passp);
+            Console.WriteLine("\"1: Play a Card from your Hand | 2: Tap a Card | 9: Show Board | " + s_passp);
 
             var input = Console.ReadLine();
 
-            if (input == "1")
+            switch (input)
             {
-                var input2 = ChooseHandCard(context, player);
-                if (!int.TryParse(input2, out int j) || j < 1 || j > player.Hand.Count + 1)
-                {
+                case "1":
+                    chosenCard = ChooseHandCard(context, player);
+
+                    if (chosenCard.IsFailure)
+                        continue;
+
+                    return new PlayerAction(player, ActionType.PlayCard, chosenCard.Value);
+
+                case "2":
+                    chosenCard = ChooseOwnBoardCard(context, player);
+
+                    if (chosenCard.IsFailure)
+                        continue;
+
+                    return new PlayerAction(player, ActionType.PlayCard, chosenCard.Value);
+
+                case "9":
+                    Console.WriteLine($"{context.ToConsoleBattlefield()}");
+                    continue;
+
+                case "0":
+                    return new PlayerAction(player, ActionType.PassPriority);
+
+                default:
                     Console.WriteLine("Could not process input. Try again!");
                     continue;
-                }
-
-                if (j == player.Hand.Count + 1)
-                    continue;
-
-                return new PlayerAction(player, ActionType.PlayCard, player.Hand[j - 1]);
             }
-            if (input == "2")
-            {
-                Console.WriteLine($"{context.ToConsoleBattlefield()}");
-                continue;
-            }
-            if (input == "0")
-            {
-                return new PlayerAction(player, ActionType.PassPriority);
-            }
-
-            Console.WriteLine("Could not process input. Try again!");
         }
     }
 
-    private static string? ChooseHandCard(GameContext context, CommanderPlayer player)
+    private static Result<CardInstance> ChooseHandCard(GameContext context, CommanderPlayer player)
     {
-        Console.WriteLine($"\n{context.PriorityPlayer.Name}, which card would you like to play from your hand?\n");
+        var text = $"\n{context.PriorityPlayer.Name}, which card would you like to play from your hand?\n";
         for (int i = 0; i < player.Hand.Count; i++)
         {
             var c = player.Hand[i];
-            Console.Write($"{i + 1}: {c.CardData.FullName} | ");
+            text += $"{i + 1}: {c.CardData.FullName} | ";
         }
-        Console.WriteLine(s_return);
+        text += s_retur;
 
-        return Console.ReadLine();
+        while (true)
+        {
+            Console.WriteLine(text);
+
+            var input = Console.ReadLine();
+            if (!int.TryParse(input, out int j) || j < 1 || j > player.Hand.Count + 1)
+            {
+                Console.WriteLine("Could not process input. Try again!");
+                continue;
+            }
+
+            if (j == 0)
+                return Result<CardInstance>.Failure("Return!");
+
+            return Result<CardInstance>.Success(player.Hand[j - 1]);
+        }
     }
 
-    private static string? ChooseBoardCard(GameContext context, CommanderPlayer player)
+    private static Result<CardInstance> ChooseOwnBoardCard(GameContext context, CommanderPlayer player)
     {
-        Console.WriteLine($"\n{context.PriorityPlayer.Name}, which card would you like to play from your board?\n");
+        var text = $"\n{context.PriorityPlayer.Name}, which card would you like to play from your board?\n";
         var playerBoard = context.GetBoardOf(player);
         for (int i = 0; i < playerBoard.Count(); i++)
         {
             var c = playerBoard.ElementAt(i);
-            Console.Write($"{i + 1}: {c.CardData.FullName} | ");
+            text += $"{i + 1}: {c.CardData.FullName} | ";
         }
-        Console.WriteLine(s_return);
+        text += s_retur;
 
-        return Console.ReadLine();
+        while (true)
+        {
+            Console.WriteLine(text);
+
+            var input = Console.ReadLine();
+            if (!int.TryParse(input, out int j) || j < 1 || j > playerBoard.Count() + 1)
+            {
+                Console.WriteLine("Could not process input. Try again!");
+                continue;
+            }
+
+            if (j == 0)
+                return Result<CardInstance>.Failure("Return!");
+
+            return Result<CardInstance>.Success(playerBoard.ElementAt(j - 1));
+        }
     }
 }
