@@ -8,6 +8,7 @@
     <ProjectReference Include="..\MTG.Core\MTG.Core.csproj" />
     <ProjectReference Include="..\MTG.DB\MTG.DB.csproj" />
     <ProjectReference Include="..\MTG.Engine\MTG.Engine.csproj" />
+    <ProjectReference Include="..\MTG.Opponent\MTG.Opponent.csproj" />
     <ProjectReference Include="..\MTG.Resources\MTG.Resources.csproj" />
     <ProjectReference Include="..\MTG.Scryfall\MTG.Scryfall.csproj" />
   </ItemGroup>

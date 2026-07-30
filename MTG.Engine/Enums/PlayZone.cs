@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace MTG.Core.Enums;
+namespace MTG.Engine.Enums;
 
 public enum PlayZone
 {

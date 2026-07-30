@@ -3,6 +3,7 @@ using MTG.Core.Cards;
 using MTG.Core.Helper;
 using MTG.Engine.Factories;
 using MTG.Engine.Gameplay;
+using MTG.Opponent;
 using MTG.Resources.Enums;
 
 namespace MTG.Run;
@@ -11,13 +12,15 @@ public class Program
 {
     public static async Task Main()
     {
-        var context = await GameContext.Create();
+        IPlayerInputProvider human = new ConsoleInputProvider();
+        IPlayerInputProvider ai = new OpponentInputProvider();
+
+        var context = await GameContext.Create(human, ai);
         WriteAndExitIfFailure(context);
 
         IGameDisplay consoleDisplay = new ConsoleGameDisplay();
-        IPlayerInputProvider consoleInput = new ConsoleInputProvider();
 
-        var engine = new GameEngine(context.Value, consoleDisplay, consoleInput);
+        var engine = new GameEngine(context.Value, consoleDisplay);
 
         engine.StartGameLoop();
     }

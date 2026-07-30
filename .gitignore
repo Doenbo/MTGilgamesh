@@ -163,3 +163,5 @@ data_*/
 # --- OS-Stuff ---
 Thumbs.db
 .DS_Store
+
+coveragereport

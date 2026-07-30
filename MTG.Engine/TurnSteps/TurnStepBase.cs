@@ -1,5 +1,7 @@
+using MTG.Core.Components;
 using MTG.Engine.Enums;
 using MTG.Engine.Gameplay;
+using MTG.Engine.Services;
 
 namespace MTG.Engine.TurnSteps;
 
@@ -51,6 +53,7 @@ public abstract class TurnStepBase : ITurnStep
 
         if (card == null) return;
 
+        // --- LAND LOGIC ---
         if (card.CardData.IsLand())
         {
             if (!CanPlaySorcerySpeed(context, player) || context.StackCount > 0)
@@ -73,6 +76,7 @@ public abstract class TurnStepBase : ITurnStep
             return;
         }
 
+        // --- SPELL LOGIC ---
         bool isSorcerySpeed = !card.CardData.IsInstant() && !card.CardData.IsLand();
         if (isSorcerySpeed && (!CanPlaySorcerySpeed(context, player) || context.StackCount > 0))
         {
@@ -80,6 +84,27 @@ public abstract class TurnStepBase : ITurnStep
             return;
         }
 
+        // --- ATTEMPT TO PAY MANA ---
+        var mps = new ManaPayService();
+        var res = card.CardData.MainFace.TryGetComponent<ManaCostComponent>(out var mc);
+        if (!res)
+        {
+            context.Display?.LogMessage($"Cannot get Mana Cost!");
+            return;
+        }
+
+        var payResult = mps.TryPay(mc.ManaCost, player.ManaPool);
+
+        if (payResult.IsFailure)
+        {
+            context.Display?.LogMessage($"Cannot cast {card.CardData.FullName}: {payResult.Error}");
+            return;
+        }
+
+        // --- UPDATE MANA POOL ---
+        player.ManaPool = payResult.Value; //TODO is this override ok?
+
+        // --- CAST SPELL AND START PRIORITY ---
         context.CastSpellAndStartPriorityRound(action);
         context.OnPlayerTookAction();
     }

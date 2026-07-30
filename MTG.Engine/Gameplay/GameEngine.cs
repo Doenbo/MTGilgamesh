@@ -6,13 +6,11 @@ public class GameEngine
 {
     private readonly GameContext _context;
     private readonly IGameDisplay _display;
-    private readonly IPlayerInputProvider _inputProvider;
 
-    public GameEngine(GameContext context, IGameDisplay display, IPlayerInputProvider inputProvider)
+    public GameEngine(GameContext context, IGameDisplay display)
     {
         _context = context;
         _display = display;
-        _inputProvider = inputProvider;
     }
 
     public async void StartGameLoop()
@@ -26,7 +24,7 @@ public class GameEngine
 
         while (!IsGameOver())
         {
-            PlayerAction action = await _inputProvider.GetNextAction(_context, _context.PriorityPlayer);
+            var action = await _context.PriorityPlayer.GetNextAction(_context);
             _context.HandleIncomingAction(action);
             CheckStateBasedActions();
         }

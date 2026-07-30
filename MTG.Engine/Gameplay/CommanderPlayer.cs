@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MTG.Core;
 using MTG.Core.Cards;
 using MTG.Core.Decks;
@@ -12,11 +13,12 @@ namespace MTG.Engine.Gameplay;
 
 public class CommanderPlayer
 {
+    private readonly IPlayerInputProvider _inputProvider;
     private static readonly ILogger<CommanderPlayer> _logger = LogManager.GetLogger<CommanderPlayer>();
 
     public string Name { get; init; }
     public int LifeTotal { get; set; }
-    public ManaCost ManaPool { get; set; } //TODO NOT MANACOST
+    public ManaPool ManaPool { get; set; } //TODO init?
     public bool IsEliminated { get; set; }
 
     private CommanderDeck Deck { get; init; } //just to hold the data
@@ -37,14 +39,18 @@ public class CommanderPlayer
     private readonly List<CardInstance> _exile = [];
     public IReadOnlyList<CardInstance> Exile => _exile;
 
-    private CommanderPlayer(string name, int life, CommanderDeck cd)
+    private CommanderPlayer(string name, int life, CommanderDeck cd, IPlayerInputProvider pip)
     {
         Name = name;
         LifeTotal = life;
         Deck = cd;
+
+        _inputProvider = pip;
+
+        ManaPool = new ManaPool();
     }
 
-    public static async Task<Result<CommanderPlayer>> Create(string name, int life, CommanderPrecon cp)
+    public static async Task<Result<CommanderPlayer>> Create(string name, int life, CommanderPrecon cp, IPlayerInputProvider pip)
     {
         var deck = await DeckCreator.CreateCommanderPrecon(cp);
         if (deck.IsFailure)
@@ -52,7 +58,7 @@ public class CommanderPlayer
 
         deck.Value.Shuffle();
 
-        var player = new CommanderPlayer(name, life, deck.Value);
+        var player = new CommanderPlayer(name, life, deck.Value, pip);
 
         player.InitializePlayer(deck.Value);
 
@@ -127,6 +133,8 @@ public class CommanderPlayer
     {
         return _library.Peek();
     }
+
+    public Task<PlayerAction> GetNextAction(GameContext gc) => _inputProvider.GetNextAction(gc, this);
 
     public override string ToString() => $"{Name} ({LifeTotal})";
 }

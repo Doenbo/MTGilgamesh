@@ -1,5 +1,4 @@
 using MTG.Core.Cards;
-using MTG.Core.Enums;
 using MTG.Engine.Enums;
 
 namespace MTG.Engine.Gameplay;

@@ -9,6 +9,7 @@ public class ManaSymbolTests
         new List<object[]>
         {
             new object[] { "W", 1 },
+            new object[] { "C", 1 },
             new object[] { "14", 14 },
             new object[] { "W/U", 1 },
             new object[] { "2/B", 2 },
@@ -16,6 +17,8 @@ public class ManaSymbolTests
             new object[] { "G/P", 1 },
             new object[] { "X", 0 }
         };
+
+    //Create
 
     [Theory]
     [MemberData(nameof(ValidManaStrings))]
@@ -26,9 +29,39 @@ public class ManaSymbolTests
         Assert.Equal($"{{{input}}}", act.Value.ToString());
     }
 
+    [Fact]
+    public void TestCreateColorless()
+    {
+        var input = "1";
+        var act = ManaSymbol.Create(input);
+        Assert.True(act.IsSuccess);
+        Assert.Equal($"{{{input}}}", act.Value.ToString());
+        Assert.True(act.Value.IsGenericOnly);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("Z")]
+    [InlineData("W/Z")]
+    [InlineData("-1")]
+    [InlineData("-2/B")]
+    [InlineData("ABC/B")]
+    public void TestCreateInvalid(string input)
+    {
+        Assert.True(ManaSymbol.Create(input).IsFailure);
+    }
+
+    [Fact]
+    public void TestCreateNull()
+    {
+        Assert.True(ManaSymbol.Create(null!).IsFailure);
+    }
+
+    //CMC
+
     [Theory]
     [MemberData(nameof(ValidManaStrings))]
-    public void TestGetCMC(string input, float exp)
+    public void TestGetCMCValid(string input, float exp)
     {
         var act = ManaSymbol.Create(input);
         Assert.True(act.IsSuccess);
@@ -36,6 +69,14 @@ public class ManaSymbolTests
         Assert.True(cmc.IsSuccess);
         Assert.Equal(exp, cmc.Value);
     }
+
+    [Fact]
+    public void TestGetCMCInvalid()
+    {
+        //TODO Cannot create an invalid cmc
+    }
+
+    //Parse
 
     [Theory]
     [InlineData("W", ManaType.White, 0)]
@@ -59,23 +100,5 @@ public class ManaSymbolTests
 
         var gc = act.Value.GenericCost;
         Assert.Equal(exp_gc, gc);
-    }
-
-    [Theory]
-    [InlineData("")]
-    [InlineData("Z")]
-    [InlineData("W/Z")]
-    [InlineData("-1")]
-    [InlineData("-2/B")]
-    [InlineData("ABC/B")]
-    public void TestCreateInvalid(string input)
-    {
-        Assert.True(ManaSymbol.Create(input).IsFailure);
-    }
-
-    [Fact]
-    public void TestCreateNull()
-    {
-        Assert.True(ManaSymbol.Create(null!).IsFailure);
     }
 }

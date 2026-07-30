@@ -7,6 +7,7 @@
   <Project Path="MTG.Frontend/MTG.Frontend.csproj">
     <BuildType Solution="Release|*" Project="ExportDebug" />
   </Project>
+  <Project Path="MTG.Opponent/MTG.Opponent.csproj" />
   <Project Path="MTG.Resources.Tests/MTG.Resources.Tests.csproj" />
   <Project Path="MTG.Resources/MTG.Resources.csproj" />
   <Project Path="MTG.Run.Tests/MTG.Run.Tests.csproj" />

@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace MTG.Core.Properties;
+namespace MTG.Engine.Gameplay;
 
 public class ManaPool
 {
@@ -88,5 +88,19 @@ public class ManaPool
         Red = 0;
         Green = 0;
         Colorless = 0;
+    }
+
+    public ManaPool Clone()
+    {
+        var copy = new ManaPool();
+
+        if (White > 0) copy.AddMana(ManaType.White, White);
+        if (Blue > 0) copy.AddMana(ManaType.Blue, Blue);
+        if (Black > 0) copy.AddMana(ManaType.Black, Black);
+        if (Red > 0) copy.AddMana(ManaType.Red, Red);
+        if (Green > 0) copy.AddMana(ManaType.Green, Green);
+        if (Colorless > 0) copy.AddMana(ManaType.Colorless, Colorless);
+
+        return copy;
     }
 }

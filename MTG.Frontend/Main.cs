@@ -2,6 +2,7 @@ using Godot;
 using Microsoft.Extensions.Logging;
 using MTG.Core.Helper;
 using MTG.Engine.Gameplay;
+using MTG.Opponent;
 using System;
 using System.Threading.Tasks;
 
@@ -125,7 +126,10 @@ public partial class Main : Node2D
 
 		LogManager.Factory = _loggerFactory;
 
-		var contextResult = await GameContext.Create();
+		IPlayerInputProvider pip = new GodotInputProvider(GameLog, PlayerInput);
+		IPlayerInputProvider pop = new OpponentInputProvider();
+
+		var contextResult = await GameContext.Create(pip, pop);
 
 		if (contextResult.IsFailure)
 		{
@@ -136,9 +140,8 @@ public partial class Main : Node2D
 		var context = contextResult.Value;
 
 		IGameDisplay display = new GodotGameDisplay(GameLog);
-		IPlayerInputProvider input = new GodotInputProvider(GameLog, PlayerInput);
 
-		var engine = new GameEngine(context, display, input);
+		var engine = new GameEngine(context, display);
 
 		GameLog.AppendText("[color=green]=== Game Loop Started! ===[/color]\n");
 

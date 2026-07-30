@@ -10,14 +10,14 @@ public class ManaSymbol
         'W', 'U', 'B', 'R', 'G', 'C', 'X', 'S', 'P'
     ];
 
-    //Factory Pattern
-    private string Value { get; set; }
+    private string Value { get; init; }
 
-    public List<ManaType> AcceptedColors { get; private set; } = new();
+    public List<ManaType> AcceptedColors { get; private set; } = [];
 
     public int GenericCost { get; private set; } = 0;
     public bool IsGenericOnly => AcceptedColors.Count == 0 && GenericCost > 0;
 
+    //Factory Pattern
     private ManaSymbol(string value)
     {
         Value = value;

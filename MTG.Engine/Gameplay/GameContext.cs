@@ -41,25 +41,25 @@ public class GameContext
 
     private GameContext() { }
 
-    public async static Task<Result<GameContext>> Create()
+    public async static Task<Result<GameContext>> Create(IPlayerInputProvider human, IPlayerInputProvider ai)
     {
         var context = new GameContext();
-        var p1 = await CommanderPlayer.Create("Dön", 40, CommanderPrecon.TokenTriumph);
+        var p1 = await CommanderPlayer.Create("Dön", 40, CommanderPrecon.TokenTriumph, human);
         if (p1.IsFailure)
             return p1.ToFailure<GameContext>();
         context.AddPlayer(p1.Value);
 
-        var p2 = await CommanderPlayer.Create("Nüs", 40, CommanderPrecon.ScionsAndSpellcraft);
+        var p2 = await CommanderPlayer.Create("Nüs", 40, CommanderPrecon.ScionsAndSpellcraft, ai);
         if (p2.IsFailure)
             return p2.ToFailure<GameContext>();
         context.AddPlayer(p2.Value);
 
-        var p3 = await CommanderPlayer.Create("Zag", 40, CommanderPrecon.BlightCurse);
+        var p3 = await CommanderPlayer.Create("Zag", 40, CommanderPrecon.BlightCurse, ai);
         if (p3.IsFailure)
             return p3.ToFailure<GameContext>();
         context.AddPlayer(p3.Value);
 
-        var p4 = await CommanderPlayer.Create("Mel", 40, CommanderPrecon.DoomPrevails);
+        var p4 = await CommanderPlayer.Create("Mel", 40, CommanderPrecon.DoomPrevails, ai);
         if (p4.IsFailure)
             return p4.ToFailure<GameContext>();
         context.AddPlayer(p4.Value);

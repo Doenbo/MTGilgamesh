@@ -1,6 +1,6 @@
 ﻿using MTG.Core.Enums;
 
-namespace MTG.Run.Tests;
+namespace MTG.Engine.Tests;
 
 public class CardCreatorTests
 {
