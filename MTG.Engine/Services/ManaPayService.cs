@@ -28,7 +28,7 @@ public class ManaPayService
 
         var tempPool = pool.Clone();
 
-        foreach (var symbol in cost.Values.Where(s => !s.IsGenericOnly))
+        foreach (var symbol in cost.Symbols.Where(s => !s.IsGenericOnly))
         {
             bool paid = false;
             foreach (var color in symbol.AcceptedColors)
@@ -44,7 +44,7 @@ public class ManaPayService
                 return Result<ManaPool>.Failure($"Missing required mana color for symbol '{symbol}'.");
         }
 
-        int genericAmount = cost.Values.Where(s => s.IsGenericOnly).Sum(s => s.GenericCost);
+        int genericAmount = cost.Symbols.Where(s => s.IsGenericOnly).Sum(s => s.GenericCost);
         if (genericAmount > 0)
         {
             if (!tempPool.TryDeductGeneric(genericAmount))

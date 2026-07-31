@@ -18,20 +18,18 @@ public class ConsoleInputProvider : IPlayerInputProvider
         bool holdsStackPriority = context.StackCount > 0;
 
         if (context.TurnStep == TurnStep.Untap)
-        {
             return new PlayerAction(player, ActionType.PassPriority);
-        }
 
-        if (holdsStackPriority) return GetCastSpellReaction(context, player);
+        if (holdsStackPriority)
+            return GetCastSpellReaction(context, player);
+
         if (player == context.ActivePlayer && (context.TurnStep == TurnStep.Main1 || context.TurnStep == TurnStep.Main2))
-        {
             return GetMainStepAction(context, player);
-        }
 
         return GetPriorityAction(context, player);
     }
 
-    private PlayerAction GetMainStepAction(GameContext context, CommanderPlayer player)
+    private static PlayerAction GetMainStepAction(GameContext context, CommanderPlayer player)
     {
         Result<CardInstance> chosenCard;
 
@@ -74,7 +72,7 @@ public class ConsoleInputProvider : IPlayerInputProvider
         }
     }
 
-    private PlayerAction GetCastSpellReaction(GameContext context, CommanderPlayer player)
+    private static PlayerAction GetCastSpellReaction(GameContext context, CommanderPlayer player)
     {
         Result<CardInstance> chosenCard;
 
@@ -121,7 +119,7 @@ public class ConsoleInputProvider : IPlayerInputProvider
         }
     }
 
-    private PlayerAction GetPriorityAction(GameContext context, CommanderPlayer player)
+    private static PlayerAction GetPriorityAction(GameContext context, CommanderPlayer player)
     {
         Result<CardInstance> chosenCard;
 

@@ -5,12 +5,10 @@ namespace MTG.Core.Components;
 public class ManaCostComponent : ICardComponent
 {
     public ManaCost ManaCost { get; init; }
-    public float CMC { get; init; }
 
-    private ManaCostComponent(ManaCost manacost, float cmc)
+    private ManaCostComponent(ManaCost manacost)
     {
         ManaCost = manacost;
-        CMC = cmc;
     }
 
     public static Result<ManaCostComponent> Create(string manacost)
@@ -22,10 +20,12 @@ public class ManaCostComponent : ICardComponent
         if (mana.IsFailure)
             return mana.ToFailure<ManaCostComponent>();
 
-        var cmc = mana.Value.GetCMC();
-        if (cmc.IsFailure)
-            return cmc.ToFailure<ManaCostComponent>();
+        return Result<ManaCostComponent>.Success(new ManaCostComponent(mana.Value));
+    }
 
-        return Result<ManaCostComponent>.Success(new ManaCostComponent(mana.Value, cmc.Value));
+    public Result<float> GetCMC()
+    {
+        var cmc = ManaCost.GetCMC();
+        return cmc.IsSuccess ? Result<float>.Success(cmc.Value) : cmc.ToFailure<float>();
     }
 }

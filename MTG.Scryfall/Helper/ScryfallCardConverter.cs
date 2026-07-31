@@ -42,10 +42,10 @@ public class ScryfallCardConverter
                                 Result<ScryfallCard>.Success(sfCard);
     }
 
-    private static Result<ICardFace> CreateCardFace(string name, string typeline, string oracleText, string manaCost,
-                                                   float cmc, List<string> colorIdentity, List<string> colorIndicator,
-                                                   List<string> colors, string power, string toughness, string defense,
-                                                   string loyalty, List<string> keywords)
+    private static Result<ICardFace> CreateCardFace(
+        string name, string typeline, string oracleText, string manaCost, float cmc, List<string> colorIdentity,
+        List<string> colorIndicator, List<string> colors, string power, string toughness, string defense,
+        string loyalty, List<string> keywords)
     {
 
         //TypeLine
@@ -70,7 +70,10 @@ public class ScryfallCardConverter
         cardface.AddComponent(manaCostComponent.Value);
 
         //CMC
-        if (cmc != -1 && cmc.IsNotEqualTo(manaCostComponent.Value.CMC))
+        var cmcres = manaCostComponent.Value.GetCMC();
+        if (cmcres.IsFailure)
+            return cmcres.ToFailure<ICardFace>();
+        if (cmc != -1 && cmc.IsNotEqualTo(cmcres.Value))
             return Result<ICardFace>.Failure($"CMCs do not match for the card {name}!");
 
         //Color
@@ -93,6 +96,7 @@ public class ScryfallCardConverter
             cardface.AddComponent(creature.Value);
         }
 
+        //Defense
         if (cardface.IsBattle())
         {
             if (defense == null)
@@ -105,6 +109,7 @@ public class ScryfallCardConverter
             cardface.AddComponent(battle.Value);
         }
 
+        //Loyalty
         if (cardface.IsPlaneswalker())
         {
             if (loyalty == null)
@@ -117,6 +122,7 @@ public class ScryfallCardConverter
             cardface.AddComponent(planeswalker.Value);
         }
 
+        //Keywords
         foreach (var keyword in keywords)
         {
             if (Enum.TryParse<KeywordAbility>(Conversions.ToCamelCase(keyword), true, out var ability))
@@ -131,6 +137,9 @@ public class ScryfallCardConverter
             else
                 return Result<ICardFace>.Failure($"Could not parse {keyword} to Keyword enum!");
         }
+
+        //ProducedMana
+
 
         return Result<ICardFace>.Success(cardface);
     }

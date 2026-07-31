@@ -12,7 +12,7 @@ public class ManaSymbol
 
     private string Value { get; init; }
 
-    public List<ManaType> AcceptedColors { get; private set; } = [];
+    public List<ManaType> AcceptedColors { get; private set; } = []; //TODO WHAT IS THIS??
 
     public int GenericCost { get; private set; } = 0;
     public bool IsGenericOnly => AcceptedColors.Count == 0 && GenericCost > 0;

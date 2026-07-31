@@ -11,12 +11,12 @@ public partial class ManaCost
 
     //Factory Pattern
     private string Value { get; set; }
-    public List<ManaSymbol> Values { get; init; }
+    public List<ManaSymbol> Symbols { get; init; }
 
     private ManaCost(string mana)
     {
         Value = mana;
-        Values = [];
+        Symbols = [];
     }
 
     public static Result<ManaCost> Create(string mana)
@@ -49,7 +49,7 @@ public partial class ManaCost
                 if (symbolResult.IsFailure)
                     return symbolResult.ToFailure<ManaCost>();
 
-                result.Values.Add(symbolResult.Value);
+                result.Symbols.Add(symbolResult.Value);
             }
         }
 
@@ -59,7 +59,7 @@ public partial class ManaCost
     public Result<float> GetCMC()
     {
         float count = 0;
-        foreach (ManaSymbol symbol in Values)
+        foreach (ManaSymbol symbol in Symbols)
         {
             var cmc = symbol.GetCMC();
             if (cmc.IsFailure)
