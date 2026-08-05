@@ -2,6 +2,7 @@
 using MTG.Core.Enums;
 using MTG.Core.Helper;
 using MTG.Core.Properties;
+using MTG.Core.Types;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -31,6 +32,7 @@ public interface ICardFace
     public bool IsLegendary();
     public bool IsPermanent();
     public bool IsPlaneswalker();
+    public bool IsCardType(CardType cardType);
 
     //Component Methods
     void AddComponent<T>(T component) where T : class, ICardComponent;

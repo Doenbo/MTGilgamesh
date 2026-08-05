@@ -2,6 +2,7 @@
 using MTG.Core.Enums;
 using MTG.Core.Helper;
 using MTG.Core.Properties;
+using MTG.Core.Types;
 using System.Text;
 
 namespace MTG.Core.Cards;
@@ -43,6 +44,8 @@ public class CardFaceFactory
         public bool IsLegendary() => TypeLine.IsLegendary();
         public bool IsPermanent() => TypeLine.IsPermanent();
         public bool IsPlaneswalker() => TypeLine.IsPlaneswalker();
+
+        public bool IsCardType(CardType cardType) => TypeLine.IsCardType(cardType);
 
         //Component Methods
         public void AddComponent<T>(T component) where T : class, ICardComponent

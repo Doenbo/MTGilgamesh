@@ -29,20 +29,25 @@ public abstract class TurnStepBase : ITurnStep
     {
         switch (action.Type)
         {
+            case ActionType.Concede:
+                action.Player.IsEliminated = true;
+                context.Display?.LogMessage($"{action.Player.Name} has conceded.");
+                context.RemovePlayerFromGame(action.Player);
+                break;
+
             case ActionType.PassPriority:
                 context.Display?.LogMessage($"{action.Player.Name} passes priority.");
                 context.PassPriority();
+                break;
+
+            case ActionType.TapLandForMana:
+                HandleTapLandForMana(context, action);
                 break;
 
             case ActionType.PlayCard:
                 HandlePlayCard(context, action);
                 break;
 
-            case ActionType.Concede:
-                action.Player.IsEliminated = true;
-                context.Display?.LogMessage($"{action.Player.Name} has conceded.");
-                context.RemovePlayerFromGame(action.Player);
-                break;
         }
     }
 
@@ -107,6 +112,26 @@ public abstract class TurnStepBase : ITurnStep
         // --- CAST SPELL AND START PRIORITY ---
         context.CastSpellAndStartPriorityRound(action);
         context.OnPlayerTookAction();
+    }
+
+    protected virtual void HandleTapLandForMana(GameContext context, PlayerAction action)
+    {
+        var card = action.TargetCardInstance;
+        var player = action.Player;
+
+        if (card == null)
+            context.Display?.LogMessage($"Cannot get Produced Mana!");
+
+        var result = card.CardData.MainFace.TryGetComponent<ProduceManaComponent>(out var pmc);
+
+        if (!result)
+            context.Display?.LogMessage($"Cannot get Produced Mana!");
+
+        if (pmc.IsChoice)
+        {
+
+        }
+
     }
 
     public virtual void OnStepExit(GameContext context)

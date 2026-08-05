@@ -1,4 +1,5 @@
-﻿using MTG.Core.Enums;
+﻿using MTG.Core.Cards;
+using MTG.Core.Enums;
 using MTG.Core.Helper;
 using System;
 using System.Collections.Generic;
@@ -36,6 +37,7 @@ public class ProduceManaComponent : ICardComponent
         ChoseMana = choseMana;
         RequiresTap = requiresTap;
     }
+    public static Result<ProduceManaComponent> Create(ICard card) => Create(card.OracleText);
 
     public static Result<ProduceManaComponent> Create(string oracleText)
     {

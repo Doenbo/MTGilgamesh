@@ -1,5 +1,6 @@
 using MTG.Core.Cards;
 using MTG.Core.Helper;
+using MTG.Core.Types;
 using MTG.Engine.Enums;
 using MTG.Engine.Gameplay;
 using System;
@@ -9,9 +10,17 @@ namespace MTG.Run;
 
 public class ConsoleInputProvider : IPlayerInputProvider
 {
-    private const string s_passp = "0: Pass Priority";
-    private const string s_endph = "0: End Phase";
-    private const string s_retur = "0: Return";
+    private const string s_board = "B: Show Own Board";
+    private const string s_manap = "M: Show Own Mana Pool";
+    private const string s_stack = "S: Show Stack";
+
+    private const string o_passp = "0: Pass Priority";
+    private const string o_endph = "0: End Phase";
+    private const string o_retur = "0: Return";
+
+    private const string f_passp = $"{s_board} | {s_manap} | {s_stack} | {o_passp}";
+    private const string f_endph = $"{s_board} | {s_manap} | {o_endph}";
+    private const string f_retur = $"{s_board} | {s_manap} | {o_retur}";
 
     public async Task<PlayerAction> GetNextAction(GameContext context, CommanderPlayer player)
     {
@@ -36,7 +45,7 @@ public class ConsoleInputProvider : IPlayerInputProvider
         while (true)
         {
             Console.WriteLine($"\n[{context.TurnStep}] {context.PriorityPlayer.Name}, it's your main phase. What do you do?");
-            Console.WriteLine("1: Play a Card from your Hand | 2: Tap a Card | 9: Show Board | " + s_endph);
+            Console.WriteLine($"1: Play a Card from your Hand | 2: Tap Land for Mana | 3: Activate Ability | {f_endph}");
 
             var input = Console.ReadLine();
 
@@ -51,15 +60,27 @@ public class ConsoleInputProvider : IPlayerInputProvider
                     return new PlayerAction(player, ActionType.PlayCard, chosenCard.Value);
 
                 case "2":
-                    chosenCard = ChooseOwnBoardCard(context, player);
+                    chosenCard = ChooseCardFromOwnBoard(context, player, CardType.Land);
+
+                    if (chosenCard.IsFailure)
+                        continue;
+
+                    return new PlayerAction(player, ActionType.TapLandForMana, chosenCard.Value);
+
+                case "3":
+                    chosenCard = ChooseCardFromOwnBoard(context, player);
 
                     if (chosenCard.IsFailure)
                         continue;
 
                     return new PlayerAction(player, ActionType.PlayCard, chosenCard.Value);
 
-                case "9":
+                case "B":
                     Console.WriteLine($"{context.ToConsoleBattlefield()}");
+                    continue;
+
+                case "M":
+                    Console.WriteLine($"{context.ToConsoleManaPool()}");
                     continue;
 
                 case "0":
@@ -83,7 +104,7 @@ public class ConsoleInputProvider : IPlayerInputProvider
 
             Console.WriteLine($"\n[{casterName}] has casted {topStackCard.CardData.FullName}");
             Console.WriteLine($"[{player.Name}] How do you react?");
-            Console.WriteLine("1: Play a Card from your Hand | 9: Show Stack | " + s_passp);
+            Console.WriteLine($"1: Play a Card from your Hand | {f_passp}");
 
             string? input = Console.ReadLine();
 
@@ -98,14 +119,22 @@ public class ConsoleInputProvider : IPlayerInputProvider
                     return new PlayerAction(player, ActionType.PlayCard, chosenCard.Value);
 
                 case "2":
-                    chosenCard = ChooseOwnBoardCard(context, player);
+                    chosenCard = ChooseCardFromOwnBoard(context, player);
 
                     if (chosenCard.IsFailure)
                         continue;
 
                     return new PlayerAction(player, ActionType.PlayCard, chosenCard.Value);
 
-                case "9":
+                case "B":
+                    Console.WriteLine($"{context.ToConsoleBattlefield()}");
+                    continue;
+
+                case "M":
+                    Console.WriteLine($"{context.ToConsoleManaPool()}");
+                    continue;
+
+                case "S":
                     Console.WriteLine($"{context.ToConsoleStack()}");
                     continue;
 
@@ -126,7 +155,7 @@ public class ConsoleInputProvider : IPlayerInputProvider
         while (true)
         {
             Console.WriteLine($"\n[{context.TurnStep}] Priority: {player.Name}. What do you do?");
-            Console.WriteLine("\"1: Play a Card from your Hand | 2: Tap a Card | 9: Show Board | " + s_passp);
+            Console.WriteLine($"\n1: Play a Card from your Hand | 2: Tap a Card | {f_passp}");
 
             var input = Console.ReadLine();
 
@@ -141,15 +170,23 @@ public class ConsoleInputProvider : IPlayerInputProvider
                     return new PlayerAction(player, ActionType.PlayCard, chosenCard.Value);
 
                 case "2":
-                    chosenCard = ChooseOwnBoardCard(context, player);
+                    chosenCard = ChooseCardFromOwnBoard(context, player);
 
                     if (chosenCard.IsFailure)
                         continue;
 
                     return new PlayerAction(player, ActionType.PlayCard, chosenCard.Value);
 
-                case "9":
+                case "B":
                     Console.WriteLine($"{context.ToConsoleBattlefield()}");
+                    continue;
+
+                case "M":
+                    Console.WriteLine($"{context.ToConsoleManaPool()}");
+                    continue;
+
+                case "S":
+                    Console.WriteLine($"{context.ToConsoleStack()}");
                     continue;
 
                 case "0":
@@ -170,7 +207,7 @@ public class ConsoleInputProvider : IPlayerInputProvider
             var c = player.Hand[i];
             text += $"{i + 1}: {c.CardData.FullName} | ";
         }
-        text += s_retur;
+        text += f_retur;
 
         while (true)
         {
@@ -190,16 +227,23 @@ public class ConsoleInputProvider : IPlayerInputProvider
         }
     }
 
-    private static Result<CardInstance> ChooseOwnBoardCard(GameContext context, CommanderPlayer player)
+    private static Result<CardInstance> ChooseCardFromOwnBoard(GameContext context, CommanderPlayer player, CardType filter = CardType.None)
     {
         var text = $"\n{context.PriorityPlayer.Name}, which card would you like to play from your board?\n";
-        var playerBoard = context.GetBoardOf(player);
+        var playerBoard = context.GetBoardOf(player, filter);
+
+        if (playerBoard.Count() == 0 && filter == CardType.None)
+            return Result<CardInstance>.Failure($"Your Board is empty!");
+
+        if (playerBoard.Count() == 0 && filter != CardType.None)
+            return Result<CardInstance>.Failure($"No {filter} on your Board!");
+
         for (int i = 0; i < playerBoard.Count(); i++)
         {
             var c = playerBoard.ElementAt(i);
             text += $"{i + 1}: {c.CardData.FullName} | ";
         }
-        text += s_retur;
+        text += f_retur;
 
         while (true)
         {

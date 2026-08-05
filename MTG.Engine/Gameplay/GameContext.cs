@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MTG.Core.Cards;
 using MTG.Core.Helper;
+using MTG.Core.Types;
 using MTG.Engine.Enums;
 using MTG.Engine.TurnSteps;
 using MTG.Resources.Enums;
@@ -78,10 +80,11 @@ public class GameContext
         _currentStep.HandleAction(this, action);
     }
 
-    public IEnumerable<CardInstance> GetBoardOf(CommanderPlayer player)
-    {
-        return Battlefield.Where(card => card.Controller == player);
-    }
+    public IEnumerable<CardInstance> GetBoardOf(CommanderPlayer player, CardType filter = CardType.None)
+        => filter == CardType.None
+        ? Battlefield.Where(card => card.Controller == player)
+        : Battlefield.Where(card => card.Controller == player && card.CardData.MainFace.IsCardType(filter));
+
     public void AddPlayer(CommanderPlayer player)
     {
         _players.Add(player);
@@ -283,6 +286,8 @@ public class GameContext
         }
         return sb.ToString();
     }
+
+    public string ToConsoleManaPool() => ActivePlayer.ManaPool.ToStringConsole();
 
     public string ToConsoleStack()
     {

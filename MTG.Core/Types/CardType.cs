@@ -23,4 +23,7 @@ public enum CardType
     Scheme,
     Sorcery,
     Vanguard,
+
+    //TODO?
+    None
 }

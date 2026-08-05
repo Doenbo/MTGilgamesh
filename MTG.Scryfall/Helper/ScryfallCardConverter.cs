@@ -139,7 +139,14 @@ public class ScryfallCardConverter
         }
 
         //ProducedMana
+        if (oracleText != null)
+        {
+            var produceMana = ProduceManaComponent.Create(oracleText);
+            if (produceMana.IsFailure)
+                return produceMana.ToFailure<ICardFace>();
 
+            cardface.AddComponent(produceMana.Value);
+        }        
 
         return Result<ICardFace>.Success(cardface);
     }

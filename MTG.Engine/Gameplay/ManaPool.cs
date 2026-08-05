@@ -103,4 +103,10 @@ public class ManaPool
 
         return copy;
     }
+
+    public string ToStringConsole()
+    {
+        return $"White:{White} | Blue:{Blue} | Black:{Black} | Red:{Red} | Green:{Green} | " +
+               $"Colorless:{Colorless} | TotalMana:{TotalMana} ";
+    }
 }

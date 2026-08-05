@@ -1,5 +1,7 @@
 ﻿using MTG.Core.Helper;
 using MTG.Core.Types;
+using System.Numerics;
+using System.Reflection.Metadata;
 using System.Text.RegularExpressions;
 
 namespace MTG.Core.Properties;
@@ -184,6 +186,33 @@ public class TypeLine
     public bool IsPermanent() => !CardTypes.Contains(CardType.Instant) &&
                                  !CardTypes.Contains(CardType.Sorcery);
     public bool IsPlaneswalker() => CardTypes.Contains(CardType.Planeswalker);
+
+    public bool IsCardType(CardType cardType)
+    {
+        return cardType switch
+        {
+            CardType.Artifact => IsArtifact(),
+            CardType.Battle => IsBattle(),
+            //CardType.Boss => IsBoss(),
+            //CardType.Conspiracy => IsConspiracy(),
+            CardType.Creature => IsCreature(),
+            //CardType.Dungeon => IsDungeon(),
+            //CardType.Emblem => IsEmblem(),
+            //CardType.Enchantment => IsEnchantment(),
+            //CardType.Event => IsEvent(),
+            //CardType.Hero => IsHero(),
+            CardType.Instant => IsInstant(),
+            //CardType.Kindred => IsKindred(),
+            CardType.Land => IsLand(),
+            //CardType.Phenomenon => IsPhenomenon(),
+            //CardType.Plane => IsPlane(),
+            CardType.Planeswalker => IsPlaneswalker(),
+            //CardType.Scheme => IsScheme(),
+            //CardType.Sorcery => IsSorcery(),
+            //CardType.Vanguard => IsVanguar(),
+            _ => false
+        };
+    }
 
     public override string ToString() => Value;
 }

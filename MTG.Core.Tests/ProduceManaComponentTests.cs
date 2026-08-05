@@ -1,4 +1,5 @@
 ﻿using MTG.Core.Components;
+using MTG.Core.Decks;
 using MTG.Core.Enums;
 using MTG.Core.Properties;
 using System;
@@ -19,6 +20,7 @@ public class ProduceManaComponentTests
     [InlineData("({T}: Add {G}.)", 0, 0, 0, 0, 1, 0)]
 
     [InlineData("{T}: Add {C}{C}.", 0, 0, 0, 0, 0, 2)] //Sol Ring
+    [InlineData("{T}: Add {W}{U}.", 1, 1, 0, 0, 0, 0)] //Azorius Chancery
 
     public void TestCreateFixedValid(string input, int w, int u, int b, int r, int g, int c)
     {
