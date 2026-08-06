@@ -45,7 +45,7 @@ public class ScryfallCardConverter
     private static Result<ICardFace> CreateCardFace(
         string name, string typeline, string oracleText, string manaCost, float cmc, List<string> colorIdentity,
         List<string> colorIndicator, List<string> colors, string power, string toughness, string defense,
-        string loyalty, List<string> keywords)
+        string loyalty, List<ScryfallColor>? producedMana, List<string> keywords)
     {
 
         //TypeLine
@@ -139,14 +139,15 @@ public class ScryfallCardConverter
         }
 
         //ProducedMana
-        if (oracleText != null)
+        // TODO this is weird in the API, see: https://api.scryfall.com/cards/named?fuzzy=Brigid+Heart+Mind
+        if (oracleText != null && producedMana != null && producedMana.Any())
         {
             var produceMana = ProduceManaComponent.Create(oracleText);
             if (produceMana.IsFailure)
                 return produceMana.ToFailure<ICardFace>();
 
             cardface.AddComponent(produceMana.Value);
-        }        
+        }
 
         return Result<ICardFace>.Success(cardface);
     }
@@ -170,7 +171,8 @@ public class ScryfallCardConverter
             {
                 var noFace = CreateCardFace(dto.Name, dto.TypeLine, dto.OracleText, dto.ManaCost,
                                             dto.CMC, dto.ColorIdentity, dto.ColorIndicator, dto.Colors,
-                                            dto.Power, dto.Toughness, dto.Defense, dto.Layout, dto.Keywords);
+                                            dto.Power, dto.Toughness, dto.Defense, dto.Layout, dto.ProducedMana,
+                                            dto.Keywords);
                 if (noFace.IsFailure)
                     return noFace.ToFailure<ICard>();
 
@@ -185,6 +187,7 @@ public class ScryfallCardConverter
                 var iFace = CreateCardFace(cardFace.Name, cardFace.TypeLine, cardFace.OracleText, cardFace.ManaCost,
                                            cardFace.CMC ?? -1, null, cardFace.ColorIndicator, cardFace.Colors,
                                            cardFace.Power, cardFace.Toughness, cardFace.Defense, cardFace.Layout,
+                                           dto.ProducedMana,
                                            //TODO NO KEYWORDS??
                                            dto.Keywords);
                 if (iFace.IsFailure)
@@ -194,11 +197,12 @@ public class ScryfallCardConverter
             }
         }
 
-        //Card Properties
+        //Card Properties (not on Face)
         card.Id = new Guid(dto.Id);
         card.Lang = dto.Lang;
         card.SetName = dto.SetName;
 
+        //Legalities
         foreach (var sLegality in dto.Legalities)
         {
             if (!Enum.TryParse(Conversions.ToCamelCase(sLegality.Key), out Format eFormat))
@@ -210,6 +214,7 @@ public class ScryfallCardConverter
             card.Legalities.Add(eFormat, eLegality);
         }
 
+        //Image Uris
         if (dto.ImageUris != null)
         {
             foreach (var sImageUri in dto.ImageUris)

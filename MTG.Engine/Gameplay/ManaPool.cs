@@ -27,6 +27,11 @@ public class ManaPool
         _ => 0
     };
 
+    public void AddMana(IReadOnlyList<ManaType> manaTypes)
+    {
+        foreach (ManaType type in manaTypes) { AddMana(type); }
+    }
+
     public void AddMana(ManaType type, int amount = 1)
     {
         switch (type)

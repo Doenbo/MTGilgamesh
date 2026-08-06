@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using MTG.Core;
 using MTG.Core.Cards;
 using MTG.Core.Decks;
+using MTG.Core.Enums;
 using MTG.Core.Helper;
 using MTG.Engine.Factories;
 using MTG.Resources.Enums;
@@ -38,6 +39,10 @@ public class CommanderPlayer
     //Exile
     private readonly List<CardInstance> _exile = [];
     public IReadOnlyList<CardInstance> Exile => _exile;
+
+    //CommandZone
+    public readonly (CardInstance, CardInstance) Commander;
+
 
     private CommanderPlayer(string name, int life, CommanderDeck cd, IPlayerInputProvider pip)
     {
@@ -132,6 +137,11 @@ public class CommanderPlayer
     public CardInstance PeekLibrary()
     {
         return _library.Peek();
+    }
+
+    public Result<List<ManaType>> GetDeckColors()
+    {
+        throw new NotImplementedException();
     }
 
     public Task<PlayerAction> GetNextAction(GameContext gc) => _inputProvider.GetNextAction(gc, this);

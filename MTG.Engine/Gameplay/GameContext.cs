@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MTG.Core.Cards;
+using MTG.Core.Components;
+using MTG.Core.Enums;
 using MTG.Core.Helper;
 using MTG.Core.Types;
 using MTG.Engine.Enums;
@@ -250,6 +252,27 @@ public class GameContext
 
         PriorityPlayer = ActivePlayer;
         ConsecutivePasses = 0;
+    }
+
+    public List<ManaType> GetAvailableManaOptions(ProduceManaComponent component, CommanderPlayer player)
+    {
+        if (component.DynamicMana == DynamicManaType.CommanderColorIdentity)
+            return player.GetDeckColors().Value;
+
+        if (component.DynamicMana == DynamicManaType.AnyColor)
+            return new List<ManaType>
+            {
+                ManaType.White,
+                ManaType.Blue,
+                ManaType.Black,
+                ManaType.Red,
+                ManaType.Green
+            };
+
+        if (component.IsChoice)
+            return component.ChoseMana.ToList();
+
+        return component.FixedMana.ToList();
     }
 
     public void AdvanceToNextPlayersTurn()

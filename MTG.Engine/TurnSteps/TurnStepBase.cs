@@ -127,15 +127,18 @@ public abstract class TurnStepBase : ITurnStep
         if (!result)
             context.Display?.LogMessage($"Cannot get Produced Mana!");
 
-        if (pmc.IsChoice)
+        if (pmc.IsChoice || pmc.IsDynamic)
         {
 
         }
+
+        player.ManaPool.AddMana(pmc.FixedMana);
 
     }
 
     public virtual void OnStepExit(GameContext context)
     {
         // CR 500.4: Empty unspent mana pools at the end of each step/phase
+        //context.ResetManaPools();
     }
 }
