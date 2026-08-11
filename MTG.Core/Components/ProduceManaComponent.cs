@@ -1,7 +1,9 @@
-﻿using MTG.Core.Cards;
+﻿using MTG.Core.Abilities;
+using MTG.Core.Cards;
 using MTG.Core.Enums;
 using MTG.Core.Helper;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -18,20 +20,14 @@ public class ProduceManaComponent : ICardComponent
         @"\{([WUBRGC0-9])\}",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    public bool RequiresTap { get; init; } = true;
-    public IReadOnlyList<ManaType> FixedMana { get; init; }
-    public IReadOnlyList<ManaType> ChoseMana { get; init; }
-    public DynamicManaType DynamicMana { get; init; } = DynamicManaType.None;
-    public bool IsFixed => FixedMana.Count > 0;
-    public bool IsChoice => ChoseMana.Count > 0;
-    public bool IsDynamic => DynamicMana != DynamicManaType.None;
 
-    private ProduceManaComponent(List<ManaType> fixedMana, List<ManaType> manaChoices, DynamicManaType dynamicType, bool requiresTap)
+    private List<ManaUnit> Mana { get; init; } = [];
+
+    public bool RequiresTap { get; private set; } = true;
+
+    private ProduceManaComponent()
     {
-        FixedMana = fixedMana;
-        ChoseMana = manaChoices;
-        DynamicMana = dynamicType;
-        RequiresTap = requiresTap;
+
     }
     public static Result<ProduceManaComponent> Create(ICard card) => Create(card.MainFace.OracleText);
 
@@ -49,22 +45,39 @@ public class ProduceManaComponent : ICardComponent
         if (manaLine == null)
             return Result<ProduceManaComponent>.Failure("No tap-for-mana ability found in oracle text.");
 
+        Result<ManaUnit> rmu;
+        ProduceManaComponent pmc = new();
+
         // 1. Commander's Color Identity
         if (manaLine.Contains("commander's color identity", StringComparison.OrdinalIgnoreCase))
-            return Result<ProduceManaComponent>.Success(
-                new ProduceManaComponent([], [], DynamicManaType.CommanderColorIdentity, true));
+        {
+            rmu = ManaUnit.CreateDynamic(ManaDynamicType.CommanderColorIdentity);
+            if (rmu.IsFailure) return rmu.ToFailure<ProduceManaComponent>();
+            pmc.Mana.Add(rmu.Value);
+            return Result<ProduceManaComponent>.Success(pmc);
+        }
 
         // 2. Opponent Land
         if (manaLine.Contains("opponent controls could produce", StringComparison.OrdinalIgnoreCase) ||
             manaLine.Contains("opponents control", StringComparison.OrdinalIgnoreCase))
-            return Result<ProduceManaComponent>.Success(
-                new ProduceManaComponent([], [], DynamicManaType.OpponentLandColor, true));
+        {
+            rmu = ManaUnit.CreateDynamic(ManaDynamicType.OpponentLandColor);
+            if (rmu.IsFailure) return rmu.ToFailure<ProduceManaComponent>();
+            pmc.Mana.Add(rmu.Value);
+            return Result<ProduceManaComponent>.Success(pmc);
+        }
 
         // 3. Any Color
         if (manaLine.Contains("any color", StringComparison.OrdinalIgnoreCase) ||
-            manaLine.Contains("one mana of any type", StringComparison.OrdinalIgnoreCase))
-            return Result<ProduceManaComponent>.Success(
-                new ProduceManaComponent([], [], DynamicManaType.AnyColor, true));
+            manaLine.Contains("one mana of any", StringComparison.OrdinalIgnoreCase) ||
+            manaLine.Contains("two mana of any", StringComparison.OrdinalIgnoreCase) ||
+            manaLine.Contains("three mana of any", StringComparison.OrdinalIgnoreCase))
+        {
+            rmu = ManaUnit.CreateDynamic(ManaDynamicType.AnyColor);
+            if (rmu.IsFailure) return rmu.ToFailure<ProduceManaComponent>();
+            pmc.Mana.Add(rmu.Value);
+            return Result<ProduceManaComponent>.Success(pmc);
+        }
 
         // 4. Static Symbol Parsing ({W}, {U}, {B}, {R}, {G}, {C})
         var match = AddManaLineRegex.Match(manaLine);
@@ -88,11 +101,17 @@ public class ProduceManaComponent : ICardComponent
         bool isChoicePattern = capturedText.Contains(" or ", StringComparison.OrdinalIgnoreCase);
 
         if (isChoicePattern)
-            return Result<ProduceManaComponent>.Success(
-                new ProduceManaComponent([], parsedTypes, DynamicManaType.None, true));
+        {
+            rmu = ManaUnit.CreateChoice(new List<ManaType>() { ManaType.Black }); //TODO
+            if (rmu.IsFailure) return rmu.ToFailure<ProduceManaComponent>();
+            pmc.Mana.Add(rmu.Value);
+            return Result<ProduceManaComponent>.Success(pmc);
+        }
 
-        return Result<ProduceManaComponent>.Success(
-            new ProduceManaComponent(parsedTypes, [], DynamicManaType.None, true));
+        rmu = ManaUnit.CreateFixed(ManaType.Black); //TODO
+        if (rmu.IsFailure) return rmu.ToFailure<ProduceManaComponent>();
+        pmc.Mana.Add(rmu.Value);
+        return Result<ProduceManaComponent>.Success(pmc);
     }
 
     private static bool TryParseManaType(string code, out ManaType manaType)

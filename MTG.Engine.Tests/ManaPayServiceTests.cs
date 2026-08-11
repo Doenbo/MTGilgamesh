@@ -1,5 +1,6 @@
 ﻿using Microsoft.SqlServer.Management.Smo;
 using MTG.Core;
+using MTG.Core.Abilities;
 using MTG.Core.Enums;
 using MTG.Core.Properties;
 using MTG.Engine.Gameplay;
@@ -75,11 +76,11 @@ public class ManaPayServiceTests
 
     private void AddMana(ManaPool pool, int w, int u, int b, int r, int g, int c)
     {
-        pool.AddMana(ManaType.White, w);
-        pool.AddMana(ManaType.Blue, u);
-        pool.AddMana(ManaType.Black, b);
-        pool.AddMana(ManaType.Red, r);
-        pool.AddMana(ManaType.Green, g);
-        pool.AddMana(ManaType.Colorless, c);
+        pool.AddMana(ManaUnit.CreateFixed(ManaType.White).Value);
+        pool.AddMana(ManaUnit.CreateFixed(ManaType.Blue).Value);
+        pool.AddMana(ManaUnit.CreateFixed(ManaType.Black).Value);
+        pool.AddMana(ManaUnit.CreateFixed(ManaType.Red).Value);
+        pool.AddMana(ManaUnit.CreateFixed(ManaType.Green).Value);
+        pool.AddMana(ManaUnit.CreateFixed(ManaType.Colorless).Value);
     }
 }

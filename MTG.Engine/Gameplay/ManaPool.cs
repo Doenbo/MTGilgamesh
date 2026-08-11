@@ -1,4 +1,6 @@
-﻿using MTG.Core.Enums;
+﻿using MTG.Core.Abilities;
+using MTG.Core.Enums;
+using MTG.Core.Helper;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,111 +9,81 @@ namespace MTG.Engine.Gameplay;
 
 public class ManaPool
 {
-    public int White { get; private set; }
-    public int Blue { get; private set; }
-    public int Black { get; private set; }
-    public int Red { get; private set; }
-    public int Green { get; private set; }
-    public int Colorless { get; private set; }
+    private readonly List<ManaUnit> _mana = [];
 
-    public int TotalMana => White + Blue + Black + Red + Green + Colorless;
+    public IReadOnlyList<ManaUnit> AvailableMana => _mana.AsReadOnly();
 
-    public int Get(ManaType type) => type switch
+    public int TotalMana => _mana.Count;
+
+    public void AddMana(ManaUnit manaUnit)
     {
-        ManaType.White => White,
-        ManaType.Blue => Blue,
-        ManaType.Black => Black,
-        ManaType.Red => Red,
-        ManaType.Green => Green,
-        ManaType.Colorless => Colorless,
-        _ => 0
-    };
-
-    public void AddMana(IReadOnlyList<ManaType> manaTypes)
-    {
-        foreach (ManaType type in manaTypes) { AddMana(type); }
+        _mana.Add(manaUnit);
     }
 
-    public void AddMana(ManaType type, int amount = 1)
+    public void AddMana(IEnumerable<ManaUnit> manaList)
     {
-        switch (type)
-        {
-            case ManaType.White: White += amount; break;
-            case ManaType.Blue: Blue += amount; break;
-            case ManaType.Black: Black += amount; break;
-            case ManaType.Red: Red += amount; break;
-            case ManaType.Green: Green += amount; break;
-            case ManaType.Colorless: Colorless += amount; break;
-        }
+        _mana.AddRange(manaList);
     }
 
-    public bool TryDeduct(ManaType type, int amount = 1)
+    public bool TryDeduct(ManaType type, ManaRestriction currentContext = ManaRestriction.None)
     {
-        if (Get(type) < amount) return false;
+        //TODO
+        var candidate = _mana
+            //.Where(m => m.CanPayFor(type) && IsRestrictionSatisfied(m.Restriction, currentContext))
+            //.OrderBy(m => m.Restriction != ManaRestriction.None)
+            .FirstOrDefault();
 
-        switch (type)
-        {
-            case ManaType.White: White -= amount; break;
-            case ManaType.Blue: Blue -= amount; break;
-            case ManaType.Black: Black -= amount; break;
-            case ManaType.Red: Red -= amount; break;
-            case ManaType.Green: Green -= amount; break;
-            case ManaType.Colorless: Colorless -= amount; break;
-        }
+        if (candidate == null) return false;
+
+        _mana.Remove(candidate);
         return true;
     }
 
-    public bool TryDeductGeneric(int amount)
+    public bool TryDeductGeneric(int amount, ManaRestriction currentContext = ManaRestriction.None)
     {
-        if (TotalMana < amount) return false;
+        //TODO
+        var validMana = _mana
+            //.Where(m => IsRestrictionSatisfied(m.Restriction, currentContext))
+            //.OrderBy(m => m.Restriction != ManaRestriction.None)
+            .Take(amount)
+            .ToList();
 
-        int remainingToPay = amount;
+        if (validMana.Count < amount) return false;
 
-        ManaType[] priority = [
-            ManaType.Colorless, ManaType.Green, ManaType.Red,
-            ManaType.Black, ManaType.Blue, ManaType.White
-        ];
-
-        foreach (var type in priority)
+        foreach (var mana in validMana)
         {
-            while (Get(type) > 0 && remainingToPay > 0)
-            {
-                TryDeduct(type, 1);
-                remainingToPay--;
-            }
-            if (remainingToPay == 0) break;
+            _mana.Remove(mana);
         }
 
-        return remainingToPay == 0;
+        return true;
+    }
+
+    private static bool IsRestrictionSatisfied(ManaRestriction manaRestriction, ManaRestriction currentContext)
+    {
+        if (manaRestriction == ManaRestriction.None) return true;
+        return manaRestriction == currentContext;
     }
 
     public void Clear()
     {
-        White = 0;
-        Blue = 0;
-        Black = 0;
-        Red = 0;
-        Green = 0;
-        Colorless = 0;
+        _mana.Clear();
     }
 
-    public ManaPool Clone()
+    public Result<ManaPool> Clone()
     {
         var copy = new ManaPool();
-
-        if (White > 0) copy.AddMana(ManaType.White, White);
-        if (Blue > 0) copy.AddMana(ManaType.Blue, Blue);
-        if (Black > 0) copy.AddMana(ManaType.Black, Black);
-        if (Red > 0) copy.AddMana(ManaType.Red, Red);
-        if (Green > 0) copy.AddMana(ManaType.Green, Green);
-        if (Colorless > 0) copy.AddMana(ManaType.Colorless, Colorless);
-
-        return copy;
+        foreach (var mu in _mana)
+        {
+            var nu = mu.Clone();
+            if (nu.IsFailure) return nu.ToFailure<ManaPool>();
+            copy.AddMana(nu.Value);
+        }
+        return Result<ManaPool>.Success(copy);
     }
 
     public string ToStringConsole()
     {
-        return $"White:{White} | Blue:{Blue} | Black:{Black} | Red:{Red} | Green:{Green} | " +
-               $"Colorless:{Colorless} | TotalMana:{TotalMana} ";
+        //TODO
+        return $"TotalMana:{TotalMana}"; //(W:{White} | U:{Blue} | B:{Black} | R:{Red} | G:{Green} | C:{Colorless})";
     }
 }

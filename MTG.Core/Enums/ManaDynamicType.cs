@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MTG.Core.Enums;
 
-public enum DynamicManaType
+public enum ManaDynamicType
 {
     None,
     CommanderColorIdentity,

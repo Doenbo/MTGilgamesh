@@ -11,12 +11,11 @@ public partial class ManaCost
 
     //Factory Pattern
     private string Value { get; set; }
-    public List<ManaSymbol> Symbols { get; init; }
+    public List<ManaSymbol> Symbols { get; init; } = [];
 
     private ManaCost(string mana)
     {
         Value = mana;
-        Symbols = [];
     }
 
     public static Result<ManaCost> Create(string mana)

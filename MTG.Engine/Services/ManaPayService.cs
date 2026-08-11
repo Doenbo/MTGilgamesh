@@ -27,13 +27,14 @@ public class ManaPayService
             return Result<ManaPool>.Failure($"Not enough total mana! Required: {cmc.Value}, Available: {pool.TotalMana}");
 
         var tempPool = pool.Clone();
+        if (tempPool.IsFailure) return tempPool.ToFailure<ManaPool>();
 
         foreach (var symbol in cost.Symbols.Where(s => !s.IsGenericOnly))
         {
             bool paid = false;
             foreach (var color in symbol.AcceptedColors)
             {
-                if (tempPool.TryDeduct(color, 1))
+                if (tempPool.Value.TryDeduct(color))
                 {
                     paid = true;
                     break;
@@ -47,10 +48,10 @@ public class ManaPayService
         int genericAmount = cost.Symbols.Where(s => s.IsGenericOnly).Sum(s => s.GenericCost);
         if (genericAmount > 0)
         {
-            if (!tempPool.TryDeductGeneric(genericAmount))
+            if (!tempPool.Value.TryDeductGeneric(genericAmount))
                 return Result<ManaPool>.Failure("Not enough mana left to pay generic costs.");
         }
 
-        return Result<ManaPool>.Success(tempPool);
+        return Result<ManaPool>.Success(tempPool.Value);
     }
 }

@@ -127,12 +127,12 @@ public abstract class TurnStepBase : ITurnStep
         if (!result)
             context.Display?.LogMessage($"Cannot get Produced Mana!");
 
-        if (pmc.IsChoice || pmc.IsDynamic)
-        {
+        //if (pmc.IsChoice || pmc.IsDynamic)
+        //{
 
-        }
+        //}
 
-        player.ManaPool.AddMana(pmc.FixedMana);
+        //player.ManaPool.AddMana(pmc.FixedMana);
 
     }
 
