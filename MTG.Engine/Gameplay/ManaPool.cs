@@ -27,10 +27,9 @@ public class ManaPool
 
     public bool TryDeduct(ManaType type, ManaRestriction currentContext = ManaRestriction.None)
     {
-        //TODO
         var candidate = _mana
-            //.Where(m => m.CanPayFor(type) && IsRestrictionSatisfied(m.Restriction, currentContext))
-            //.OrderBy(m => m.Restriction != ManaRestriction.None)
+            .Where(m => m.CanPayFor(type) && IsRestrictionSatisfied(m.ManaRestriction, currentContext))
+            .OrderBy(m => m.ManaRestriction != ManaRestriction.None)
             .FirstOrDefault();
 
         if (candidate == null) return false;
@@ -41,10 +40,9 @@ public class ManaPool
 
     public bool TryDeductGeneric(int amount, ManaRestriction currentContext = ManaRestriction.None)
     {
-        //TODO
         var validMana = _mana
-            //.Where(m => IsRestrictionSatisfied(m.Restriction, currentContext))
-            //.OrderBy(m => m.Restriction != ManaRestriction.None)
+            .Where(m => IsRestrictionSatisfied(m.ManaRestriction, currentContext))
+            .OrderBy(m => m.ManaRestriction != ManaRestriction.None)
             .Take(amount)
             .ToList();
 

@@ -74,13 +74,23 @@ public class ManaPayServiceTests
         Assert.True(mps.CanAfford(cost.Value, pool).IsFailure);
     }
 
-    private void AddMana(ManaPool pool, int w, int u, int b, int r, int g, int c)
+    private static void AddMana(ManaPool pool, int w, int u, int b, int r, int g, int c)
     {
-        pool.AddMana(ManaUnit.CreateFixed(ManaType.White).Value);
-        pool.AddMana(ManaUnit.CreateFixed(ManaType.Blue).Value);
-        pool.AddMana(ManaUnit.CreateFixed(ManaType.Black).Value);
-        pool.AddMana(ManaUnit.CreateFixed(ManaType.Red).Value);
-        pool.AddMana(ManaUnit.CreateFixed(ManaType.Green).Value);
-        pool.AddMana(ManaUnit.CreateFixed(ManaType.Colorless).Value);
+        AddMana(pool, ManaType.White, w);
+        AddMana(pool, ManaType.Blue, u);
+        AddMana(pool, ManaType.Black, b);
+        AddMana(pool, ManaType.Red, r);
+        AddMana(pool, ManaType.Green, g);
+        AddMana(pool, ManaType.Colorless, c);
+    }
+
+    private static void AddMana(ManaPool pool, ManaType mt, int amount)
+    {
+        for (int i = 0; i < amount; i++)
+        {
+            var mu = ManaUnit.CreateFixed(mt);
+            Assert.True(mu.IsSuccess);
+            pool.AddMana(mu.Value);
+        }
     }
 }

@@ -5,40 +5,115 @@ using MTG.Core.Properties;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Reflection.Metadata;
 using System.Text;
 
 namespace MTG.Core.Tests;
 
 public class ProduceManaComponentTests
 {
+    //Basic Lands
     [Theory]
-    //Basics
-    [InlineData("({T}: Add {W}.)", 1, 0, 0, 0, 0, 0)]
-    [InlineData("({T}: Add {U}.)", 0, 1, 0, 0, 0, 0)]
-    [InlineData("({T}: Add {B}.)", 0, 0, 1, 0, 0, 0)]
-    [InlineData("({T}: Add {R}.)", 0, 0, 0, 1, 0, 0)]
-    [InlineData("({T}: Add {G}.)", 0, 0, 0, 0, 1, 0)]
-
-    [InlineData("{T}: Add {C}{C}.", 0, 0, 0, 0, 0, 2)] //Sol Ring
-    [InlineData("{T}: Add {W}{U}.", 1, 1, 0, 0, 0, 0)] //Azorius Chancery
-
-    public void TestCreateFixedValid(string input, int w, int u, int b, int r, int g, int c)
+    [InlineData("({T}: Add {W}.)", ManaType.White)]
+    [InlineData("({T}: Add {U}.)", ManaType.Blue)]
+    [InlineData("({T}: Add {B}.)", ManaType.Black)]
+    [InlineData("({T}: Add {R}.)", ManaType.Red)]
+    [InlineData("({T}: Add {G}.)", ManaType.Green)]
+    [InlineData("({T}: Add {C}.)", ManaType.Colorless)]
+    public void TestCreateFixedSingleValid(string input, ManaType exp)
     {
-        var pmc = ProduceManaComponent.Create(input);
-        Assert.True(pmc.IsSuccess);
+        var result = ProduceManaComponent.Create(input);
 
-        var produced = pmc.Value;
+        Assert.True(result.IsSuccess, result.Error);
+
+        var produced = result.Value;
+        Assert.True(produced.RequiresTap);
+        Assert.Single(produced.Mana);
+
+        var manaUnit = produced.Mana[0];
+        Assert.True(manaUnit.IsFixed);
+        Assert.Equal(exp, manaUnit.ManaFixed);
     }
 
-    //https://api.scryfall.com/cards/named?fuzzy=command+tower
     [Theory]
-    [InlineData("({T}: Add {B} or {R}.)", 0, 0, 1, 1, 0, 0)] //Badlands
-    public void TestCreateChoseValid(string input, int w, int u, int b, int r, int g, int c)
+    [InlineData("{T}: Add {C}{C}.", ManaType.Colorless, ManaType.Colorless)] //Sol Ring
+    [InlineData("{T}: Add {W}{U}.", ManaType.White, ManaType.Blue)] //Azorius Chancery
+    public void TestCreateFixedDoubleValid(string input, ManaType exp0, ManaType exp1)
     {
-        var pmc = ProduceManaComponent.Create(input);
-        Assert.True(pmc.IsSuccess);
+        var result = ProduceManaComponent.Create(input);
 
-        var produced = pmc.Value;
+        Assert.True(result.IsSuccess, result.Error);
+
+        var produced = result.Value;
+        Assert.True(produced.RequiresTap);
+        Assert.Equal(2, produced.Mana.Count);
+
+        var manaUnit0 = produced.Mana[0];
+        Assert.True(manaUnit0.IsFixed);
+        Assert.Equal(exp0, manaUnit0.ManaFixed);
+
+        var manaUnit1 = produced.Mana[1];
+        Assert.True(manaUnit1.IsFixed);
+        Assert.Equal(exp1, manaUnit1.ManaFixed);
+    }
+
+    [Theory]
+    [InlineData("{U}, {T}: Add {C}{C}{C}.", ManaType.Colorless, ManaType.Colorless, ManaType.Colorless)] //Apprentice Wizard
+    public void TestCreateFixedTripleValid(string input, ManaType exp0, ManaType exp1, ManaType exp2)
+    {
+        var result = ProduceManaComponent.Create(input);
+
+        Assert.True(result.IsSuccess, result.Error);
+
+        var produced = result.Value;
+        Assert.True(produced.RequiresTap);
+        Assert.Equal(3, produced.Mana.Count);
+
+        var manaUnit0 = produced.Mana[0];
+        Assert.True(manaUnit0.IsFixed);
+        Assert.Equal(exp0, manaUnit0.ManaFixed);
+
+        var manaUnit1 = produced.Mana[1];
+        Assert.True(manaUnit1.IsFixed);
+        Assert.Equal(exp1, manaUnit1.ManaFixed);
+
+        var manaUnit2 = produced.Mana[2];
+        Assert.True(manaUnit2.IsFixed);
+        Assert.Equal(exp2, manaUnit2.ManaFixed);
+    }
+
+    //Dual Lands
+    [Theory]
+    [InlineData("({T}: Add {B} or {R}.)", ManaType.Black, ManaType.Red)] //Badlands
+    [InlineData("({T}: Add {B} or {G}.)", ManaType.Black, ManaType.Green)] //Bayou
+    [InlineData("({T}: Add {R} or {W}.)", ManaType.Red, ManaType.White)] //Plateau
+    [InlineData("({T}: Add {G} or {W}.)", ManaType.Green, ManaType.White)] //Savannah
+    [InlineData("({T}: Add {W} or {B}.)", ManaType.White, ManaType.Black)] //Scrubland
+    [InlineData("({T}: Add {R} or {G}.)", ManaType.Red, ManaType.Green)] //Taiga
+    [InlineData("({T}: Add {G} or {U}.)", ManaType.Green, ManaType.Blue)] //Tropical Island
+    [InlineData("({T}: Add {W} or {U}.)", ManaType.White, ManaType.Blue)] //Tundra
+    [InlineData("({T}: Add {U} or {B}.)", ManaType.Blue, ManaType.Black)] //Underground Sea
+    [InlineData("({T}: Add {U} or {R}.)", ManaType.Blue, ManaType.Red)] //Volcanic Island
+
+    [InlineData("{T}: Add {W}, {U}, or {B}.", ManaType.White, ManaType.Blue, ManaType.Black)] //Arcane Sanctum
+    public void TestCreateChoiceValid(string input, params ManaType[] expectedChoices)
+    {
+        var result = ProduceManaComponent.Create(input);
+
+        Assert.True(result.IsSuccess, result.Error);
+        var produced = result.Value;
+
+        Assert.True(produced.RequiresTap);
+        Assert.Single(produced.Mana);
+
+        var manaUnit = produced.Mana[0];
+        Assert.True(manaUnit.IsChoice);
+
+        Assert.Equal(expectedChoices.Length, manaUnit.ManaChoice.Count);
+        foreach (var expected in expectedChoices)
+        {
+            Assert.Contains(expected, manaUnit.ManaChoice);
+        }
     }
 
     [Theory]
@@ -58,9 +133,31 @@ public class ProduceManaComponentTests
         ManaDynamicType.AnyColor)] //Coveted Jewel
     public void TestCreateDynamicValid(string input, ManaDynamicType dmt)
     {
-        var pmc = ProduceManaComponent.Create(input);
-        Assert.True(pmc.IsSuccess);
+        var result = ProduceManaComponent.Create(input);
 
-        var produced = pmc.Value;
+        Assert.True(result.IsSuccess, result.Error);
+        var produced = result.Value;
+
+        Assert.True(produced.RequiresTap);
+        Assert.Single(produced.Mana);
+
+        var manaUnit = produced.Mana[0];
+
+        Assert.True(manaUnit.IsDynamic);
+        Assert.Equal(dmt, manaUnit.ManaDynamic);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("Trample, Haste")]
+    [InlineData("{2}, {T}: Draw a card.")]
+    [InlineData("({T}: Add {Z}.)")]
+    public void TestCreate_InvalidOrNonManaText_ReturnsFailure(string input)
+    {
+        var result = ProduceManaComponent.Create(input);
+
+        Assert.True(result.IsFailure);
+        Assert.False(string.IsNullOrWhiteSpace(result.Error));
     }
 }

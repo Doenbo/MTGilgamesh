@@ -21,7 +21,8 @@ public class ProduceManaComponent : ICardComponent
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
 
-    private List<ManaUnit> Mana { get; init; } = [];
+    private readonly List<ManaUnit> _mana = [];
+    public IReadOnlyList<ManaUnit> Mana => _mana;
 
     public bool RequiresTap { get; private set; } = true;
 
@@ -48,38 +49,17 @@ public class ProduceManaComponent : ICardComponent
         Result<ManaUnit> rmu;
         ProduceManaComponent pmc = new();
 
-        // 1. Commander's Color Identity
-        if (manaLine.Contains("commander's color identity", StringComparison.OrdinalIgnoreCase))
+        // Dynamic
+        var dynamicResult = TryParseDynamicMana(manaLine);
+        if (dynamicResult.IsSuccess)
         {
-            rmu = ManaUnit.CreateDynamic(ManaDynamicType.CommanderColorIdentity);
+            rmu = ManaUnit.CreateDynamic(dynamicResult.Value);
             if (rmu.IsFailure) return rmu.ToFailure<ProduceManaComponent>();
-            pmc.Mana.Add(rmu.Value);
+
+            pmc._mana.Add(rmu.Value);
             return Result<ProduceManaComponent>.Success(pmc);
         }
 
-        // 2. Opponent Land
-        if (manaLine.Contains("opponent controls could produce", StringComparison.OrdinalIgnoreCase) ||
-            manaLine.Contains("opponents control", StringComparison.OrdinalIgnoreCase))
-        {
-            rmu = ManaUnit.CreateDynamic(ManaDynamicType.OpponentLandColor);
-            if (rmu.IsFailure) return rmu.ToFailure<ProduceManaComponent>();
-            pmc.Mana.Add(rmu.Value);
-            return Result<ProduceManaComponent>.Success(pmc);
-        }
-
-        // 3. Any Color
-        if (manaLine.Contains("any color", StringComparison.OrdinalIgnoreCase) ||
-            manaLine.Contains("one mana of any", StringComparison.OrdinalIgnoreCase) ||
-            manaLine.Contains("two mana of any", StringComparison.OrdinalIgnoreCase) ||
-            manaLine.Contains("three mana of any", StringComparison.OrdinalIgnoreCase))
-        {
-            rmu = ManaUnit.CreateDynamic(ManaDynamicType.AnyColor);
-            if (rmu.IsFailure) return rmu.ToFailure<ProduceManaComponent>();
-            pmc.Mana.Add(rmu.Value);
-            return Result<ProduceManaComponent>.Success(pmc);
-        }
-
-        // 4. Static Symbol Parsing ({W}, {U}, {B}, {R}, {G}, {C})
         var match = AddManaLineRegex.Match(manaLine);
         if (!match.Success)
             return Result<ProduceManaComponent>.Failure("Could not parse tap ability line.");
@@ -100,18 +80,43 @@ public class ProduceManaComponent : ICardComponent
 
         bool isChoicePattern = capturedText.Contains(" or ", StringComparison.OrdinalIgnoreCase);
 
+        //Choice
         if (isChoicePattern)
         {
-            rmu = ManaUnit.CreateChoice(new List<ManaType>() { ManaType.Black }); //TODO
+            rmu = ManaUnit.CreateChoice(parsedTypes);
             if (rmu.IsFailure) return rmu.ToFailure<ProduceManaComponent>();
-            pmc.Mana.Add(rmu.Value);
+            pmc._mana.Add(rmu.Value);
             return Result<ProduceManaComponent>.Success(pmc);
         }
 
-        rmu = ManaUnit.CreateFixed(ManaType.Black); //TODO
-        if (rmu.IsFailure) return rmu.ToFailure<ProduceManaComponent>();
-        pmc.Mana.Add(rmu.Value);
+        // Fixed
+        foreach (var type in parsedTypes)
+        {
+            rmu = ManaUnit.CreateFixed(type);
+            if (rmu.IsFailure) return rmu.ToFailure<ProduceManaComponent>();
+
+            pmc._mana.Add(rmu.Value);
+        }
+
         return Result<ProduceManaComponent>.Success(pmc);
+    }
+
+    private static Result<ManaDynamicType> TryParseDynamicMana(string manaLine)
+    {
+        if (manaLine.Contains("commander's color identity", StringComparison.OrdinalIgnoreCase))
+            return Result<ManaDynamicType>.Success(ManaDynamicType.CommanderColorIdentity);
+
+        if (manaLine.Contains("opponent controls could produce", StringComparison.OrdinalIgnoreCase) ||
+            manaLine.Contains("opponents control", StringComparison.OrdinalIgnoreCase))
+            return Result<ManaDynamicType>.Success(ManaDynamicType.OpponentLandColor);
+
+        if (manaLine.Contains("any color", StringComparison.OrdinalIgnoreCase) ||
+            manaLine.Contains("one mana of any", StringComparison.OrdinalIgnoreCase) ||
+            manaLine.Contains("two mana of any", StringComparison.OrdinalIgnoreCase) ||
+            manaLine.Contains("three mana of any", StringComparison.OrdinalIgnoreCase))
+            return Result<ManaDynamicType>.Success(ManaDynamicType.AnyColor);
+
+        return Result<ManaDynamicType>.Failure("No dynamic mana pattern matched.");
     }
 
     private static bool TryParseManaType(string code, out ManaType manaType)

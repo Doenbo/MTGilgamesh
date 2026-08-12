@@ -71,4 +71,26 @@ public class ManaUnit
 
         return Result<ManaUnit>.Failure("ManaUnit has no type!");
     }
+
+    public bool CanPayFor(ManaType requiredColor)
+    {
+        if (requiredColor == ManaType.Colorless)
+            return true;
+
+        if (IsFixed)
+            return ManaFixed == requiredColor;
+
+        if (IsChoice)
+            return ManaChoice.Contains(requiredColor);
+
+        if (IsDynamic)
+            return CanPayForDynamic(requiredColor);
+
+        return false;
+    }
+
+    public bool CanPayForDynamic(ManaType requiredColor)
+    {
+        throw new NotImplementedException();
+    }
 }
