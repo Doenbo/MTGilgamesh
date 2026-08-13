@@ -6,12 +6,10 @@ using System.Text.RegularExpressions;
 
 namespace MTG.Core.Properties;
 
-public class TypeLine
+public partial class TypeLine
 {
-    private static readonly Regex TypeLineRegex = new(
-        @"^\s*(?<left>[^—]+)(?:—\s*(?<right>.+))?\s*$",
-        RegexOptions.Compiled | RegexOptions.ExplicitCapture
-    );
+    [GeneratedRegex(@"^\s*(?<left>[^—]+)(?:—\s*(?<right>.+))?\s*$", RegexOptions.ExplicitCapture)]
+    private static partial Regex GetTypeLineRegex();
 
     private string Value { get; set; }
 
@@ -50,7 +48,7 @@ public class TypeLine
         foreach (var face in faces)
         {
             //Match
-            var match = TypeLineRegex.Match(face);
+            var match = GetTypeLineRegex().Match(face);
             if (!match.Success)
                 return Result<TypeLine>.Failure($"Invalid type line format: '{face}'");
 
@@ -165,7 +163,7 @@ public class TypeLine
 
             else
                 return Result<(HashSet<ArtifactType>, HashSet<CreatureType>, HashSet<EnchantmentType>, HashSet<LandType>, HashSet<PlaneswalkerType>, HashSet<SpellType>)>.
-                       Failure($"Unknown type word found on right    side: '{word}'");
+                       Failure($"Unknown type word found on right side: '{word}'");
         }
 
         return Result<(HashSet<ArtifactType>, HashSet<CreatureType>, HashSet<EnchantmentType>, HashSet<LandType>, HashSet<PlaneswalkerType>, HashSet<SpellType>)>.

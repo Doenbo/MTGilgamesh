@@ -25,7 +25,7 @@ public class Program
         engine.StartGameLoop();
     }
 
-    private static async Task SomeTests(CommanderPlayer player)
+    private static async Task SomeTests()
     {
         var card1 = await CardCreator.GetExact("The Destined Warrior");
         WriteAndExitIfFailure(card1);

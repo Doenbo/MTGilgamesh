@@ -6,17 +6,16 @@ namespace MTG.Core.Tests;
 public class ManaSymbolTests
 {
     public static IEnumerable<object[]> ValidManaStrings =>
-        new List<object[]>
-        {
-            new object[] { "W", 1 },
-            new object[] { "C", 1 },
-            new object[] { "14", 14 },
-            new object[] { "W/U", 1 },
-            new object[] { "2/B", 2 },
-            new object[] { "14/B", 14 },
-            new object[] { "G/P", 1 },
-            new object[] { "X", 0 }
-        };
+        [
+            ["W", 1],
+            ["C", 1],
+            ["14", 14],
+            ["W/U", 1],
+            ["2/B", 2],
+            ["14/B", 14],
+            ["G/P", 1],
+            ["X", 0]
+        ];
 
     //Create
 

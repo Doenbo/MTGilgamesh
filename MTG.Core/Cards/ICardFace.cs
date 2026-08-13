@@ -19,7 +19,7 @@ public interface ICardFace
     public List<KeywordAbility> KeywordAbilities { get; } //https://api.scryfall.com/catalog/keyword-abilities
     public List<KeywordAction> KeywordActions { get; } //https://api.scryfall.com/catalog/keyword-actions
     public List<AbilityWord> AbilityWords { get; } //https://api.scryfall.com/catalog/ability-words
-    public string? OracleText { get; set; }
+    public string OracleText { get; }
 
     //Simple Yes/No Checks
     public bool IsArtifact();

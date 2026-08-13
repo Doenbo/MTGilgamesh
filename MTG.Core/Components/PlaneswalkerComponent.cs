@@ -1,4 +1,5 @@
-﻿using MTG.Core.Helper;
+﻿using MTG.Core.Cards;
+using MTG.Core.Helper;
 using MTG.Core.Properties;
 
 namespace MTG.Core.Components;
@@ -12,8 +13,10 @@ public class PlaneswalkerComponent : ICardComponent
         Loyalty = loyalty;
     }
 
-    public static Result<PlaneswalkerComponent> Create(string loyalty)
+    public static Result<PlaneswalkerComponent> Create(string? loyalty)
     {
-        return Result<PlaneswalkerComponent>.Success(new PlaneswalkerComponent(new Loyalty(loyalty)));
+        return loyalty == null
+            ? Result<PlaneswalkerComponent>.Failure($"Loyalty can't be null!")
+            : Result<PlaneswalkerComponent>.Success(new PlaneswalkerComponent(new Loyalty(loyalty)));
     }
 }

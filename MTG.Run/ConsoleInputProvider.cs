@@ -214,7 +214,14 @@ public class ConsoleInputProvider : IPlayerInputProvider
             Console.WriteLine(text);
 
             var input = Console.ReadLine();
-            if (!int.TryParse(input, out int j) || j < 1 || j > player.Hand.Count + 1)
+
+            if (input == "B")
+            {
+                Console.WriteLine($"{context.ToConsoleBattlefield()}");
+                continue;
+            }
+
+            if (!int.TryParse(input, out int j) || j < 0 || j > player.Hand.Count + 1)
             {
                 Console.WriteLine("Could not process input. Try again!");
                 continue;
@@ -232,10 +239,10 @@ public class ConsoleInputProvider : IPlayerInputProvider
         var text = $"\n{context.PriorityPlayer.Name}, which card would you like to play from your board?\n";
         var playerBoard = context.GetBoardOf(player, filter);
 
-        if (playerBoard.Count() == 0 && filter == CardType.None)
+        if (!playerBoard.Any() && filter == CardType.None)
             return Result<CardInstance>.Failure($"Your Board is empty!");
 
-        if (playerBoard.Count() == 0 && filter != CardType.None)
+        if (!playerBoard.Any() && filter != CardType.None)
             return Result<CardInstance>.Failure($"No {filter} on your Board!");
 
         for (int i = 0; i < playerBoard.Count(); i++)
@@ -250,7 +257,14 @@ public class ConsoleInputProvider : IPlayerInputProvider
             Console.WriteLine(text);
 
             var input = Console.ReadLine();
-            if (!int.TryParse(input, out int j) || j < 1 || j > playerBoard.Count() + 1)
+
+            if (input == "B")
+            {
+                Console.WriteLine($"{context.ToConsoleBattlefield()}");
+                continue;
+            }
+
+            if (!int.TryParse(input, out int j) || j < 0 || j > playerBoard.Count() + 1)
             {
                 Console.WriteLine("Could not process input. Try again!");
                 continue;

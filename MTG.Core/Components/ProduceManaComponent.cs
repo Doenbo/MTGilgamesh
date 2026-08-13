@@ -10,15 +10,13 @@ using System.Text.RegularExpressions;
 
 namespace MTG.Core.Components;
 
-public class ProduceManaComponent : ICardComponent
+public partial class ProduceManaComponent : ICardComponent
 {
-    private static readonly Regex AddManaLineRegex = new Regex(
-        @"Add\s+([^\.\n]+)",
-        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    [GeneratedRegex(@"Add\s+([^\.\n]+)", RegexOptions.IgnoreCase)]
+    private static partial Regex GetAddManaLineRegex();
 
-    private static readonly Regex ManaSymbolRegex = new Regex(
-        @"\{([WUBRGC0-9])\}",
-        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    [GeneratedRegex(@"\{([WUBRGC0-9])\}", RegexOptions.IgnoreCase)]
+    private static partial Regex GetManaSymbolRegex();
 
 
     private readonly List<ManaUnit> _mana = [];
@@ -60,12 +58,12 @@ public class ProduceManaComponent : ICardComponent
             return Result<ProduceManaComponent>.Success(pmc);
         }
 
-        var match = AddManaLineRegex.Match(manaLine);
+        var match = GetAddManaLineRegex().Match(manaLine);
         if (!match.Success)
             return Result<ProduceManaComponent>.Failure("Could not parse tap ability line.");
 
         string capturedText = match.Groups[1].Value;
-        var symbolMatches = ManaSymbolRegex.Matches(capturedText);
+        var symbolMatches = GetManaSymbolRegex().Matches(capturedText);
 
         var parsedTypes = new List<ManaType>();
         foreach (Match symbolMatch in symbolMatches)

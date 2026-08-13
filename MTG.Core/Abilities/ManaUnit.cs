@@ -93,4 +93,41 @@ public class ManaUnit
     {
         throw new NotImplementedException();
     }
+
+    public override string ToString()
+    {
+        if (IsFixed)
+        {
+            return $"{{{ManaTypeToString(ManaFixed)}}}";
+        }
+
+        if (IsChoice)
+        {
+            return $"{{{ManaTypeToString(ManaChoice)}}}";
+        }
+
+        if (IsDynamic)
+        {
+            return $"{{{ManaTypeToString(ManaDynamic)}}}";
+        }
+
+        return "--- ERROR ---";
+    }
+
+    private static string ManaTypeToString(ManaDynamicType mdt)
+        => mdt.ToString();
+
+    private static string ManaTypeToString(IEnumerable<ManaType> mtl)
+        => string.Join("|", mtl.Select(mt => ManaTypeToString(mt)));
+
+    private static string ManaTypeToString(ManaType mt) => mt switch
+    {
+        ManaType.White => "W",
+        ManaType.Blue => "U",
+        ManaType.Black => "B",
+        ManaType.Red => "R",
+        ManaType.Green => "G",
+        ManaType.Colorless => "C",
+        _ => "--- ERROR ---",
+    };
 }

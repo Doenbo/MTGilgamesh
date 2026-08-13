@@ -15,8 +15,10 @@ public class CreatureComponent : ICardComponent
         Toughness = toughness;
     }
 
-    public static Result<CreatureComponent> Create(string power, string toughness)
+    public static Result<CreatureComponent> Create(string? power, string? toughness)
     {
-        return Result<CreatureComponent>.Success(new CreatureComponent(new Power(power), new Toughness(toughness)));
+        return power == null || toughness == null
+            ? Result<CreatureComponent>.Failure("Power and Toughness can't be null!")
+            : Result<CreatureComponent>.Success(new CreatureComponent(new Power(power), new Toughness(toughness)));
     }
 }

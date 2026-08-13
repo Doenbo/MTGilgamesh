@@ -2,5 +2,5 @@
 
 public class VehicleComponent : ICardComponent
 {
-    //TODO löschen?
+
 }

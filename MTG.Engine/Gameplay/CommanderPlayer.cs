@@ -30,15 +30,15 @@ public class CommanderPlayer
 
     //Hand
     private readonly List<CardInstance> _hand = [];
-    public IReadOnlyList<CardInstance> Hand => _hand;
+    public IReadOnlyList<CardInstance> Hand => _hand.AsReadOnly();
 
     //Graveyard
     private readonly List<CardInstance> _graveyard = [];
-    public IReadOnlyList<CardInstance> Graveyard => _graveyard;
+    public IReadOnlyList<CardInstance> Graveyard => _graveyard.AsReadOnly();
 
     //Exile
     private readonly List<CardInstance> _exile = [];
-    public IReadOnlyList<CardInstance> Exile => _exile;
+    public IReadOnlyList<CardInstance> Exile => _exile.AsReadOnly();
 
     //CommandZone
     public readonly (CardInstance, CardInstance) Commander;
@@ -67,7 +67,9 @@ public class CommanderPlayer
 
         player.InitializePlayer(deck.Value);
 
-        _logger.LogInformation($"Player {player} created");
+        if (_logger.IsEnabled(LogLevel.Information))
+            _logger.LogInformation("Player {player} created", player);
+
         return Result<CommanderPlayer>.Success(player);
     }
 

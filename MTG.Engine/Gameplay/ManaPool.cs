@@ -9,9 +9,9 @@ namespace MTG.Engine.Gameplay;
 
 public class ManaPool
 {
+    //Mana
     private readonly List<ManaUnit> _mana = [];
-
-    public IReadOnlyList<ManaUnit> AvailableMana => _mana.AsReadOnly();
+    public IReadOnlyList<ManaUnit> Mana => _mana.AsReadOnly();
 
     public int TotalMana => _mana.Count;
 
@@ -79,9 +79,6 @@ public class ManaPool
         return Result<ManaPool>.Success(copy);
     }
 
-    public string ToStringConsole()
-    {
-        //TODO
-        return $"TotalMana:{TotalMana}"; //(W:{White} | U:{Blue} | B:{Black} | R:{Red} | G:{Green} | C:{Colorless})";
-    }
+    public string ToStringConsole() =>
+        $"Pool: {string.Join(",", Mana)} TotalMana: {TotalMana}";
 }

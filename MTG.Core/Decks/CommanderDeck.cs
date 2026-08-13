@@ -49,7 +49,7 @@ public class CommanderDeck : Deck
         if (fc.IsFailure)
             return fc.ToFailure<ManaType>();
 
-        result = result | fc.Value;
+        result |= fc.Value;
 
         if (SecondCommander == null)
             return Result<ManaType>.Success(result);
@@ -58,7 +58,7 @@ public class CommanderDeck : Deck
         if (sc.IsFailure)
             return sc.ToFailure<ManaType>();
 
-        result = result | sc.Value;
+        result |= sc.Value;
 
         return Result<ManaType>.Success(result);
     }

@@ -9,12 +9,12 @@ namespace MTG.Core.Cards;
 
 public class CardFaceFactory
 {
-    public static Result<ICardFace> Create(string name, TypeLine typeline)
+    public static Result<ICardFace> Create(string name, TypeLine typeline, string? oracleText)
     {
         if (name == null)
-            return Result<ICardFace>.Failure("Name, Set and CollectionNumber can't be null!");
+            return Result<ICardFace>.Failure("Name can't be null!");
 
-        return Result<ICardFace>.Success(new CardFace() { Name = name, TypeLine = typeline });
+        return Result<ICardFace>.Success(new CardFace() { Name = name, TypeLine = typeline, OracleText = oracleText ?? string.Empty });
     }
 
     private class CardFace : ICardFace
@@ -26,12 +26,12 @@ public class CardFaceFactory
         //100% Mandatory Properties
         public required string Name { get; init; }
         public required TypeLine TypeLine { get; init; }
+        public required string OracleText { get; init; }
 
         //Gameplay
-        public List<KeywordAbility> KeywordAbilities { get; set; } = []; //https://api.scryfall.com/catalog/keyword-abilities
-        public List<KeywordAction> KeywordActions { get; set; } = []; //https://api.scryfall.com/catalog/keyword-actions
-        public List<AbilityWord> AbilityWords { get; set; } = []; //https://api.scryfall.com/catalog/ability-words
-        public string? OracleText { get; set; }
+        public List<KeywordAbility> KeywordAbilities { get; init; } = []; //https://api.scryfall.com/catalog/keyword-abilities
+        public List<KeywordAction> KeywordActions { get; init; } = []; //https://api.scryfall.com/catalog/keyword-actions
+        public List<AbilityWord> AbilityWords { get; init; } = []; //https://api.scryfall.com/catalog/ability-words
 
         //Simple Yes/No Checks
         public bool IsArtifact() => TypeLine.IsArtifact();

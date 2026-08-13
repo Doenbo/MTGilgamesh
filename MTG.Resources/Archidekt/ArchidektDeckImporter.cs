@@ -7,7 +7,7 @@ namespace MTG.Resources.Archidekt;
 
 public static class ArchidektDeckImporter
 {
-    private static string pattern =
+    private static readonly string pattern =
         @"^(?<quantity>\d+)x\s+(?<name>.+?)\s+\((?<set>[^)]+)\)\s+(?<number>\d+)\s+\[(?<type>[^\]]+)\]";
 
     public static Result<List<CardRef>> ImportCommanderPrecon(CommanderPrecon cp)

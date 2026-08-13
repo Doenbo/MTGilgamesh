@@ -51,7 +51,7 @@ public static class CardFactory
             {
                 if (!face.TryGetComponent<ColorComponent>(out var ident))
                     return Result<ManaType>.Failure("No Color Component?");
-                result |= ident.ColorIdentity; // Bitwise Operation | mean OR
+                result |= ident.ColorIdentity; // Bitwise Operation | means OR
             }
             return Result<ManaType>.Success(result);
         }

@@ -22,7 +22,7 @@ public class Result
         Error = error;
 
         if (IsFailure)
-            _logger.LogError($"{GetType}: {error}"); //TODO first bracket?
+            _logger.LogError("Error: {error}", error);
     }
 
     public static Result Success() => new(true, string.Empty);
@@ -50,7 +50,7 @@ public class Result<T> : Result, IResult
             }
             else
             {
-                _logger.LogError($"{typeof(T)}: {Error}"); //TODO first bracket?
+                _logger.LogError("{typeof(T)}: {Error}", typeof(T), Error);
                 throw new InvalidOperationException("Cannot access Value of a failed result!");
             }
         }

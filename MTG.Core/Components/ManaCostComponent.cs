@@ -11,7 +11,7 @@ public class ManaCostComponent : ICardComponent
         ManaCost = manacost;
     }
 
-    public static Result<ManaCostComponent> Create(string manacost)
+    public static Result<ManaCostComponent> Create(string? manacost)
     {
         if (manacost == null)
             return Result<ManaCostComponent>.Failure($"ManaCost can't be null!");

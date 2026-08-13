@@ -120,20 +120,23 @@ public abstract class TurnStepBase : ITurnStep
         var player = action.Player;
 
         if (card == null)
+        {
             context.Display?.LogMessage($"Cannot get Produced Mana!");
+            return;
+        }
 
         var result = card.CardData.MainFace.TryGetComponent<ProduceManaComponent>(out var pmc);
 
         if (!result)
+        {
             context.Display?.LogMessage($"Cannot get Produced Mana!");
+            return;
+        }
 
-        //if (pmc.IsChoice || pmc.IsDynamic)
-        //{
-
-        //}
-
-        //player.ManaPool.AddMana(pmc.FixedMana);
-
+        foreach (var mana in pmc.Mana)
+        {
+            player.ManaPool.AddMana(mana);
+        }
     }
 
     public virtual void OnStepExit(GameContext context)

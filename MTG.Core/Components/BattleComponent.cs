@@ -1,4 +1,5 @@
-﻿using MTG.Core.Helper;
+﻿using MTG.Core.Cards;
+using MTG.Core.Helper;
 using MTG.Core.Properties;
 
 namespace MTG.Core.Components;
@@ -12,8 +13,10 @@ public class BattleComponent : ICardComponent
         Defense = defense;
     }
 
-    public static Result<BattleComponent> Create(string defense)
+    public static Result<BattleComponent> Create(string? defense)
     {
-        return Result<BattleComponent>.Success(new BattleComponent(new Defense(defense)));
+        return defense == null
+            ? Result<BattleComponent>.Failure($"Defense can't be null!")
+            : Result<BattleComponent>.Success(new BattleComponent(new Defense(defense)));
     }
 }

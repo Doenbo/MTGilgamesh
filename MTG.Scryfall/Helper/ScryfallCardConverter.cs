@@ -43,8 +43,8 @@ public class ScryfallCardConverter
     }
 
     private static Result<ICardFace> CreateCardFace(
-        string name, string typeline, string oracleText, string manaCost, float cmc, List<string> colorIdentity,
-        List<string> colorIndicator, List<string> colors, string power, string toughness, string defense,
+        string name, string typeline, string? oracleText, string? manaCost, float cmc, List<string> colorIdentity,
+        List<string>? colorIndicator, List<string>? colors, string? power, string? toughness, string? defense,
         string loyalty, List<ScryfallColor>? producedMana, List<string> keywords)
     {
 
@@ -54,13 +54,10 @@ public class ScryfallCardConverter
             return typelineres.ToFailure<ICardFace>();
 
         //Name + Face
-        var cardfaceres = CardFaceFactory.Create(name, typelineres.Value);
+        var cardfaceres = CardFaceFactory.Create(name, typelineres.Value, oracleText);
         if (cardfaceres.IsFailure)
             return cardfaceres.ToFailure<ICardFace>();
         var cardface = cardfaceres.Value;
-
-        //Face Properties
-        cardface.OracleText = oracleText;
 
         //ManaCost
         var manaCostComponent = ManaCostComponent.Create(manaCost);
@@ -82,13 +79,10 @@ public class ScryfallCardConverter
             return colorComponent.ToFailure<ICardFace>();
         cardface.AddComponent(colorComponent.Value);
 
-        //TODO auslagern?
+        //Components
+        //TODO können wir das auslagern?
         if (cardface.IsCreature())
         {
-            //TODO NULL IN CREATE ODER DAVOR???
-            if (power == null || toughness == null)
-                return Result<ICardFace>.Failure($"Power and Toughness can't be null!");
-
             var creature = CreatureComponent.Create(power, toughness);
             if (creature.IsFailure)
                 return creature.ToFailure<ICardFace>();
@@ -99,9 +93,6 @@ public class ScryfallCardConverter
         //Defense
         if (cardface.IsBattle())
         {
-            if (defense == null)
-                return Result<ICardFace>.Failure($"Defense can't be null!");
-
             var battle = BattleComponent.Create(defense);
             if (battle.IsFailure)
                 return battle.ToFailure<ICardFace>();
@@ -112,9 +103,6 @@ public class ScryfallCardConverter
         //Loyalty
         if (cardface.IsPlaneswalker())
         {
-            if (loyalty == null)
-                return Result<ICardFace>.Failure($"Loyalty can't be null!");
-
             var planeswalker = PlaneswalkerComponent.Create(loyalty);
             if (planeswalker.IsFailure)
                 return planeswalker.ToFailure<ICardFace>();
@@ -140,7 +128,7 @@ public class ScryfallCardConverter
 
         //ProducedMana
         // TODO this is weird in the API, see: https://api.scryfall.com/cards/named?fuzzy=Brigid+Heart+Mind
-        if (oracleText != null && producedMana != null && producedMana.Any())
+        if (oracleText != null && producedMana != null && producedMana.Count != 0)
         {
             var produceMana = ProduceManaComponent.Create(oracleText);
             if (produceMana.IsFailure)
@@ -185,7 +173,7 @@ public class ScryfallCardConverter
                     return Result<ICard>.Failure("Object is not a card face!");
 
                 var iFace = CreateCardFace(cardFace.Name, cardFace.TypeLine, cardFace.OracleText, cardFace.ManaCost,
-                                           cardFace.CMC ?? -1, null, cardFace.ColorIndicator, cardFace.Colors,
+                                           cardFace.CMC ?? -1, null!, cardFace.ColorIndicator, cardFace.Colors,
                                            cardFace.Power, cardFace.Toughness, cardFace.Defense, cardFace.Layout,
                                            dto.ProducedMana,
                                            //TODO NO KEYWORDS??
