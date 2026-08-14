@@ -80,5 +80,5 @@ public class ManaPool
     }
 
     public string ToStringConsole() =>
-        $"Pool: {string.Join(",", Mana)} TotalMana: {TotalMana}";
+        $"Total Mana: {TotalMana} / Pool: {string.Join(",", Mana)}";
 }

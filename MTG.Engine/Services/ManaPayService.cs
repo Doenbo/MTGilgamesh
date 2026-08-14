@@ -19,6 +19,13 @@ public class ManaPayService
 
     public Result<ManaPool> TryPay(ManaCost cost, ManaPool pool)
     {
+        if (Cheats.CanPlaySpellsWithoutPaying ||
+           cost.Symbols.Count == -1) //so compiler shuts up
+            return Result<ManaPool>.Success(pool);
+
+        if (cost == null || pool == null)
+            return Result<ManaPool>.Failure("Cannot calculate paying Mana!");
+
         var cmc = cost.GetCMC();
         if (cmc.IsFailure)
             return Result<ManaPool>.Failure(cmc.Error);

@@ -1,8 +1,11 @@
+using Microsoft.EntityFrameworkCore;
+using MTG.Core;
 using MTG.Core.Cards;
 using MTG.Core.Helper;
 using MTG.Core.Types;
 using MTG.Engine.Enums;
 using MTG.Engine.Gameplay;
+using MTG.Engine.TurnSteps;
 using System;
 using System.CodeDom;
 
@@ -10,7 +13,8 @@ namespace MTG.Run;
 
 public class ConsoleInputProvider : IPlayerInputProvider
 {
-    private const string s_board = "B: Show Own Board";
+    private static readonly string[] miscCommand = { "B", "M", "S" };
+    private const string s_board = "B: Show Board";
     private const string s_manap = "M: Show Own Mana Pool";
     private const string s_stack = "S: Show Stack";
 
@@ -19,8 +23,8 @@ public class ConsoleInputProvider : IPlayerInputProvider
     private const string o_retur = "0: Return";
 
     private const string f_passp = $"{s_board} | {s_manap} | {s_stack} | {o_passp}";
-    private const string f_endph = $"{s_board} | {s_manap} | {o_endph}";
-    private const string f_retur = $"{s_board} | {s_manap} | {o_retur}";
+    private const string f_endph = $"{s_board} | {s_manap} | {s_stack} | {o_endph}";
+    private const string f_retur = $"{s_board} | {s_manap} | {s_stack} | {o_retur}";
 
     public async Task<PlayerAction> GetNextAction(GameContext context, CommanderPlayer player)
     {
@@ -40,8 +44,10 @@ public class ConsoleInputProvider : IPlayerInputProvider
 
     private static PlayerAction GetMainStepAction(GameContext context, CommanderPlayer player)
     {
-        Result<CardInstance> chosenCard;
+        if (AnyCheatSkipActive(context, player))
+            return new PlayerAction(player, ActionType.PassPriority);
 
+        Result<CardInstance> chosenCard;
         while (true)
         {
             Console.WriteLine($"\n[{context.TurnStep}] {context.PriorityPlayer.Name}, it's your main phase. What do you do?");
@@ -83,6 +89,10 @@ public class ConsoleInputProvider : IPlayerInputProvider
                     Console.WriteLine($"{context.ToConsoleManaPool()}");
                     continue;
 
+                case "S":
+                    Console.WriteLine($"{context.ToConsoleStack()}");
+                    continue;
+
                 case "0":
                     return new PlayerAction(player, ActionType.PassPriority);
 
@@ -95,8 +105,10 @@ public class ConsoleInputProvider : IPlayerInputProvider
 
     private static PlayerAction GetCastSpellReaction(GameContext context, CommanderPlayer player)
     {
-        Result<CardInstance> chosenCard;
+        if (AnyCheatSkipActive(context, player))
+            return new PlayerAction(player, ActionType.PassPriority);
 
+        Result<CardInstance> chosenCard;
         while (true)
         {
             var topStackCard = context.PeekStack();
@@ -150,8 +162,10 @@ public class ConsoleInputProvider : IPlayerInputProvider
 
     private static PlayerAction GetPriorityAction(GameContext context, CommanderPlayer player)
     {
-        Result<CardInstance> chosenCard;
+        if (AnyCheatSkipActive(context, player))
+            return new PlayerAction(player, ActionType.PassPriority);
 
+        Result<CardInstance> chosenCard;
         while (true)
         {
             Console.WriteLine($"\n[{context.TurnStep}] Priority: {player.Name}. What do you do?");
@@ -215,20 +229,23 @@ public class ConsoleInputProvider : IPlayerInputProvider
 
             var input = Console.ReadLine();
 
-            if (input == "B")
+            if (string.IsNullOrEmpty(input))
+                continue;
+
+            if (input == "0")
+                return Result<CardInstance>.Failure("Return!");
+
+            if (miscCommand.Contains(input))
             {
-                Console.WriteLine($"{context.ToConsoleBattlefield()}");
+                ExecMiscCommand(context, input);
                 continue;
             }
 
-            if (!int.TryParse(input, out int j) || j < 0 || j > player.Hand.Count + 1)
+            if (!int.TryParse(input, out int j) || j < 1 || j > player.Hand.Count + 1)
             {
                 Console.WriteLine("Could not process input. Try again!");
                 continue;
             }
-
-            if (j == 0)
-                return Result<CardInstance>.Failure("Return!");
 
             return Result<CardInstance>.Success(player.Hand[j - 1]);
         }
@@ -258,22 +275,66 @@ public class ConsoleInputProvider : IPlayerInputProvider
 
             var input = Console.ReadLine();
 
-            if (input == "B")
+            if (string.IsNullOrEmpty(input))
+                continue;
+
+            if (input == "0")
+                return Result<CardInstance>.Failure("Return!");
+
+            if (miscCommand.Contains(input))
             {
-                Console.WriteLine($"{context.ToConsoleBattlefield()}");
+                ExecMiscCommand(context, input);
                 continue;
             }
 
-            if (!int.TryParse(input, out int j) || j < 0 || j > playerBoard.Count() + 1)
+            if (!int.TryParse(input, out int j) || j < 1 || j > playerBoard.Count() + 1)
             {
                 Console.WriteLine("Could not process input. Try again!");
                 continue;
             }
 
-            if (j == 0)
-                return Result<CardInstance>.Failure("Return!");
-
             return Result<CardInstance>.Success(playerBoard.ElementAt(j - 1));
         }
+    }
+
+    private static void ExecMiscCommand(GameContext context, string input)
+    {
+        switch (input)
+        {
+            case "B":
+                Console.WriteLine($"{context.ToConsoleBattlefield()}");
+                return;
+
+            case "M":
+                Console.WriteLine($"{context.ToConsoleManaPool()}");
+                return;
+
+            case "S":
+                Console.WriteLine($"{context.ToConsoleStack()}");
+                return;
+        }
+    }
+
+    private static bool AnyCheatSkipActive(GameContext context, CommanderPlayer player)
+    {
+        if (Cheats.SkipUpkeepAndDraw &&
+           (context.TurnStep == TurnStep.Upkeep || context.TurnStep == TurnStep.Draw))
+            return true;
+
+        if (Cheats.SkipCompleteCombatPhase &&
+           (context.TurnStep == TurnStep.CombatBegin || context.TurnStep == TurnStep.DeclareAttackers ||
+            context.TurnStep == TurnStep.DeclareBlockers || context.TurnStep == TurnStep.CombatDamage ||
+            context.TurnStep == TurnStep.EndOfCombat))
+            return true;
+
+        if (Cheats.SkipEndStep &&
+           (context.TurnStep == TurnStep.EndStep || context.TurnStep == TurnStep.CleanupStep))
+            return true;
+
+        if (Cheats.SkipPrio &&
+           (context.StackCount > 0 || context.ActivePlayer != player))
+            return true;
+
+        return false;
     }
 }

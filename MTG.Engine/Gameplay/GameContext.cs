@@ -300,13 +300,17 @@ public class GameContext
 
     public string ToConsoleBattlefield()
     {
-        var sorted = _battlefield.OrderBy(c => c.Owner);
+        var sorted = _battlefield.OrderBy(c => c.Owner.Name);
         var sb = new StringBuilder();
         sb.AppendLine($"/------------------------------------\\");
+        sb.AppendLine($"[{ActivePlayer.Name}]");
         foreach (var c in sorted)
         {
-            sb.AppendLine($"{c.CardData.FullName} [{c.Owner.Name}]");
+            sb.Append($"{c.CardData.FullName}");
+            if (c.IsTapped) sb.Append("[Tapped]");
+            sb.AppendLine();
         }
+        sb.AppendLine($"\\------------------------------------/");
         return sb.ToString();
     }
 
@@ -320,6 +324,7 @@ public class GameContext
         {
             sb.AppendLine($"{c.CardData.FullName} [{c.Owner.Name}]");
         }
+        sb.AppendLine($"\\------------------------------------/");
         return sb.ToString();
     }
 }

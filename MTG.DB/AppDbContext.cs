@@ -51,7 +51,7 @@ public class AppDbContext : DbContext
             using var dbContext = new AppDbContext();
 
             var cacheEntry = dbContext.CardsAsJson
-            .FirstOrDefault(c => c.Name.Contains(cref.Name, StringComparison.CurrentCultureIgnoreCase));
+            .FirstOrDefault(c => c.Name.ToLower().Contains(cref.Name.ToLower()));
 
             if (cacheEntry == null)
             {

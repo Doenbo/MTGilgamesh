@@ -1,3 +1,4 @@
+using MTG.Core;
 using MTG.Core.Components;
 using MTG.Engine.Enums;
 using MTG.Engine.Gameplay;
@@ -119,9 +120,9 @@ public abstract class TurnStepBase : ITurnStep
         var card = action.TargetCardInstance;
         var player = action.Player;
 
-        if (card == null)
+        if (card == null || (card.IsTapped && !Cheats.CanTapLandsInfiniteTimes))
         {
-            context.Display?.LogMessage($"Cannot get Produced Mana!");
+            context.Display?.LogMessage($"Cannot tap card for Mana!");
             return;
         }
 
@@ -135,6 +136,7 @@ public abstract class TurnStepBase : ITurnStep
 
         foreach (var mana in pmc.Mana)
         {
+            if (pmc.RequiresTap) card.IsTapped = true;
             player.ManaPool.AddMana(mana);
         }
     }
