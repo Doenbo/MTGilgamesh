@@ -13,6 +13,7 @@ public class Cheats
     public const bool SkipPrio = true;
 
     // Infinites
+    public const bool CanPlayInfiniteLands = true;
     public const bool CanPlaySpellsWithoutPaying = true;
     public const bool CanTapLandsInfiniteTimes = true;
     public const bool CanUseAbilitiesInfiniteTimes = true;

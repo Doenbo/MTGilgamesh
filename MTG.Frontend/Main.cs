@@ -275,7 +275,7 @@ public partial class Main : Node2D
 	{
 		if (_context == null || _handContainer == null) return;
 
-		foreach (Node child in _handContainer.GetChildren())
+		foreach (var child in _handContainer.GetChildren().ToList())
 		{
 			child.QueueFree();
 		}
@@ -283,7 +283,7 @@ public partial class Main : Node2D
 		var human = _context.Players[0];
 		_humanLifeLabel.Text = $"❤ {human.Name}: {human.LifeTotal} HP";
 
-		foreach (var cardInstance in human.Hand)
+		foreach (var cardInstance in human.Hand.ToList())
 		{
 			var cardNode = new CardNode();
 			cardNode.Setup(cardInstance);
@@ -305,7 +305,7 @@ public partial class Main : Node2D
 		var targetPlayer = _context.Players[_viewingPlayerIndex];
 		_boardTitleLabel.Text = $" BOARD: {targetPlayer.Name} {(_viewingPlayerIndex == 0 ? "(You)" : "[Bot]")} ";
 
-		foreach (Node child in _battlefieldContainer.GetChildren())
+		foreach (var child in _battlefieldContainer.GetChildren().ToList())
 		{
 			child.QueueFree();
 		}
@@ -319,7 +319,7 @@ public partial class Main : Node2D
 			grid.Columns = 6;
 			_battlefieldContainer.AddChild(grid);
 
-			foreach (var cardInstance in boardCards)
+			foreach (var cardInstance in boardCards.ToList())
 			{
 				var cardNode = new CardNode();
 				cardNode.Setup(cardInstance);

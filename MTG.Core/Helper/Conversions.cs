@@ -13,7 +13,7 @@ public static class Conversions
         var sb = new StringBuilder(input.Length);
         bool makeUpper = true;
 
-        foreach (char c in input)
+        foreach (var c in input.ToList())
         {
             if (char.IsWhiteSpace(c) || c == '_')
                 makeUpper = true;

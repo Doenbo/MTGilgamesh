@@ -78,12 +78,12 @@ public class CommanderDeck : Deck
         if (deckColor.IsFailure)
             return deckColor.ToFailure<bool>();
 
-        foreach (var card in Cards)
+        foreach (var card in Cards.ToList())
         {
             if (card.Legalities[Format.Commander] != Legality.Legal)
                 return Result<bool>.Failure("Card is not legal in Commander!");
 
-            foreach (var face in card.Faces)
+            foreach (var face in card.Faces.ToList())
             {
                 if (!face.TryGetComponent<ColorComponent>(out var ident))
                     return Result<bool>.Failure("No Color Component?");

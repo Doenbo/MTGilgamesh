@@ -1,4 +1,5 @@
-﻿using MTG.Engine.TurnSteps;
+﻿using MTG.Engine.Events;
+using MTG.Engine.TurnSteps;
 
 namespace MTG.Engine.Gameplay;
 
@@ -34,13 +35,13 @@ public class GameEngine
 
     private void CheckStateBasedActions()
     {
-        foreach (var player in _context.Players)
+        foreach (var player in _context.Players.ToList())
         {
             if (player.LifeTotal <= 0 && !player.IsEliminated)
             {
                 player.IsEliminated = true;
                 _context.RemovePlayerFromGame(player);
-                _display.LogElimination(player.Name);
+                _display.LogGameEvent(new PlayerEliminationEvent(player.Name));
             }
         }
     }

@@ -32,7 +32,7 @@ public class DeckCreator
     {
         var deck = new CommanderDeck();
 
-        foreach (var cardref in cardrefs)
+        foreach (var cardref in cardrefs.ToList())
         {
             var card = await CardCreator.GetExact(cardref);
             if (card.IsFailure)

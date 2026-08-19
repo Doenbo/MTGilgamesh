@@ -48,7 +48,7 @@ public class ManaPool
 
         if (validMana.Count < amount) return false;
 
-        foreach (var mana in validMana)
+        foreach (var mana in validMana.ToList())
         {
             _mana.Remove(mana);
         }
@@ -70,7 +70,7 @@ public class ManaPool
     public Result<ManaPool> Clone()
     {
         var copy = new ManaPool();
-        foreach (var mu in _mana)
+        foreach (var mu in _mana.ToList())
         {
             var nu = mu.Clone();
             if (nu.IsFailure) return nu.ToFailure<ManaPool>();

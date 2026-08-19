@@ -183,28 +183,28 @@ public class TypeLineComponentTests
         Assert.Equal(planeswalkerTypes.Length, act.PlaneswalkerTypes.Count);
         Assert.Equal(spellTypes.Length, act.SpellTypes.Count);
 
-        foreach (var _ in cardTypes)
+        foreach (var _ in cardTypes.ToList())
             Assert.Contains(_, act.CardTypes);
 
-        foreach (var _ in superTypes)
+        foreach (var _ in superTypes.ToList())
             Assert.Contains(_, act.SuperTypes);
 
-        foreach (var _ in artifactTypes)
+        foreach (var _ in artifactTypes.ToList())
             Assert.Contains(_, act.ArtifactTypes);
 
-        foreach (var _ in creatureTypes)
+        foreach (var _ in creatureTypes.ToList())
             Assert.Contains(_, act.CreatureTypes);
 
-        foreach (var _ in enchantmentTypes)
+        foreach (var _ in enchantmentTypes.ToList())
             Assert.Contains(_, act.EnchantmentTypes);
 
-        foreach (var _ in landTypes)
+        foreach (var _ in landTypes.ToList())
             Assert.Contains(_, act.LandTypes);
 
-        foreach (var _ in planeswalkerTypes)
+        foreach (var _ in planeswalkerTypes.ToList())
             Assert.Contains(_, act.PlaneswalkerTypes);
 
-        foreach (var _ in spellTypes)
+        foreach (var _ in spellTypes.ToList())
             Assert.Contains(_, act.SpellTypes);
     }
 

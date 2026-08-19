@@ -1,13 +1,21 @@
 using MTG.Core.Cards;
 using MTG.Engine.Enums;
+using MTG.Engine.Events;
 
 namespace MTG.Engine.Gameplay;
 
 public interface IGameDisplay
 {
-    void LogMessage(string message);
-    void LogStepTransition(TurnStep name, string playerName);
-    void LogElimination(string playerName);
+    //Logging
+    bool IsLoggingErrors { get; set; }
+
+    void LogInfo(string message);
+    void LogError(string message);
+    void LogGameEvent(IGameEvent gameEvent);
+
+    void RenderBattlefield(GameContext context);
+    void RenderManaPool(GameContext context);
+    void RenderStack(GameContext context);
 
     // Optional visual event hooks with default empty implementations
     void OnCardPlayed(CommanderPlayer player, ICard card) { }

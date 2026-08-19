@@ -56,7 +56,7 @@
 //                return Result<List<Card>>.Failure("Die Antwort von Scryfall war leer oder fehlerhaft.");
 
 //            var cards = new List<Card>();
-//            foreach (var dto in scryfallResponse.Data)
+//            foreach (var dto in scryfallResponse.Data.ToList())
 //            {
 //                //var cardResult = ScryfallCardConverter.Convert(dto);
 

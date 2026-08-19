@@ -10,6 +10,6 @@ public class DrawStep : TurnStepBase
     protected override void PerformTurnBasedActions(GameContext context)
     {
         context.ActivePlayer.DrawCard();
-        context.Display?.LogMessage($"{context.ActivePlayer.Name} has drawn a card for turn.");
+        context.Display.LogInfo($"{context.ActivePlayer.Name} has drawn a card for turn.");
     }
 }

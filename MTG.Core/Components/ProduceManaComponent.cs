@@ -66,7 +66,7 @@ public partial class ProduceManaComponent : ICardComponent
         var symbolMatches = GetManaSymbolRegex().Matches(capturedText);
 
         var parsedTypes = new List<ManaType>();
-        foreach (Match symbolMatch in symbolMatches)
+        foreach (var symbolMatch in symbolMatches.ToList())
         {
             string symbolCode = symbolMatch.Groups[1].Value.ToUpperInvariant();
             if (TryParseManaType(symbolCode, out var manaType))
@@ -88,7 +88,7 @@ public partial class ProduceManaComponent : ICardComponent
         }
 
         // Fixed
-        foreach (var type in parsedTypes)
+        foreach (var type in parsedTypes.ToList())
         {
             rmu = ManaUnit.CreateFixed(type);
             if (rmu.IsFailure) return rmu.ToFailure<ProduceManaComponent>();

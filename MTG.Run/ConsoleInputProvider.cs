@@ -50,8 +50,9 @@ public class ConsoleInputProvider : IPlayerInputProvider
         Result<CardInstance> chosenCard;
         while (true)
         {
-            Console.WriteLine($"\n[{context.TurnStep}] {context.PriorityPlayer.Name}, it's your main phase. What do you do?");
-            Console.WriteLine($"1: Play a Card from your Hand | 2: Tap Land for Mana | 3: Activate Ability | {f_endph}");
+            context.Display.LogInfo(
+                $"{Environment.NewLine}[{context.TurnStep}] {context.PriorityPlayer.Name}, it's your main phase. What do you do?" +
+                $"{Environment.NewLine}1: Play a Card from your Hand | 2: Tap Land for Mana | 3: Activate Ability | {f_endph}");
 
             var input = Console.ReadLine();
 
@@ -82,22 +83,22 @@ public class ConsoleInputProvider : IPlayerInputProvider
                     return new PlayerAction(player, ActionType.PlayCard, chosenCard.Value);
 
                 case "B":
-                    Console.WriteLine($"{context.ToConsoleBattlefield()}");
+                    context.Display.RenderBattlefield(context);
                     continue;
 
                 case "M":
-                    Console.WriteLine($"{context.ToConsoleManaPool()}");
+                    context.Display.RenderManaPool(context);
                     continue;
 
                 case "S":
-                    Console.WriteLine($"{context.ToConsoleStack()}");
+                    context.Display.RenderStack(context);
                     continue;
 
                 case "0":
                     return new PlayerAction(player, ActionType.PassPriority);
 
                 default:
-                    Console.WriteLine("Could not process input. Try again!");
+                    context.Display.LogError("Could not process input. Try again!");
                     continue;
             }
         }
@@ -114,9 +115,10 @@ public class ConsoleInputProvider : IPlayerInputProvider
             var topStackCard = context.PeekStack();
             string casterName = topStackCard.Owner.Name;
 
-            Console.WriteLine($"\n[{casterName}] has casted {topStackCard.CardData.FullName}");
-            Console.WriteLine($"[{player.Name}] How do you react?");
-            Console.WriteLine($"1: Play a Card from your Hand | {f_passp}");
+            context.Display.LogInfo(
+                $"{Environment.NewLine}[{casterName}] has casted {topStackCard.CardData.FullName}." +
+                $"[{player.Name}] How do you react?" +
+                $"{Environment.NewLine}1: Play a Card from your Hand | {f_passp}");
 
             string? input = Console.ReadLine();
 
@@ -139,22 +141,22 @@ public class ConsoleInputProvider : IPlayerInputProvider
                     return new PlayerAction(player, ActionType.PlayCard, chosenCard.Value);
 
                 case "B":
-                    Console.WriteLine($"{context.ToConsoleBattlefield()}");
+                    context.Display.RenderBattlefield(context);
                     continue;
 
                 case "M":
-                    Console.WriteLine($"{context.ToConsoleManaPool()}");
+                    context.Display.RenderManaPool(context);
                     continue;
 
                 case "S":
-                    Console.WriteLine($"{context.ToConsoleStack()}");
+                    context.Display.RenderStack(context);
                     continue;
 
                 case "0":
                     return new PlayerAction(player, ActionType.PassPriority);
 
                 default:
-                    Console.WriteLine("Could not process input. Try again!");
+                    context.Display.LogError("Could not process input. Try again!");
                     continue;
             }
         }
@@ -168,8 +170,9 @@ public class ConsoleInputProvider : IPlayerInputProvider
         Result<CardInstance> chosenCard;
         while (true)
         {
-            Console.WriteLine($"\n[{context.TurnStep}] Priority: {player.Name}. What do you do?");
-            Console.WriteLine($"\n1: Play a Card from your Hand | 2: Tap a Card | {f_passp}");
+            context.Display.LogInfo(
+                $"{Environment.NewLine}[{context.TurnStep}] Priority: {player.Name}. What do you do?" +
+                $"{Environment.NewLine}1: Play a Card from your Hand | 2: Tap a Card | {f_passp}");
 
             var input = Console.ReadLine();
 
@@ -192,22 +195,22 @@ public class ConsoleInputProvider : IPlayerInputProvider
                     return new PlayerAction(player, ActionType.PlayCard, chosenCard.Value);
 
                 case "B":
-                    Console.WriteLine($"{context.ToConsoleBattlefield()}");
+                    context.Display.RenderBattlefield(context);
                     continue;
 
                 case "M":
-                    Console.WriteLine($"{context.ToConsoleManaPool()}");
+                    context.Display.RenderManaPool(context);
                     continue;
 
                 case "S":
-                    Console.WriteLine($"{context.ToConsoleStack()}");
+                    context.Display.RenderStack(context);
                     continue;
 
                 case "0":
                     return new PlayerAction(player, ActionType.PassPriority);
 
                 default:
-                    Console.WriteLine("Could not process input. Try again!");
+                    context.Display.LogError("Could not process input. Try again!");
                     continue;
             }
         }
@@ -225,7 +228,7 @@ public class ConsoleInputProvider : IPlayerInputProvider
 
         while (true)
         {
-            Console.WriteLine(text);
+            context.Display.LogInfo(text);
 
             var input = Console.ReadLine();
 
@@ -243,7 +246,7 @@ public class ConsoleInputProvider : IPlayerInputProvider
 
             if (!int.TryParse(input, out int j) || j < 1 || j > player.Hand.Count + 1)
             {
-                Console.WriteLine("Could not process input. Try again!");
+                context.Display.LogError("Could not process input. Try again!");
                 continue;
             }
 
@@ -271,7 +274,7 @@ public class ConsoleInputProvider : IPlayerInputProvider
 
         while (true)
         {
-            Console.WriteLine(text);
+            context.Display.LogInfo(text);
 
             var input = Console.ReadLine();
 
@@ -289,7 +292,7 @@ public class ConsoleInputProvider : IPlayerInputProvider
 
             if (!int.TryParse(input, out int j) || j < 1 || j > playerBoard.Count() + 1)
             {
-                Console.WriteLine("Could not process input. Try again!");
+                context.Display.LogError("Could not process input. Try again!");
                 continue;
             }
 
@@ -302,15 +305,15 @@ public class ConsoleInputProvider : IPlayerInputProvider
         switch (input)
         {
             case "B":
-                Console.WriteLine($"{context.ToConsoleBattlefield()}");
+                context.Display.RenderBattlefield(context);
                 return;
 
             case "M":
-                Console.WriteLine($"{context.ToConsoleManaPool()}");
+                context.Display.RenderManaPool(context);
                 return;
 
             case "S":
-                Console.WriteLine($"{context.ToConsoleStack()}");
+                context.Display.RenderStack(context);
                 return;
         }
     }

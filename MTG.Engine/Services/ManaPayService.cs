@@ -36,10 +36,10 @@ public class ManaPayService
         var tempPool = pool.Clone();
         if (tempPool.IsFailure) return tempPool.ToFailure<ManaPool>();
 
-        foreach (var symbol in cost.Symbols.Where(s => !s.IsGenericOnly))
+        foreach (var symbol in cost.Symbols.Where(s => !s.IsGenericOnly).ToList())
         {
             bool paid = false;
-            foreach (var color in symbol.AcceptedColors)
+            foreach (var color in symbol.AcceptedColors.ToList())
             {
                 if (tempPool.Value.TryDeduct(color))
                 {

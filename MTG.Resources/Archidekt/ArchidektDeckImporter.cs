@@ -26,7 +26,7 @@ public static class ArchidektDeckImporter
         catch (Exception ex) { return Result<List<CardRef>>.Failure($"Could not read File: {ex}"); }
 
         var cardrefs = new List<CardRef>();
-        foreach (var line in lines)
+        foreach (var line in lines.ToList())
         {
             Match match = Regex.Match(line, pattern);
 

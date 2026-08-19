@@ -33,14 +33,14 @@ public partial class ManaCost
         //var values = new List<ManaSymbol>();
         var faces = mana.Split(["//"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        foreach (var face in faces)
+        foreach (var face in faces.ToList())
         {
             var matches = CreateManaRegex().Matches(face);
 
             if (matches.Count == 0)
                 return Result<ManaCost>.Failure("Not a convertible mana string!");
 
-            foreach (Match match in matches)
+            foreach (var match in matches.ToList())
             {
                 var bubbleContent = match.Groups[1].Value;
 
@@ -58,7 +58,7 @@ public partial class ManaCost
     public Result<float> GetCMC()
     {
         float count = 0;
-        foreach (ManaSymbol symbol in Symbols)
+        foreach (var symbol in Symbols.ToList())
         {
             var cmc = symbol.GetCMC();
             if (cmc.IsFailure)

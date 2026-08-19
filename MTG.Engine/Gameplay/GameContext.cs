@@ -95,6 +95,7 @@ public class GameContext
     public void MoveToBattlefield(CardInstance card)
     {
         _battlefield.Add(card);
+        card.HasSummoningSickness = true;
     }
 
     public void PushToStack(CardInstance card)
@@ -144,7 +145,7 @@ public class GameContext
         } while (_players[currentIndex].IsEliminated);
 
         PriorityPlayer = _players[currentIndex];
-        Display?.LogMessage($"Priority switches to: {PriorityPlayer.Name}");
+        Display.LogInfo($"Priority switches to: {PriorityPlayer.Name}");
     }
 
     public void OnPlayerTookAction()
@@ -223,12 +224,16 @@ public class GameContext
     {
         var card = action.TargetCardInstance;
         var player = action.Player;
+        CastSpellAndStartPriorityRound(card, player);
+    }
 
+    public void CastSpellAndStartPriorityRound(CardInstance? card, CommanderPlayer player)
+    {
         if (card == null) return;
 
         player.RemoveFromHand(card);
         PushToStack(card);
-        Display?.LogMessage($"{player.Name} casts {card.CardData.FullName} (Object is on the STACK!)");
+        Display.LogInfo($"{player.Name} casts {card.CardData.FullName} (Object is on the STACK!)");
 
         PriorityPlayer = player;
         ConsecutivePasses = 0;
@@ -237,17 +242,17 @@ public class GameContext
     public void ResolveTopStackObject()
     {
         var resolvedCard = PopFromStack();
-        Display?.LogMessage($"\n=== RESOLVING: {resolvedCard.CardData.FullName} ===");
+        Display.LogInfo($"\n=== RESOLVING: {resolvedCard.CardData.FullName} ===");
 
         if (resolvedCard.CardData.IsPermanent())
         {
             MoveToBattlefield(resolvedCard);
-            Display?.LogMessage($"{resolvedCard.CardData.FullName} enters the battlefield.");
+            Display.LogInfo($"{resolvedCard.CardData.FullName} enters the battlefield.");
         }
         else
         {
             resolvedCard.Owner.AddToGraveyard(resolvedCard);
-            Display?.LogMessage($"{resolvedCard.CardData.FullName} finishes resolving and goes to Graveyard.");
+            Display.LogInfo($"{resolvedCard.CardData.FullName} finishes resolving and goes to Graveyard.");
         }
 
         PriorityPlayer = ActivePlayer;
@@ -286,7 +291,7 @@ public class GameContext
         }
 
         ActivePlayer = _players[nextIndex];
-        Display.LogMessage($"It's the turn of {ActivePlayer.Name}");
+        Display.LogInfo($"It's the turn of {ActivePlayer.Name}");
 
         HasPlayedLandThisTurn = false;
 
@@ -300,14 +305,18 @@ public class GameContext
 
     public string ToConsoleBattlefield()
     {
-        var sorted = _battlefield.OrderBy(c => c.Owner.Name);
+        var groupedItems = _battlefield.GroupBy(item => item.Owner);
         var sb = new StringBuilder();
         sb.AppendLine($"/------------------------------------\\");
-        sb.AppendLine($"[{ActivePlayer.Name}]");
-        foreach (var c in sorted)
+        foreach (var group in groupedItems.ToList())
         {
-            sb.Append($"{c.CardData.FullName}");
-            if (c.IsTapped) sb.Append("[Tapped]");
+            sb.AppendLine($"[{group.Key}]");
+            foreach (var card in group.ToList())
+            {
+                sb.Append($"{card.CardData.FullName}");
+                if (card.IsTapped) sb.Append("[Tapped]");
+                sb.AppendLine();
+            }
             sb.AppendLine();
         }
         sb.AppendLine($"\\------------------------------------/");
@@ -320,7 +329,7 @@ public class GameContext
     {
         var sb = new StringBuilder();
         sb.AppendLine($"/------------------------------------\\");
-        foreach (var c in _stack)
+        foreach (var c in _stack.ToList())
         {
             sb.AppendLine($"{c.CardData.FullName} [{c.Owner.Name}]");
         }

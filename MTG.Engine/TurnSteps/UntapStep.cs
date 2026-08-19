@@ -1,4 +1,5 @@
 using MTG.Engine.Enums;
+using MTG.Engine.Events;
 using MTG.Engine.Gameplay;
 
 namespace MTG.Engine.TurnSteps;
@@ -9,10 +10,10 @@ public class UntapStep : ITurnStep
 
     public void OnStepEnter(GameContext context)
     {
-        context.Display?.LogStepTransition(Name, context.ActivePlayer.Name);
+        context.Display.LogGameEvent(new StepTransitionEvent(Name, context.ActivePlayer.Name));
 
         int untappedCount = 0;
-        foreach (var card in context.GetBoardOf(context.ActivePlayer))
+        foreach (var card in context.GetBoardOf(context.ActivePlayer).ToList())
         {
             if (card.IsTapped)
             {
@@ -21,7 +22,7 @@ public class UntapStep : ITurnStep
             }
         }
 
-        context.Display?.LogMessage($"{context.ActivePlayer.Name} has untapped {untappedCount} Cards");
+        context.Display.LogInfo($"{context.ActivePlayer.Name} has untapped {untappedCount} Cards");
 
         context.AdvanceToNextStep();
     }

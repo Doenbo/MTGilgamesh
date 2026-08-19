@@ -111,7 +111,7 @@ public class ScryfallCardConverter
         }
 
         //Keywords
-        foreach (var keyword in keywords)
+        foreach (var keyword in keywords.ToList())
         {
             if (Enum.TryParse<KeywordAbility>(Conversions.ToCamelCase(keyword), true, out var ability))
                 cardface.KeywordAbilities.Add(ability);
@@ -127,7 +127,7 @@ public class ScryfallCardConverter
         }
 
         //ProducedMana
-        // TODO this is weird in the API, see: https://api.scryfall.com/cards/named?fuzzy=Brigid+Heart+Mind
+        // TODO this card is weird in the API, see: https://api.scryfall.com/cards/named?fuzzy=Brigid+Heart+Mind
         if (oracleText != null && producedMana != null && producedMana.Count > 0)
         {
             var produceMana = ProduceManaComponent.Create(oracleText);
@@ -191,7 +191,7 @@ public class ScryfallCardConverter
         card.SetName = dto.SetName;
 
         //Legalities
-        foreach (var sLegality in dto.Legalities)
+        foreach (var sLegality in dto.Legalities.ToList())
         {
             if (!Enum.TryParse(Conversions.ToCamelCase(sLegality.Key), out Format eFormat))
                 return Result<ICard>.Failure($"Could not parse {sLegality.Key} to Format enum!");
@@ -205,7 +205,7 @@ public class ScryfallCardConverter
         //Image Uris
         if (dto.ImageUris != null)
         {
-            foreach (var sImageUri in dto.ImageUris)
+            foreach (var sImageUri in dto.ImageUris.ToList())
             {
                 if (!Enum.TryParse(Conversions.ToCamelCase(sImageUri.Key), out ImageSize eImageUri))
                     return Result<ICard>.Failure($"Could not parse {sImageUri.Key} to enum!");

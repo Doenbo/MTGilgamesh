@@ -47,7 +47,7 @@ public static class CardFactory
         public Result<ManaType> GetCardColorIdentity()
         {
             ManaType result = 0;
-            foreach (var face in Faces)
+            foreach (var face in Faces.ToList())
             {
                 if (!face.TryGetComponent<ColorComponent>(out var ident))
                     return Result<ManaType>.Failure("No Color Component?");

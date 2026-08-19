@@ -110,7 +110,7 @@ public class ProduceManaComponentTests
         Assert.True(manaUnit.IsChoice);
 
         Assert.Equal(expectedChoices.Length, manaUnit.ManaChoice.Count);
-        foreach (var expected in expectedChoices)
+        foreach (var expected in expectedChoices.ToList())
         {
             Assert.Contains(expected, manaUnit.ManaChoice);
         }

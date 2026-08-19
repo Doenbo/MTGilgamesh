@@ -20,7 +20,7 @@ public abstract class Deck
 
     public Result AddCards(List<ICard> cards)
     {
-        foreach (var card in cards)
+        foreach (var card in cards.ToList())
         {
             Cards.Add(card);
         }

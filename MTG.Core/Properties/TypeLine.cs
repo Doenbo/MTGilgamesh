@@ -45,7 +45,7 @@ public partial class TypeLine
         //Split for Two-Faced Cards
         var faces = typeline.Split(["//"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        foreach (var face in faces)
+        foreach (var face in faces.ToList())
         {
             //Match
             var match = GetTypeLineRegex().Match(face);
@@ -92,7 +92,7 @@ public partial class TypeLine
         var superTypes = new HashSet<SuperType>();
         var leftWords = leftSide.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-        foreach (var word in leftWords)
+        foreach (var word in leftWords.ToList())
         {
             var camelWord = Conversions.ToCamelCase(word);
 
@@ -139,7 +139,7 @@ public partial class TypeLine
         bool isPlaneswalker = cardTypes.Contains(CardType.Planeswalker);
         bool isSpell = cardTypes.Contains(CardType.Instant) || cardTypes.Contains(CardType.Sorcery);
 
-        foreach (var word in rightWords)
+        foreach (var word in rightWords.ToList())
         {
             var camelWord = Conversions.ToCamelCase(word);
 

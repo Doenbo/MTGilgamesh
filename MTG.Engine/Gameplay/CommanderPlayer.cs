@@ -19,7 +19,7 @@ public class CommanderPlayer
 
     public string Name { get; init; }
     public int LifeTotal { get; set; }
-    public ManaPool ManaPool { get; set; } //TODO init?
+    public ManaPool ManaPool { get; private set; }
     public bool IsEliminated { get; set; }
 
     private CommanderDeck Deck { get; init; } //just to hold the data
@@ -84,6 +84,11 @@ public class CommanderPlayer
         {
             _library.Push(new CardInstance(deck.Cards[i], this));
         }
+    }
+
+    public void UpdateManaPool(ManaPool mp)
+    {
+        ManaPool = mp;
     }
 
     //Puts a Card from the Library into the Hand

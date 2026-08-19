@@ -54,7 +54,7 @@ public class ColorComponent : ICardComponent
     {
         ManaType result = ManaType.Colorless;
 
-        foreach (var str in colorStrings)
+        foreach (var str in colorStrings.ToList())
         {
             var upperStr = str.ToUpperInvariant();
 

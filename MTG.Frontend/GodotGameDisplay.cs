@@ -1,5 +1,6 @@
 using Godot;
 using MTG.Engine.Enums;
+using MTG.Engine.Events;
 using MTG.Engine.Gameplay;
 
 namespace MTG.Frontend;
@@ -8,26 +9,16 @@ public class GodotGameDisplay : IGameDisplay
 {
     private readonly RichTextLabel _gameLog;
 
+    public bool IsLoggingErrors { get; set; } = true;
+
     public GodotGameDisplay(RichTextLabel gameLog)
     {
         _gameLog = gameLog ?? throw new System.ArgumentNullException(nameof(gameLog));
     }
 
-    public void LogMessage(string message)
+    public void LogInfo(string message)
     {
         AppendBbcode($"[color=gainsboro]{message}[/color]\n");
-    }
-
-    public void LogStepTransition(TurnStep name, string playerName)
-    {
-        AppendBbcode($"\n[color=cyan]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/color]\n" +
-                     $"[color=yellow]► [{name}] — {playerName}'s Turn[/color]\n" +
-                     $"[color=cyan]━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[/color]\n");
-    }
-
-    public void LogElimination(string playerName)
-    {
-        AppendBbcode($"\n[color=red][bold]☠ {playerName} has been ELIMINATED! ☠[/bold][/color]\n");
     }
 
     private void AppendBbcode(string bbcode)
@@ -37,5 +28,30 @@ public class GodotGameDisplay : IGameDisplay
             _gameLog?.AppendText(bbcode);
             _gameLog?.ScrollToLine(_gameLog.GetLineCount());
         }).CallDeferred();
+    }
+
+    public void LogError(string message)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void RenderBattlefield(GameContext context)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void LogGameEvent(IGameEvent gameEvent)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void RenderManaPool(GameContext context)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void RenderStack(GameContext context)
+    {
+        throw new System.NotImplementedException();
     }
 }

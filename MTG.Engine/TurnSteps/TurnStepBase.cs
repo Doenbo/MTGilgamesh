@@ -1,6 +1,7 @@
 using MTG.Core;
 using MTG.Core.Components;
 using MTG.Engine.Enums;
+using MTG.Engine.Events;
 using MTG.Engine.Gameplay;
 using MTG.Engine.Services;
 
@@ -19,7 +20,7 @@ public abstract class TurnStepBase : ITurnStep
 
     public virtual void OnStepEnter(GameContext context)
     {
-        context.Display?.LogStepTransition(Name, context.ActivePlayer.Name);
+        context.Display.LogGameEvent(new StepTransitionEvent(Name, context.ActivePlayer.Name));
         PerformTurnBasedActions(context);
 
         context.PriorityPlayer = context.ActivePlayer;
@@ -32,12 +33,12 @@ public abstract class TurnStepBase : ITurnStep
         {
             case ActionType.Concede:
                 action.Player.IsEliminated = true;
-                context.Display?.LogMessage($"{action.Player.Name} has conceded.");
+                context.Display.LogInfo($"{action.Player.Name} has conceded.");
                 context.RemovePlayerFromGame(action.Player);
                 break;
 
             case ActionType.PassPriority:
-                context.Display?.LogMessage($"{action.Player.Name} passes priority.");
+                context.Display.LogInfo($"{action.Player.Name} passes priority.");
                 context.PassPriority();
                 break;
 
@@ -64,20 +65,20 @@ public abstract class TurnStepBase : ITurnStep
         {
             if (!CanPlaySorcerySpeed(context, player) || context.StackCount > 0)
             {
-                context.Display?.LogMessage($"Cannot play land {card.CardData.FullName} right now (Requires main phase & empty stack).");
+                context.Display.LogError($"Cannot play land {card.CardData.FullName} right now (Requires main phase & empty stack).");
                 return;
             }
 
-            if (context.HasPlayedLandThisTurn)
+            if (!Cheats.CanPlayInfiniteLands && context.HasPlayedLandThisTurn)
             {
-                context.Display?.LogMessage("You can only play one land each turn!");
+                context.Display.LogError("You can only play one land each turn!");
                 return;
             }
 
             context.HasPlayedLandThisTurn = true;
             player.RemoveFromHand(card);
             context.MoveToBattlefield(card);
-            context.Display?.LogMessage($"{player.Name} plays land: {card.CardData.FullName}");
+            context.Display.LogInfo($"{player.Name} plays land: {card.CardData.FullName}");
             context.OnPlayerTookAction();
             return;
         }
@@ -86,29 +87,27 @@ public abstract class TurnStepBase : ITurnStep
         bool isSorcerySpeed = !card.CardData.IsInstant() && !card.CardData.IsLand();
         if (isSorcerySpeed && (!CanPlaySorcerySpeed(context, player) || context.StackCount > 0))
         {
-            context.Display?.LogMessage($"Cannot cast {card.CardData.FullName} right now (Sorcery timing rule).");
+            context.Display.LogError($"Cannot cast {card.CardData.FullName} right now (Sorcery timing rule).");
             return;
         }
 
         // --- ATTEMPT TO PAY MANA ---
         var mps = new ManaPayService();
-        var res = card.CardData.MainFace.TryGetComponent<ManaCostComponent>(out var mc);
-        if (!res)
+        var res = card.CardData.MainFace.TryGetComponent<ManaCostComponent>(out var mcc);
+        if (!res || mcc == null)
         {
-            context.Display?.LogMessage($"Cannot get Mana Cost!");
+            context.Display.LogError($"Cannot get Mana Cost!");
             return;
         }
 
-        var payResult = mps.TryPay(mc.ManaCost, player.ManaPool);
-
+        var payResult = mps.TryPay(mcc.ManaCost, player.ManaPool);
         if (payResult.IsFailure)
         {
-            context.Display?.LogMessage($"Cannot cast {card.CardData.FullName}: {payResult.Error}");
+            context.Display.LogError($"Cannot cast {card.CardData.FullName}: {payResult.Error}");
             return;
         }
 
-        // --- UPDATE MANA POOL ---
-        player.ManaPool = payResult.Value; //TODO is this override ok?
+        player.UpdateManaPool(payResult.Value);
 
         // --- CAST SPELL AND START PRIORITY ---
         context.CastSpellAndStartPriorityRound(action);
@@ -122,7 +121,7 @@ public abstract class TurnStepBase : ITurnStep
 
         if (card == null || (card.IsTapped && !Cheats.CanTapLandsInfiniteTimes))
         {
-            context.Display?.LogMessage($"Cannot tap card for Mana!");
+            context.Display.LogError($"Cannot tap card for Mana!");
             return;
         }
 
@@ -130,11 +129,11 @@ public abstract class TurnStepBase : ITurnStep
 
         if (!result)
         {
-            context.Display?.LogMessage($"Cannot get Produced Mana!");
+            context.Display.LogError($"Cannot get Produced Mana!");
             return;
         }
 
-        foreach (var mana in pmc.Mana)
+        foreach (var mana in pmc.Mana.ToList())
         {
             if (pmc.RequiresTap) card.IsTapped = true;
             player.ManaPool.AddMana(mana);

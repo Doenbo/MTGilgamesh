@@ -35,7 +35,7 @@ public class ManaSymbol
         }
 
         var parts = value.Split('/');
-        foreach (var part in parts)
+        foreach (var part in parts.ToList())
         {
             if (int.TryParse(part, out int partNum) && partNum >= 0) continue;
             if (part.Length == 1 && ValidManaSymbols.Contains(part[0])) continue;
@@ -55,7 +55,7 @@ public class ManaSymbol
         }
 
         var parts = Value.Split('/');
-        foreach (var part in parts)
+        foreach (var part in parts.ToList())
         {
             if (int.TryParse(part, out int num))
             {
@@ -88,7 +88,7 @@ public class ManaSymbol
         string[] parts = Value.Split('/');
         float maxCmc = -1f;
 
-        foreach (string part in parts)
+        foreach (var part in parts.ToList())
         {
             Result<float> partResult = GetSingleSymbolCmc(part);
             if (partResult.IsFailure)
