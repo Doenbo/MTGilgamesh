@@ -14,6 +14,8 @@ namespace MTG.Frontend;
 
 public partial class Main : Node2D
 {
+	public static Main Instance { get; private set; }
+
 	[Export] public RichTextLabel GameLog { get; set; }
 	[Export] public RichTextLabel DevLog { get; set; }
 
@@ -39,19 +41,27 @@ public partial class Main : Node2D
 	private PanelContainer _stackPanel;
 	private VBoxContainer _stackListVBox;
 
+	// Card Inspector Preview Panel
+	private PanelContainer _previewPanel;
+	private Label _previewTitleLabel;
+	private Label _previewTypeLabel;
+	private TextureRect _previewTextureRect;
+	private RichTextLabel _previewOracleLabel;
+
 	// Bottom Human HUD
 	private Label _humanLifeLabel;
 	private Label _humanManaLabel;
 	private HBoxContainer _handContainer;
 	private Button _passPriorityBtn;
 
-	// Turn & Priority Status Bar
-	private Label _stepBannerLabel;
+	// Phase Tracker Bar Labels
+	private readonly Dictionary<TurnStep, Label> _phasePillLabels = new();
 
 	private ILoggerFactory _loggerFactory;
 
 	public override void _Ready()
 	{
+		Instance = this;
 		GD.Print(">>> Starting MTGilgamesh Fullscreen Godot GUI <<<");
 
 		CreateUi();
@@ -71,20 +81,29 @@ public partial class Main : Node2D
 		canvasLayer.AddChild(mainVBox);
 
 		// ==========================================
-		// 1. TOP BAR: Turn Banner + 3-Bot Dashboard + Board Switcher Arrows
+		// 1. TOP BAR: Interactive Phase Tracker + 3-Bot Dashboard + Board Switcher Arrows
 		// ==========================================
 		var topBarHBox = new HBoxContainer();
 		topBarHBox.CustomMinimumSize = new Vector2(0, 50);
 		topBarHBox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 		mainVBox.AddChild(topBarHBox);
 
-		// Step & Priority Banner
-		_stepBannerLabel = new Label();
-		_stepBannerLabel.Text = " [Untap Step] ";
-		_stepBannerLabel.AddThemeFontSizeOverride("font_size", 15);
-		_stepBannerLabel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-		_stepBannerLabel.VerticalAlignment = VerticalAlignment.Center;
-		topBarHBox.AddChild(_stepBannerLabel);
+		// Visual Phase Tracker Bar
+		var phaseTrackerHBox = new HBoxContainer();
+		phaseTrackerHBox.AddThemeConstantOverride("separation", 4);
+		phaseTrackerHBox.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
+		topBarHBox.AddChild(phaseTrackerHBox);
+
+		TurnStep[] stepsToTrack = { TurnStep.Untap, TurnStep.Upkeep, TurnStep.Draw, TurnStep.Main1, TurnStep.CombatBegin, TurnStep.Main2, TurnStep.EndStep };
+		foreach (var step in stepsToTrack)
+		{
+			var pill = new Label();
+			pill.Text = $" {step} ";
+			pill.AddThemeFontSizeOverride("font_size", 10);
+			pill.Modulate = new Color(0.6f, 0.6f, 0.6f);
+			phaseTrackerHBox.AddChild(pill);
+			_phasePillLabels[step] = pill;
+		}
 
 		// 3-Bot Opponent Dashboard Widgets
 		var botsDashboardHBox = new HBoxContainer();
@@ -95,7 +114,7 @@ public partial class Main : Node2D
 		{
 			int botIndex = i;
 			var botWidget = new PanelContainer();
-			botWidget.CustomMinimumSize = new Vector2(140, 42);
+			botWidget.CustomMinimumSize = new Vector2(130, 42);
 
 			var botStyle = new StyleBoxFlat();
 			botStyle.BgColor = new Color(0.12f, 0.15f, 0.2f, 0.95f);
@@ -172,7 +191,7 @@ public partial class Main : Node2D
 		boardNavHBox.AddChild(_nextBoardBtn);
 
 		// ==========================================
-		// 2. MIDDLE AREA: Fullscreen Active Board View + Stack Overlay + Logs
+		// 2. MIDDLE AREA: Fullscreen Active Board View + Inspector Preview + Stack Overlay + Logs
 		// ==========================================
 		var middleHSplit = new HBoxContainer();
 		middleHSplit.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
@@ -180,7 +199,52 @@ public partial class Main : Node2D
 		middleHSplit.SizeFlagsStretchRatio = 7.0f;
 		mainVBox.AddChild(middleHSplit);
 
-		// Fullscreen Board Panel (Left 75% width)
+		// Card Inspector Preview Panel (Left Overlay Panel)
+		_previewPanel = new PanelContainer();
+		_previewPanel.CustomMinimumSize = new Vector2(200, 0);
+		_previewPanel.Visible = false;
+
+		var previewStyle = new StyleBoxFlat();
+		previewStyle.BgColor = new Color(0.08f, 0.1f, 0.14f, 0.98f);
+		previewStyle.BorderWidthBottom = 2; previewStyle.BorderWidthLeft = 2;
+		previewStyle.BorderWidthRight = 2; previewStyle.BorderWidthTop = 2;
+		previewStyle.BorderColor = new Color(0.8f, 0.7f, 0.3f);
+		previewStyle.CornerRadiusBottomLeft = 6; previewStyle.CornerRadiusBottomRight = 6;
+		previewStyle.CornerRadiusTopLeft = 6; previewStyle.CornerRadiusTopRight = 6;
+		_previewPanel.AddThemeStyleboxOverride("panel", previewStyle);
+		middleHSplit.AddChild(_previewPanel);
+
+		var previewVBox = new VBoxContainer();
+		_previewPanel.AddChild(previewVBox);
+
+		_previewTitleLabel = new Label();
+		_previewTitleLabel.Text = "Card Preview";
+		_previewTitleLabel.AddThemeFontSizeOverride("font_size", 13);
+		_previewTitleLabel.Modulate = new Color(1.0f, 0.9f, 0.5f);
+		previewVBox.AddChild(_previewTitleLabel);
+
+		_previewTypeLabel = new Label();
+		_previewTypeLabel.Text = "Type Line";
+		_previewTypeLabel.AddThemeFontSizeOverride("font_size", 10);
+		_previewTypeLabel.Modulate = new Color(0.8f, 0.85f, 0.95f);
+		previewVBox.AddChild(_previewTypeLabel);
+
+		_previewTextureRect = new TextureRect();
+		_previewTextureRect.CustomMinimumSize = new Vector2(0, 140);
+		_previewTextureRect.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+		_previewTextureRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+		_previewTextureRect.Visible = false;
+		previewVBox.AddChild(_previewTextureRect);
+
+		_previewOracleLabel = new RichTextLabel();
+		_previewOracleLabel.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
+		_previewOracleLabel.BbcodeEnabled = true;
+		_previewOracleLabel.FocusMode = Control.FocusModeEnum.None;
+		_previewOracleLabel.MouseFilter = Control.MouseFilterEnum.Ignore;
+		_previewOracleLabel.AddThemeFontSizeOverride("normal_font_size", 10);
+		previewVBox.AddChild(_previewOracleLabel);
+
+		// Fullscreen Board Panel (Center 70% width)
 		var boardPanel = new PanelContainer();
 		boardPanel.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
 		boardPanel.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
@@ -210,7 +274,7 @@ public partial class Main : Node2D
 
 		// Center Stack Window Overlay
 		_stackPanel = new PanelContainer();
-		_stackPanel.CustomMinimumSize = new Vector2(220, 140);
+		_stackPanel.CustomMinimumSize = new Vector2(210, 130);
 		_stackPanel.Visible = false;
 
 		var stackStyle = new StyleBoxFlat();
@@ -307,14 +371,14 @@ public partial class Main : Node2D
 
 		// Action Bar
 		var actionVBox = new VBoxContainer();
-		actionVBox.CustomMinimumSize = new Vector2(160, 0);
+		actionVBox.CustomMinimumSize = new Vector2(165, 0);
 		actionVBox.Alignment = BoxContainer.AlignmentMode.Center;
 		hudHBox.AddChild(actionVBox);
 
 		_passPriorityBtn = new Button();
-		_passPriorityBtn.Text = "PASS PRIORITY";
-		_passPriorityBtn.CustomMinimumSize = new Vector2(150, 50);
-		_passPriorityBtn.AddThemeFontSizeOverride("font_size", 14);
+		_passPriorityBtn.Text = "END PHASE";
+		_passPriorityBtn.CustomMinimumSize = new Vector2(155, 50);
+		_passPriorityBtn.AddThemeFontSizeOverride("font_size", 13);
 		_passPriorityBtn.Pressed += OnPassPriorityPressed;
 		actionVBox.AddChild(_passPriorityBtn);
 	}
@@ -357,11 +421,29 @@ public partial class Main : Node2D
 
 	public void SetPriorityPrompt(CommanderPlayer priorityPlayer, TurnStep step, bool isStackActive)
 	{
-		_stepBannerLabel.Text = $" [{step}] — Priority: {priorityPlayer.Name} " + (isStackActive ? "(STACK ACTIVE)" : "");
-		
+		UpdatePhaseTracker(step);
+
 		bool isHumanTurn = priorityPlayer == _context.Players[0];
 		_passPriorityBtn.Disabled = !isHumanTurn;
-		_passPriorityBtn.Modulate = isHumanTurn ? new Color(0.3f, 1.0f, 0.4f) : new Color(0.6f, 0.6f, 0.6f);
+
+		if (isHumanTurn)
+		{
+			if (isStackActive)
+			{
+				_passPriorityBtn.Text = "RESOLVE (PASS)";
+				_passPriorityBtn.Modulate = new Color(0.9f, 0.3f, 1.0f); // Magenta
+			}
+			else
+			{
+				_passPriorityBtn.Text = "END PHASE";
+				_passPriorityBtn.Modulate = new Color(0.3f, 1.0f, 0.4f); // Green
+			}
+		}
+		else
+		{
+			_passPriorityBtn.Text = $"WAITING FOR {priorityPlayer.Name.ToUpper()}...";
+			_passPriorityBtn.Modulate = new Color(0.6f, 0.6f, 0.6f); // Disabled Gray
+		}
 
 		UpdateOpponentsDashboard();
 		UpdateStackOverlay();
@@ -372,6 +454,53 @@ public partial class Main : Node2D
 	public void ClearPriorityPrompt()
 	{
 		_passPriorityBtn.Disabled = true;
+		_passPriorityBtn.Text = "PROCESSING...";
+	}
+
+	private void UpdatePhaseTracker(TurnStep currentStep)
+	{
+		foreach (var kvp in _phasePillLabels)
+		{
+			if (kvp.Key == currentStep)
+			{
+				kvp.Value.Modulate = new Color(1.0f, 0.85f, 0.3f); // Highlight active phase
+				kvp.Value.Text = $" ►[{kvp.Key}]◄ ";
+			}
+			else
+			{
+				kvp.Value.Modulate = new Color(0.5f, 0.5f, 0.5f);
+				kvp.Value.Text = $" {kvp.Key} ";
+			}
+		}
+	}
+
+	public async void ShowCardPreview(CardInstance cardInstance)
+	{
+		if (cardInstance?.CardData == null) return;
+		var card = cardInstance.CardData;
+
+		_previewPanel.Visible = true;
+		_previewTitleLabel.Text = card.FullName;
+		_previewTypeLabel.Text = card.FullTypeLine;
+
+		_previewOracleLabel.Clear();
+		_previewOracleLabel.AppendText($"[color=gainsboro]{card.ToString()}[/color]");
+
+		var texture = await CardImageLoader.LoadCardTextureAsync(card);
+		if (texture != null)
+		{
+			_previewTextureRect.Texture = texture;
+			_previewTextureRect.Visible = true;
+		}
+		else
+		{
+			_previewTextureRect.Visible = false;
+		}
+	}
+
+	public void HideCardPreview()
+	{
+		_previewPanel.Visible = false;
 	}
 
 	private void UpdateOpponentsDashboard()

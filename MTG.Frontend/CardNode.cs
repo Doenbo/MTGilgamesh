@@ -1,6 +1,7 @@
 using Godot;
 using MTG.Engine.Gameplay;
 using System;
+using System.Threading.Tasks;
 
 namespace MTG.Frontend;
 
@@ -13,6 +14,7 @@ public partial class CardNode : PanelContainer
     private Label _nameLabel;
     private Label _typeLabel;
     private Label _manaLabel;
+    private TextureRect _artTextureRect;
     private RichTextLabel _oracleLabel;
     private Label _ptLabel;
     private PanelContainer _ptContainer;
@@ -72,6 +74,14 @@ public partial class CardNode : PanelContainer
         _typeLabel.Modulate = new Color(0.75f, 0.85f, 0.95f);
         _typeLabel.Text = "Type Line";
         vbox.AddChild(_typeLabel);
+
+        // Card Art TextureRect
+        _artTextureRect = new TextureRect();
+        _artTextureRect.CustomMinimumSize = new Vector2(0, 70);
+        _artTextureRect.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+        _artTextureRect.StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered;
+        _artTextureRect.Visible = false;
+        vbox.AddChild(_artTextureRect);
 
         // Oracle Box
         _oracleLabel = new RichTextLabel();
@@ -153,6 +163,19 @@ public partial class CardNode : PanelContainer
         Modulate = _isTapped ? new Color(0.6f, 0.6f, 0.6f) : new Color(1.0f, 1.0f, 1.0f);
 
         UpdateCardFrameStyle();
+
+        // Async Texture Load
+        _ = LoadArtAsync(card);
+    }
+
+    private async Task LoadArtAsync(MTG.Core.Cards.ICard card)
+    {
+        var texture = await CardImageLoader.LoadCardTextureAsync(card);
+        if (texture != null && IsInsideTree() && CardInstance?.CardData == card)
+        {
+            _artTextureRect.Texture = texture;
+            _artTextureRect.Visible = true;
+        }
     }
 
     private void UpdateCardFrameStyle()
@@ -191,10 +214,12 @@ public partial class CardNode : PanelContainer
     {
         Scale = new Vector2(1.05f, 1.05f);
         PivotOffset = CustomMinimumSize / 2.0f;
+        Main.Instance?.ShowCardPreview(CardInstance);
     }
 
     private void OnMouseExited()
     {
         Scale = new Vector2(1.0f, 1.0f);
+        Main.Instance?.HideCardPreview();
     }
 }
