@@ -9,34 +9,46 @@ public partial class CardNode : PanelContainer
     public CardInstance CardInstance { get; private set; }
     public Action<CardNode> OnCardClicked { get; set; }
 
+    private StyleBoxFlat _panelStyle;
     private Label _nameLabel;
     private Label _typeLabel;
     private Label _manaLabel;
     private RichTextLabel _oracleLabel;
     private Label _ptLabel;
+    private PanelContainer _ptContainer;
+
+    private bool _isPlayable;
+    private bool _isTapped;
 
     public override void _Ready()
     {
-        CustomMinimumSize = new Vector2(160, 220);
+        CustomMinimumSize = new Vector2(165, 230);
         MouseFilter = MouseFilterEnum.Stop;
 
-        // Visual Styling for Card Frame
-        var style = new StyleBoxFlat();
-        style.BgColor = new Color(0.12f, 0.14f, 0.18f, 0.95f);
-        style.BorderWidthBottom = 2;
-        style.BorderWidthLeft = 2;
-        style.BorderWidthRight = 2;
-        style.BorderWidthTop = 2;
-        style.BorderColor = new Color(0.7f, 0.6f, 0.3f); // Golden frame
-        style.CornerRadiusBottomLeft = 8;
-        style.CornerRadiusBottomRight = 8;
-        style.CornerRadiusTopLeft = 8;
-        style.CornerRadiusTopRight = 8;
-        AddThemeStyleboxOverride("panel", style);
+        // Base Styling for Card Frame
+        _panelStyle = new StyleBoxFlat();
+        _panelStyle.BgColor = new Color(0.1f, 0.12f, 0.16f, 0.96f);
+        _panelStyle.BorderWidthBottom = 2;
+        _panelStyle.BorderWidthLeft = 2;
+        _panelStyle.BorderWidthRight = 2;
+        _panelStyle.BorderWidthTop = 2;
+        _panelStyle.BorderColor = new Color(0.8f, 0.65f, 0.25f); // Golden frame
+        _panelStyle.CornerRadiusBottomLeft = 8;
+        _panelStyle.CornerRadiusBottomRight = 8;
+        _panelStyle.CornerRadiusTopLeft = 8;
+        _panelStyle.CornerRadiusTopRight = 8;
+        AddThemeStyleboxOverride("panel", _panelStyle);
+
+        var marginContainer = new MarginContainer();
+        marginContainer.AddThemeConstantOverride("margin_top", 6);
+        marginContainer.AddThemeConstantOverride("margin_bottom", 6);
+        marginContainer.AddThemeConstantOverride("margin_left", 6);
+        marginContainer.AddThemeConstantOverride("margin_right", 6);
+        AddChild(marginContainer);
 
         var vbox = new VBoxContainer();
         vbox.AddThemeConstantOverride("separation", 4);
-        AddChild(vbox);
+        marginContainer.AddChild(vbox);
 
         // Header: Name & Mana Cost
         var headerHBox = new HBoxContainer();
@@ -50,14 +62,14 @@ public partial class CardNode : PanelContainer
 
         _manaLabel = new Label();
         _manaLabel.AddThemeFontSizeOverride("font_size", 11);
-        _manaLabel.Modulate = new Color(0.9f, 0.8f, 0.4f);
+        _manaLabel.Modulate = new Color(1.0f, 0.85f, 0.4f);
         _manaLabel.Text = "";
         headerHBox.AddChild(_manaLabel);
 
-        // Type Line
+        // Type Line Badge
         _typeLabel = new Label();
         _typeLabel.AddThemeFontSizeOverride("font_size", 10);
-        _typeLabel.Modulate = new Color(0.8f, 0.8f, 0.8f);
+        _typeLabel.Modulate = new Color(0.75f, 0.85f, 0.95f);
         _typeLabel.Text = "Type Line";
         vbox.AddChild(_typeLabel);
 
@@ -71,13 +83,29 @@ public partial class CardNode : PanelContainer
         _oracleLabel.AddThemeFontSizeOverride("normal_font_size", 10);
         vbox.AddChild(_oracleLabel);
 
-        // P/T Badge
+        // P/T Container (Bottom Right)
+        var footerHBox = new HBoxContainer();
+        footerHBox.Alignment = BoxContainer.AlignmentMode.End;
+        vbox.AddChild(footerHBox);
+
+        _ptContainer = new PanelContainer();
+        _ptContainer.Visible = false;
+
+        var ptStyle = new StyleBoxFlat();
+        ptStyle.BgColor = new Color(0.2f, 0.22f, 0.28f, 0.95f);
+        ptStyle.BorderWidthBottom = 1; ptStyle.BorderWidthLeft = 1;
+        ptStyle.BorderWidthRight = 1; ptStyle.BorderWidthTop = 1;
+        ptStyle.BorderColor = new Color(0.9f, 0.8f, 0.3f);
+        ptStyle.CornerRadiusBottomLeft = 4; ptStyle.CornerRadiusBottomRight = 4;
+        ptStyle.CornerRadiusTopLeft = 4; ptStyle.CornerRadiusTopRight = 4;
+        _ptContainer.AddThemeStyleboxOverride("panel", ptStyle);
+        footerHBox.AddChild(_ptContainer);
+
         _ptLabel = new Label();
-        _ptLabel.HorizontalAlignment = HorizontalAlignment.Right;
-        _ptLabel.AddThemeFontSizeOverride("font_size", 12);
-        _ptLabel.Modulate = new Color(1.0f, 0.9f, 0.5f);
+        _ptLabel.AddThemeFontSizeOverride("font_size", 11);
+        _ptLabel.Modulate = new Color(1.0f, 0.95f, 0.6f);
         _ptLabel.Text = "";
-        vbox.AddChild(_ptLabel);
+        _ptContainer.AddChild(_ptLabel);
 
         GuiInput += OnGuiInput;
         MouseEntered += OnMouseEntered;
@@ -89,13 +117,23 @@ public partial class CardNode : PanelContainer
         }
     }
 
-    public void Setup(CardInstance cardInstance)
+    public void Setup(CardInstance cardInstance, bool isPlayable = false, bool isTapped = false)
     {
         CardInstance = cardInstance;
+        _isPlayable = isPlayable;
+        _isTapped = isTapped;
+
         if (IsInsideTree())
         {
             UpdateCardVisuals();
         }
+    }
+
+    public void SetHighlight(bool isPlayable, bool isTapped)
+    {
+        _isPlayable = isPlayable;
+        _isTapped = isTapped;
+        UpdateCardFrameStyle();
     }
 
     private void UpdateCardVisuals()
@@ -106,15 +144,39 @@ public partial class CardNode : PanelContainer
         _nameLabel.Text = card.FullName;
         _typeLabel.Text = card.FullTypeLine;
 
-        // Mana Cost display
-        _manaLabel.Text = ""; // Mana Symbols formatted
-
         // Oracle text
         _oracleLabel.Clear();
         _oracleLabel.AppendText($"[color=gainsboro]{card.ToString()}[/color]");
 
-        // P/T or loyalty
-        _ptLabel.Text = "";
+        // Tapped State
+        _isTapped = CardInstance.IsTapped;
+        Modulate = _isTapped ? new Color(0.6f, 0.6f, 0.6f) : new Color(1.0f, 1.0f, 1.0f);
+
+        UpdateCardFrameStyle();
+    }
+
+    private void UpdateCardFrameStyle()
+    {
+        if (_panelStyle == null) return;
+
+        if (_isPlayable)
+        {
+            // Glowing green border when valid to play
+            _panelStyle.BorderColor = new Color(0.2f, 1.0f, 0.4f);
+            _panelStyle.BorderWidthBottom = 3;
+            _panelStyle.BorderWidthLeft = 3;
+            _panelStyle.BorderWidthRight = 3;
+            _panelStyle.BorderWidthTop = 3;
+        }
+        else
+        {
+            // Standard Golden Border
+            _panelStyle.BorderColor = new Color(0.8f, 0.65f, 0.25f);
+            _panelStyle.BorderWidthBottom = 2;
+            _panelStyle.BorderWidthLeft = 2;
+            _panelStyle.BorderWidthRight = 2;
+            _panelStyle.BorderWidthTop = 2;
+        }
     }
 
     private void OnGuiInput(InputEvent @event)
@@ -128,6 +190,7 @@ public partial class CardNode : PanelContainer
     private void OnMouseEntered()
     {
         Scale = new Vector2(1.05f, 1.05f);
+        PivotOffset = CustomMinimumSize / 2.0f;
     }
 
     private void OnMouseExited()
