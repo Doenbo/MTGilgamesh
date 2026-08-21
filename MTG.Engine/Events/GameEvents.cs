@@ -1,9 +1,5 @@
 ﻿using MTG.Engine.Enums;
 using MTG.Engine.Gameplay;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Xml.Linq;
 
 namespace MTG.Engine.Events;
 

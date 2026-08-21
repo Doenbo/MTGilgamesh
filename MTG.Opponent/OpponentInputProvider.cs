@@ -1,9 +1,5 @@
-﻿using Microsoft.SqlServer.Management.Smo;
-using Microsoft.SqlServer.Management.XEvent;
-using MTG.Core.Components;
-using MTG.Engine.Enums;
+﻿using MTG.Engine.Enums;
 using MTG.Engine.Gameplay;
-using MTG.Engine.Services;
 
 namespace MTG.Opponent;
 

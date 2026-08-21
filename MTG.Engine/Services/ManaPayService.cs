@@ -1,15 +1,10 @@
 ﻿using MTG.Core;
-using MTG.Core.Components;
 using MTG.Core.Helper;
-using MTG.Core.Properties;
 using MTG.Engine.Gameplay;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace MTG.Engine.Services;
 
-public class ManaPayService
+public class ManaPayService : IManaPayService
 {
     public Result CanAfford(ManaCost cost, ManaPool pool)
     {

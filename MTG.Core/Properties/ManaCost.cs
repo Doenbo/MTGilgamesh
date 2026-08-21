@@ -68,5 +68,15 @@ public partial class ManaCost
         return Result<float>.Success(count);
     }
 
+    public override bool Equals(object? obj)
+    {
+        if (obj is not ManaCost other) return false;
+
+        // Vergleiche z. B. die Symbols-Liste oder den String-Value
+        return this.ToString() == other.ToString();
+    }
+
+    public override int GetHashCode() => ToString().GetHashCode();
+
     public override string ToString() => Value;
 }

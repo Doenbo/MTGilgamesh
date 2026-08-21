@@ -1,13 +1,8 @@
-﻿using Microsoft.SqlServer.Management.Smo;
-using MTG.Core;
+﻿using MTG.Core;
 using MTG.Core.Abilities;
 using MTG.Core.Enums;
-using MTG.Core.Properties;
 using MTG.Engine.Gameplay;
 using MTG.Engine.Services;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace MTG.Engine.Tests;
 
@@ -43,6 +38,8 @@ public class ManaPayServiceTests
     [InlineData("{4}{G}{G}", 0, 0, 0, 0, 6, 0)]
     public void TestCanAfford(string mana, int w, int u, int b, int r, int g, int c)
     {
+        Cheats.CanPlaySpellsWithoutPaying = false;
+
         var cost = ManaCost.Create(mana);
         Assert.True(cost.IsSuccess);
 
@@ -64,6 +61,8 @@ public class ManaPayServiceTests
     [InlineData("{2}{R}", 0, 0, 0, 1, 0, 0)]
     public void TestCantAfford(string mana, int w, int u, int b, int r, int g, int c)
     {
+        Cheats.CanPlaySpellsWithoutPaying = false;
+
         var cost = ManaCost.Create(mana);
         Assert.True(cost.IsSuccess);
 

@@ -1,14 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using MTG.Core;
-using MTG.Core.Cards;
+﻿using Microsoft.Extensions.Logging;
 using MTG.Core.Decks;
 using MTG.Core.Enums;
 using MTG.Core.Helper;
 using MTG.Engine.Factories;
 using MTG.Resources.Enums;
-using Newtonsoft.Json.Linq;
-using System.Collections;
 
 namespace MTG.Engine.Gameplay;
 
@@ -92,12 +87,15 @@ public class CommanderPlayer
     }
 
     //Puts a Card from the Library into the Hand
-    public Result DrawCard()
+    public Result DrawCard(int amount = 1)
     {
-        if (!Library.Any())
-            return Result.Failure("Library is empty!");
+        for (int i = 0; i < amount; i++)
+        {
+            if (!Library.Any())
+                return Result.Failure("Library is empty!");
 
-        _hand.Add(_library.Pop());
+            _hand.Add(_library.Pop());
+        }
         return Result.Success();
     }
 

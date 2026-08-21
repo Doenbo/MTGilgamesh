@@ -1,6 +1,4 @@
-﻿using System.Numerics;
-
-namespace MTG.Engine.Gameplay;
+﻿namespace MTG.Engine.Gameplay;
 
 public interface IPlayerInputProvider
 {

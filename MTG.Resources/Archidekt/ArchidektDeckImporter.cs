@@ -28,7 +28,7 @@ public static class ArchidektDeckImporter
         var cardrefs = new List<CardRef>();
         foreach (var line in lines.ToList())
         {
-            Match match = Regex.Match(line, pattern);
+            var match = Regex.Match(line, pattern);
 
             if (!match.Success) continue; //TODO?
 

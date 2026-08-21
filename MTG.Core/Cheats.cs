@@ -1,20 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MTG.Core;
+﻿namespace MTG.Core;
 
 public class Cheats
 {
     // Skips
-    public const bool SkipUpkeepAndDraw = true;
-    public const bool SkipCompleteCombatPhase = true;
-    public const bool SkipEndStep = true;
-    public const bool SkipPrio = true;
+    public static bool SkipUpkeepAndDraw = true;
+    public static bool SkipCompleteCombatPhase = true;
+    public static bool SkipEndStep = true;
+    public static bool SkipPrio = true;
 
     // Infinites
-    public const bool CanPlayInfiniteLands = true;
-    public const bool CanPlaySpellsWithoutPaying = true;
-    public const bool CanTapLandsInfiniteTimes = true;
-    public const bool CanUseAbilitiesInfiniteTimes = true;
+    public static bool CanPlayInfiniteLands = true;
+    public static bool CanPlaySpellsWithoutPaying = true;
+    public static bool CanTapLandsInfiniteTimes = true;
+    public static bool CanUseAbilitiesInfiniteTimes = true;
 }

@@ -2,10 +2,6 @@
 using MTG.Core.Cards;
 using MTG.Core.Enums;
 using MTG.Core.Helper;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace MTG.Core.Components;
@@ -28,12 +24,13 @@ public partial class ProduceManaComponent : ICardComponent
     {
 
     }
-    public static Result<ProduceManaComponent> Create(ICard card) => Create(card.MainFace.OracleText);
 
-    public static Result<ProduceManaComponent> Create(string oracleText)
+    public static Result<ProduceManaComponent?> Create(ICard card) => Create(card.MainFace.OracleText);
+
+    public static Result<ProduceManaComponent?> Create(string oracleText)
     {
         if (string.IsNullOrWhiteSpace(oracleText))
-            return Result<ProduceManaComponent>.Failure("Oracle text is empty.");
+            return Result<ProduceManaComponent?>.Success(null);
 
         var lines = oracleText.Split('\n');
 
@@ -42,7 +39,7 @@ public partial class ProduceManaComponent : ICardComponent
             l.Contains("Add", StringComparison.OrdinalIgnoreCase));
 
         if (manaLine == null)
-            return Result<ProduceManaComponent>.Failure("No tap-for-mana ability found in oracle text.");
+            return Result<ProduceManaComponent?>.Success(null);
 
         Result<ManaUnit> rmu;
         ProduceManaComponent pmc = new();
@@ -52,15 +49,15 @@ public partial class ProduceManaComponent : ICardComponent
         if (dynamicResult.IsSuccess)
         {
             rmu = ManaUnit.CreateDynamic(dynamicResult.Value);
-            if (rmu.IsFailure) return rmu.ToFailure<ProduceManaComponent>();
+            if (rmu.IsFailure) return rmu.ToFailure<ProduceManaComponent?>();
 
             pmc._mana.Add(rmu.Value);
-            return Result<ProduceManaComponent>.Success(pmc);
+            return Result<ProduceManaComponent?>.Success(pmc);
         }
 
         var match = GetAddManaLineRegex().Match(manaLine);
         if (!match.Success)
-            return Result<ProduceManaComponent>.Failure("Could not parse tap ability line.");
+            return Result<ProduceManaComponent?>.Failure($"Found mana line '{manaLine}', but could not parse tap ability pattern.");
 
         string capturedText = match.Groups[1].Value;
         var symbolMatches = GetManaSymbolRegex().Matches(capturedText);
@@ -74,29 +71,29 @@ public partial class ProduceManaComponent : ICardComponent
         }
 
         if (parsedTypes.Count == 0)
-            return Result<ProduceManaComponent>.Failure("No valid mana types parsed.");
+            return Result<ProduceManaComponent?>.Failure($"Found mana symbols in '{capturedText}', but no valid mana types were parsed.");
 
         bool isChoicePattern = capturedText.Contains(" or ", StringComparison.OrdinalIgnoreCase);
 
-        //Choice
+        // Choice
         if (isChoicePattern)
         {
             rmu = ManaUnit.CreateChoice(parsedTypes);
-            if (rmu.IsFailure) return rmu.ToFailure<ProduceManaComponent>();
+            if (rmu.IsFailure) return rmu.ToFailure<ProduceManaComponent?>();
             pmc._mana.Add(rmu.Value);
-            return Result<ProduceManaComponent>.Success(pmc);
+            return Result<ProduceManaComponent?>.Success(pmc);
         }
 
         // Fixed
         foreach (var type in parsedTypes.ToList())
         {
             rmu = ManaUnit.CreateFixed(type);
-            if (rmu.IsFailure) return rmu.ToFailure<ProduceManaComponent>();
+            if (rmu.IsFailure) return rmu.ToFailure<ProduceManaComponent?>();
 
             pmc._mana.Add(rmu.Value);
         }
 
-        return Result<ProduceManaComponent>.Success(pmc);
+        return Result<ProduceManaComponent?>.Success(pmc);
     }
 
     private static Result<ManaDynamicType> TryParseDynamicMana(string manaLine)

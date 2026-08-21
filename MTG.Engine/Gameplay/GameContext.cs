@@ -1,14 +1,9 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using MTG.Core.Cards;
-using MTG.Core.Components;
-using MTG.Core.Enums;
 using MTG.Core.Helper;
 using MTG.Core.Types;
 using MTG.Engine.Enums;
 using MTG.Engine.TurnSteps;
 using MTG.Resources.Enums;
-using System.Numerics;
 using System.Text;
 
 namespace MTG.Engine.Gameplay;

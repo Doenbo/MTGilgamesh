@@ -3,7 +3,6 @@ using MTG.Core.Cards;
 using MTG.Core.Enums;
 using System;
 using System.Collections.Concurrent;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace MTG.Frontend;

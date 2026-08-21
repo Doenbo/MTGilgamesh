@@ -12,7 +12,12 @@ public static class CardFactory
         if (name == null || set == null || collectionnumber == null)
             return Result<ICard>.Failure("Name, Set and CollectionNumber can't be null!");
 
-        return Result<ICard>.Success(new Card() { FullName = name, FullTypeLine = typeline, Set = set, CollectorNumber = collectionnumber });
+        return Result<ICard>.Success(new Card() { 
+            FullName = name,
+            FullTypeLine = typeline,
+            Set = set,
+            CollectorNumber = collectionnumber
+        });
     }
 
     private class Card : ICard
@@ -34,7 +39,6 @@ public static class CardFactory
         ICardFace MainFace => Faces[0];
         public Dictionary<Format, Legality> Legalities { get; set; } = [];
         public List<ManaType> ProducedMana { get; set; } = [];
-        //TODO FullOracleText ?
 
         //Print
         public required string CollectorNumber { get; init; }

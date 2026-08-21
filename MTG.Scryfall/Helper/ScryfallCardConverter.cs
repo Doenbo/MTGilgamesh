@@ -126,15 +126,27 @@ public class ScryfallCardConverter
                 return Result<ICardFace>.Failure($"Could not parse {keyword} to Keyword enum!");
         }
 
-        //ProducedMana
+        //Produced Mana
         // TODO this card is weird in the API, see: https://api.scryfall.com/cards/named?fuzzy=Brigid+Heart+Mind
         if (oracleText != null && producedMana != null && producedMana.Count > 0)
         {
-            var produceMana = ProduceManaComponent.Create(oracleText);
-            if (produceMana.IsFailure)
-                return produceMana.ToFailure<ICardFace>();
+            var pmc = ProduceManaComponent.Create(oracleText);
+            if (pmc.IsFailure)
+                return pmc.ToFailure<ICardFace>();
 
-            cardface.AddComponent(produceMana.Value);
+            if (pmc.Value != null)
+                cardface.AddComponent(pmc.Value);
+        }
+
+        //Activated Ability
+        if (oracleText != null)
+        {
+            var aac = ActivatedAbilityComponent.Create(oracleText);
+            if (aac.IsFailure)
+                return aac.ToFailure<ICardFace>();
+
+            if (aac.Value != null)
+                cardface.AddComponent(aac.Value);
         }
 
         return Result<ICardFace>.Success(cardface);

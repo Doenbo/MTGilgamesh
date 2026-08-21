@@ -1,7 +1,6 @@
 ﻿using MTG.Core.Cards;
 using MTG.Core.Decks;
 using MTG.Core.Helper;
-using MTG.Engine.Gameplay;
 using MTG.Resources.Archidekt;
 using MTG.Resources.Enums;
 

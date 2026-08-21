@@ -1,7 +1,5 @@
 ﻿using MTG.Core.Helper;
 using MTG.Core.Types;
-using System.Numerics;
-using System.Reflection.Metadata;
 using System.Text.RegularExpressions;
 
 namespace MTG.Core.Properties;

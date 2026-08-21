@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MTG.Engine.Enums;
+﻿namespace MTG.Engine.Enums;
 
 public enum PlayZone
 {

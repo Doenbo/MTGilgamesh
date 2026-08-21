@@ -1,12 +1,5 @@
 ﻿using MTG.Core.Components;
-using MTG.Core.Decks;
 using MTG.Core.Enums;
-using MTG.Core.Properties;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Reflection.Metadata;
-using System.Text;
 
 namespace MTG.Core.Tests;
 

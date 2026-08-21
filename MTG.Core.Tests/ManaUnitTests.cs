@@ -1,13 +1,5 @@
 ﻿using MTG.Core.Abilities;
-using MTG.Core.Components;
-using MTG.Core.Decks;
 using MTG.Core.Enums;
-using MTG.Core.Properties;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MTG.Core.Tests;
 

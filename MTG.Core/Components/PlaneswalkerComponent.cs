@@ -1,5 +1,4 @@
-﻿using MTG.Core.Cards;
-using MTG.Core.Helper;
+﻿using MTG.Core.Helper;
 using MTG.Core.Properties;
 
 namespace MTG.Core.Components;
