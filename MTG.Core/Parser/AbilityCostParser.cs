@@ -1,59 +1,59 @@
-﻿using MTG.Core;
-using MTG.Core.Abilities;
+﻿using MTG.Core.Abilities;
 using MTG.Core.Helper;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.RegularExpressions;
 using static MTG.Core.Abilities.AbilityCosts;
 
-namespace MTG.Engine.Parser;
+namespace MTG.Core.Parser;
 
-public class AbilityCostParser
+public class AbilityCostParser : IAbilityCostParser
 {
-    // Pipeline of known cost patterns (Pattern -> Cost Factory)
-    private static readonly List<ICostPatternRule> Rules = new()
+    private readonly List<ICostPatternRule> _rules;
+
+    public AbilityCostParser()
     {
-        // 1. Tap symbol: {T}
-        new CostPatternRule(
-            @"^\{t\}$",
-            _ => new TapCost()),
+        // Initializing rules inside the constructor allows using instance methods like ParseNumber
+        _rules =
+        [
+            // 1. Tap symbol: {T}
+            new CostPatternRule(
+                @"^\{t\}$",
+                _ => new TapCost()),
 
-        // 2. Pay life: "Pay X life"
-        new CostPatternRule(
-            @"^pay\s+(?<amount>\d+)\s+life$",
-            match => new PayLifeCost(int.Parse(match.Groups["amount"].Value))),
+            // 2. Pay life: "Pay X life"
+            new CostPatternRule(
+                @"^pay\s+(?<amount>\d+)\s+life$",
+                match => new PayLifeCost(int.Parse(match.Groups["amount"].Value))),
 
-        // 3. Discard: "Discard X card(s)"
-        new CostPatternRule(
-            @"^discard\s+(?<amount>\d+|a|an)\s+cards?$",
-            match =>
-            {
-                int amount = ParseNumber(match.Groups["amount"].Value);
-                return new DiscardCost(amount);
-            }),
+            // 3. Discard: "Discard X card(s)"
+            new CostPatternRule(
+                @"^discard\s+(?<amount>\d+|a|an)\s+cards?$",
+                match =>
+                {
+                    int amount = ParseNumber(match.Groups["amount"].Value); // Works now!
+                    return new DiscardCost(amount);
+                }),
 
-        // 4. Sacrifice: "Sacrifice a permanent/creature/land..."
-        new CostPatternRule(
-            @"^sacrifice\s+(?:a|an)\s+(?<type>.+)$",
-            match => new SacrificeCost(match.Groups["type"].Value.Trim())),
+            // 4. Sacrifice: "Sacrifice a permanent/creature/land..."
+            new CostPatternRule(
+                @"^sacrifice\s+(?:a|an)\s+(?<type>.+)$",
+                match => new SacrificeCost(match.Groups["type"].Value.Trim())),
 
-        // 5. Mana cost: e.g., "{1}{R}" or "{G}"
-        new CostPatternRule(
-            @"^(?:\{[0-9a-zA-Z/]+\})+$",
-            match =>
-            {
-                // Convert to canonical upper-case representation
-                string upperMana = match.Value.ToUpperInvariant();
-                var manaCostResult = ManaCost.Create(upperMana);
-                if (manaCostResult.IsFailure)
-                    throw new InvalidOperationException(manaCostResult.Error);
-        
-                return new ManaCostData(manaCostResult.Value);
-            })
-    };
+            // 5. Mana cost: e.g., "{1}{R}" or "{G}"
+            new CostPatternRule(
+                @"^(?:\{[0-9a-zA-Z/]+\})+$",
+                match =>
+                {
+                    string upperMana = match.Value.ToUpperInvariant();
+                    var manaCostResult = ManaCost.Create(upperMana);
+                    if (manaCostResult.IsFailure)
+                        throw new InvalidOperationException(manaCostResult.Error);
 
-    public static Result<IReadOnlyList<IAbilityCost>> Parse(string rawCosts)
+                    return new ManaCostData(manaCostResult.Value);
+                })
+        ];
+    }
+
+    public Result<IReadOnlyList<IAbilityCost>> Parse(string rawCosts)
     {
         if (string.IsNullOrWhiteSpace(rawCosts))
             return Result<IReadOnlyList<IAbilityCost>>.Failure("Cost text cannot be empty.");
@@ -68,7 +68,7 @@ public class AbilityCostParser
             string normalizedSegment = segment.ToLowerInvariant();
             bool matched = false;
 
-            foreach (var rule in Rules)
+            foreach (var rule in _rules)
             {
                 var result = rule.TryMatch(normalizedSegment);
                 if (result.IsSuccess)
@@ -88,7 +88,7 @@ public class AbilityCostParser
         return Result<IReadOnlyList<IAbilityCost>>.Success(parsedCosts.AsReadOnly());
     }
 
-    private static int ParseNumber(string value)
+    private int ParseNumber(string value)
     {
         return value switch
         {

@@ -2,6 +2,7 @@
 using MTG.Core.Components;
 using MTG.Core.Enums;
 using MTG.Core.Helper;
+using MTG.Core.Parser;
 using MTG.Core.Properties;
 using MTG.Scryfall.API.Cards;
 using System.Text.Json;
@@ -126,28 +127,19 @@ public class ScryfallCardConverter
                 return Result<ICardFace>.Failure($"Could not parse {keyword} to Keyword enum!");
         }
 
-        //Produced Mana
-        // TODO this card is weird in the API, see: https://api.scryfall.com/cards/named?fuzzy=Brigid+Heart+Mind
-        if (oracleText != null && producedMana != null && producedMana.Count > 0)
-        {
-            var pmc = ProduceManaComponent.Create(oracleText);
-            if (pmc.IsFailure)
-                return pmc.ToFailure<ICardFace>();
-
-            if (pmc.Value != null)
-                cardface.AddComponent(pmc.Value);
-        }
-
-        //Activated Ability
+        // Oracle Text Parser
         if (oracleText != null)
         {
-            var aac = ActivatedAbilityComponent.Create(oracleText);
-            if (aac.IsFailure)
-                return aac.ToFailure<ICardFace>();
+            var otp = new OracleTextParser().Parse(oracleText);
+            if(otp.IsFailure)
+                return otp.ToFailure<ICardFace>();
 
-            if (aac.Value != null)
-                cardface.AddComponent(aac.Value);
+            cardface.AddComponents(otp.Value);
         }
+
+        // TODO this card
+        // https://api.scryfall.com/cards/named?fuzzy=Brigid+Heart+Mind
+        // is kinda weird in the API, the produced mana is off and doesnt match the text
 
         return Result<ICardFace>.Success(cardface);
     }

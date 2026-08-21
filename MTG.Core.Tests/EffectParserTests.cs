@@ -1,10 +1,5 @@
 ﻿using MTG.Core.Abilities;
-using MTG.Core.Helper;
-using MTG.Engine.Parser;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
+using MTG.Core.Parser;
 namespace MTG.Core.Tests;
 
 public class EffectParserTests
@@ -32,7 +27,7 @@ public class EffectParserTests
     public void Parse_ValidEffectString_ReturnsExpectedEffect(string input, IEffect expectedEffect)
     {
         // Act
-        var result = EffectParser.Parse(input);
+        var result = new EffectParser().Parse(input);
 
         // Assert
         Assert.True(result.IsSuccess, $"Failed to parse valid input: '{input}'. Error: {result.Error}");
@@ -47,7 +42,7 @@ public class EffectParserTests
     public void Parse_InvalidOrUnsupportedEffect_ReturnsFailure(string input)
     {
         // Act
-        var result = EffectParser.Parse(input);
+        var result = new EffectParser().Parse(input);
 
         // Assert
         Assert.True(result.IsFailure);

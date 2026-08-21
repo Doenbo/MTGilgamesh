@@ -1,9 +1,5 @@
 ﻿using MTG.Core.Abilities;
-using MTG.Core.Components;
-using MTG.Engine.Parser;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using MTG.Core.Parser;
 using static MTG.Core.Abilities.AbilityCosts;
 
 namespace MTG.Core.Tests;
@@ -41,7 +37,7 @@ public class AbilityCostParserTests
     [MemberData(nameof(ValidCostTestData))]
     public void Parse_ValidCostString_ReturnsExpectedCosts(string input, IReadOnlyList<IAbilityCost> expectedCosts)
     {
-        var result = AbilityCostParser.Parse(input);
+        var result = new AbilityCostParser().Parse(input);
 
         Assert.True(result.IsSuccess, $"Failed to parse input: '{input}'. Error: {result.Error}");
         Assert.Equal(expectedCosts.Count, result.Value.Count);
@@ -58,7 +54,7 @@ public class AbilityCostParserTests
     [InlineData("{T}, Pay invalid cost")]
     public void Parse_InvalidCost_ReturnsFailure(string input)
     {
-        var result = AbilityCostParser.Parse(input);
+        var result = new AbilityCostParser().Parse(input);
 
         Assert.True(result.IsFailure);
         Assert.False(string.IsNullOrWhiteSpace(result.Error));

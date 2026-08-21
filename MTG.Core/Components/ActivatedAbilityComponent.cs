@@ -2,7 +2,7 @@
 using MTG.Core.Cards;
 using MTG.Core.Enums;
 using MTG.Core.Helper;
-using MTG.Engine.Parser;
+using MTG.Core.Parser;
 using System.Text.RegularExpressions;
 
 namespace MTG.Core.Components;
@@ -34,11 +34,11 @@ public partial class ActivatedAbilityComponent : ICardComponent
         var rawCost = match.Groups["cost"].Value;
         var rawEffect = match.Groups["effect"].Value;
 
-        var costs = AbilityCostParser.Parse(rawCost);
+        var costs = new AbilityCostParser().Parse(rawCost);
         if (costs.IsFailure)
             return costs.ToFailure<ActivatedAbilityComponent?>();
 
-        var effect = EffectParser.Parse(rawEffect);
+        var effect = new EffectParser().Parse(rawEffect);
         if (effect.IsFailure)
             return effect.ToFailure<ActivatedAbilityComponent?>();
 

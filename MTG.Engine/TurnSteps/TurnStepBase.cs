@@ -127,7 +127,7 @@ public abstract class TurnStepBase : ITurnStep
 
         var result = card.CardData.MainFace.TryGetComponent<ProduceManaComponent>(out var pmc);
 
-        if (!result)
+        if (!result || pmc == null)
         {
             context.Display.LogError($"Cannot get Produced Mana!");
             return;

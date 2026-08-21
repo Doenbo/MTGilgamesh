@@ -2,6 +2,7 @@
 using MTG.Core.Enums;
 using MTG.Core.Properties;
 using MTG.Core.Types;
+using System.Diagnostics.CodeAnalysis;
 
 namespace MTG.Core.Cards;
 
@@ -31,10 +32,31 @@ public interface ICardFace
     public bool IsCardType(CardType cardType);
 
     //Component Methods
-    void AddComponent<T>(T component) where T : class, ICardComponent;
+    
+    /// <summary>
+    /// Fügt eine einzelne Komponente unter ihrem konkreten Laufzeittyp hinzu.
+    /// </summary>
+    void AddComponent(ICardComponent component);
+
+    /// <summary>
+    /// Fügt eine Sammlung von Komponenten hinzu.
+    /// </summary>
+    void AddComponents(IEnumerable<ICardComponent> components);
+
+    /// <summary>
+    /// Versucht, die erste/einzige Komponente vom Typ T abzurufen.
+    /// </summary>
+    bool TryGetComponent<T>([NotNullWhen(true)] out T? component) where T : class, ICardComponent;
+
+    /// <summary>
+    /// Versucht, alle Komponenten vom Typ T abzurufen.
+    /// </summary>
+    bool TryGetComponents<T>(out IReadOnlyList<T> components) where T : class, ICardComponent;
+
+    /// <summary>
+    /// Prüft, ob mindestens eine Komponente vom Typ T vorhanden ist.
+    /// </summary>
     bool HasComponent<T>() where T : class, ICardComponent;
-    T? GetComponent<T>() where T : class, ICardComponent;
-    bool TryGetComponent<T>(out T component) where T : class, ICardComponent;
 
     //ToStrings
     public string ToString();

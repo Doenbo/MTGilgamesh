@@ -1,45 +1,47 @@
 ﻿using MTG.Core.Abilities;
 using MTG.Core.Helper;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.RegularExpressions;
 
-namespace MTG.Engine.Parser;
+namespace MTG.Core.Parser;
 
-public class EffectParser
+public class EffectParser : IEffectParser
 {
-    // Pipeline of known effect patterns (Pattern -> Effect Factory)
-    private static readonly List<IEffectPatternRule> Rules = new()
+    private readonly List<IEffectPatternRule> _rules;
+
+    public EffectParser()
     {
-        // 1. "Draw X card(s)"
-        new PatternRule(
-            @"^draws?\s+(?<amount>\d+|a|an)\s+cards?$",
-            match =>
-            {
-                int amount = ParseNumber(match.Groups["amount"].Value);
-                return new DrawCardsEffect(amount);
-            }),
+        // Initializing rules inside constructor allows invoking non-static instance methods like ParseNumber
+        _rules =
+        [
+            // 1. "Draw X card(s)"
+            new PatternRule(
+                @"^draws?\s+(?<amount>\d+|a|an)\s+cards?$",
+                match =>
+                {
+                    int amount = ParseNumber(match.Groups["amount"].Value);
+                    return new DrawCardsEffect(amount);
+                }),
 
-        // 2. "deals X damage to any target / to target..."
-        new PatternRule(
-            @"^deals?\s+(?<damage>\d+)\s+damage(?:\s+to\s+(?<target>.+))?$",
-            match =>
-            {
-                int damage = int.Parse(match.Groups["damage"].Value);
-                string targetText = match.Groups["target"].Value;
-                bool isAnyTarget = string.IsNullOrEmpty(targetText) || targetText.Contains("any target");
+            // 2. "deals X damage to any target / to target..."
+            new PatternRule(
+                @"^deals?\s+(?<damage>\d+)\s+damage(?:\s+to\s+(?<target>.+))?$",
+                match =>
+                {
+                    int damage = int.Parse(match.Groups["damage"].Value);
+                    string targetText = match.Groups["target"].Value;
+                    bool isAnyTarget = string.IsNullOrEmpty(targetText) || targetText.Contains("any target");
 
-                return new DealDamageEffect(damage, isAnyTarget);
-            }),
+                    return new DealDamageEffect(damage, isAnyTarget);
+                }),
 
-        // 3. "destroy target..."
-        new PatternRule(
-            @"^destroys?\s+target\s+(?<target>.+)$",
-            match => new DestroyTargetEffect())
-    };
+            // 3. "destroy target..."
+            new PatternRule(
+                @"^destroys?\s+target\s+(?<target>.+)$",
+                match => new DestroyTargetEffect())
+        ];
+    }
 
-    public static Result<IEffect> Parse(string rawEffect)
+    public Result<IEffect> Parse(string rawEffect)
     {
         if (string.IsNullOrWhiteSpace(rawEffect))
             return Result<IEffect>.Failure("Effect text cannot be empty.");
@@ -47,7 +49,7 @@ public class EffectParser
         // Normalize text: trim white spaces, strip trailing dots, and convert to lower-case for pattern matching
         string normalizedText = rawEffect.Trim().TrimEnd('.').ToLowerInvariant();
 
-        foreach (var rule in Rules)
+        foreach (var rule in _rules)
         {
             var result = rule.TryMatch(normalizedText);
             if (result.IsSuccess)
@@ -59,7 +61,7 @@ public class EffectParser
         return Result<IEffect>.Failure($"Unknown or unsupported effect text: '{rawEffect}'");
     }
 
-    private static int ParseNumber(string value)
+    private int ParseNumber(string value)
     {
         return value switch
         {

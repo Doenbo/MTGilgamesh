@@ -3,6 +3,7 @@ using MTG.Core.Enums;
 using MTG.Core.Helper;
 using MTG.Core.Properties;
 using MTG.Core.Types;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace MTG.Core.Cards;
@@ -19,7 +20,7 @@ public class CardFaceFactory
 
     private class CardFace : ICardFace
     {
-        private readonly Dictionary<Type, ICardComponent> _components = [];
+        private readonly Dictionary<Type, List<ICardComponent>> _components = [];
 
         public CardFace() { }
 
@@ -48,29 +49,58 @@ public class CardFaceFactory
         public bool IsCardType(CardType cardType) => TypeLine.IsCardType(cardType);
 
         //Component Methods
-        public void AddComponent<T>(T component) where T : class, ICardComponent
+        public void AddComponent(ICardComponent component)
         {
-            _components[typeof(T)] = component;
-        }
+            ArgumentNullException.ThrowIfNull(component);
 
-        public bool HasComponent<T>() where T : class, ICardComponent
-            => _components.ContainsKey(typeof(T));
+            var type = component.GetType();
 
-        public T? GetComponent<T>() where T : class, ICardComponent
-        {
-            return _components.TryGetValue(typeof(T), out var component) ? component as T : null;
-        }
-
-        public bool TryGetComponent<T>(out T component) where T : class, ICardComponent
-        {
-            if (_components.TryGetValue(typeof(T), out var comp))
+            if (!_components.TryGetValue(type, out var list))
             {
-                component = (T)comp;
+                list = [];
+                _components[type] = list;
+            }
+
+            list.Add(component);
+        }
+
+        public void AddComponents(IEnumerable<ICardComponent> components)
+        {
+            ArgumentNullException.ThrowIfNull(components);
+
+            foreach (var component in components)
+            {
+                AddComponent(component);
+            }
+        }
+
+        public bool TryGetComponent<T>([NotNullWhen(true)] out T? component) where T : class, ICardComponent
+        {
+            if (_components.TryGetValue(typeof(T), out var list) && list.Count > 0)
+            {
+                component = (T)list[0];
                 return true;
             }
 
-            component = null!;
+            component = null;
             return false;
+        }
+
+        public bool TryGetComponents<T>(out IReadOnlyList<T> components) where T : class, ICardComponent
+        {
+            if (_components.TryGetValue(typeof(T), out var list) && list.Count > 0)
+            {
+                components = list.Cast<T>().ToList().AsReadOnly();
+                return true;
+            }
+
+            components = [];
+            return false;
+        }
+
+        public bool HasComponent<T>() where T : class, ICardComponent
+        {
+            return _components.TryGetValue(typeof(T), out var list) && list.Count > 0;
         }
 
         //ToStrings

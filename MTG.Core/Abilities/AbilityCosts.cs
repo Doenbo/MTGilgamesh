@@ -1,6 +1,4 @@
-﻿using MTG.Core.Types;
-
-namespace MTG.Core.Abilities;
+﻿namespace MTG.Core.Abilities;
 
 public class AbilityCosts
 {

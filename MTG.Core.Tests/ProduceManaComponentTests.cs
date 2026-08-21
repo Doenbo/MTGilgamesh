@@ -18,6 +18,7 @@ public class ProduceManaComponentTests
         var result = ProduceManaComponent.Create(input);
 
         Assert.True(result.IsSuccess, result.Error);
+        Assert.NotNull(result.Value);
 
         var produced = result.Value;
         Assert.True(produced.RequiresTap);
@@ -36,6 +37,7 @@ public class ProduceManaComponentTests
         var result = ProduceManaComponent.Create(input);
 
         Assert.True(result.IsSuccess, result.Error);
+        Assert.NotNull(result.Value);
 
         var produced = result.Value;
         Assert.True(produced.RequiresTap);
@@ -57,6 +59,7 @@ public class ProduceManaComponentTests
         var result = ProduceManaComponent.Create(input);
 
         Assert.True(result.IsSuccess, result.Error);
+        Assert.NotNull(result.Value);
 
         var produced = result.Value;
         Assert.True(produced.RequiresTap);
@@ -94,8 +97,9 @@ public class ProduceManaComponentTests
         var result = ProduceManaComponent.Create(input);
 
         Assert.True(result.IsSuccess, result.Error);
+        Assert.NotNull(result.Value);
+        
         var produced = result.Value;
-
         Assert.True(produced.RequiresTap);
         Assert.Single(produced.Mana);
 
@@ -129,8 +133,9 @@ public class ProduceManaComponentTests
         var result = ProduceManaComponent.Create(input);
 
         Assert.True(result.IsSuccess, result.Error);
-        var produced = result.Value;
+        Assert.NotNull(result.Value);
 
+        var produced = result.Value;
         Assert.True(produced.RequiresTap);
         Assert.Single(produced.Mana);
 
@@ -141,16 +146,25 @@ public class ProduceManaComponentTests
     }
 
     [Theory]
-    [InlineData("")]
-    [InlineData("   ")]
-    [InlineData("Trample, Haste")]
-    [InlineData("{2}, {T}: Draw a card.")]
     [InlineData("({T}: Add {Z}.)")]
-    public void TestCreate_InvalidOrNonManaText_ReturnsFailure(string input)
+    public void TestCreate_Invalid_ReturnsFailure(string input)
     {
         var result = ProduceManaComponent.Create(input);
 
         Assert.True(result.IsFailure);
         Assert.False(string.IsNullOrWhiteSpace(result.Error));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("Trample, Haste")]
+    [InlineData("{2}, {T}: Draw a card.")]
+    public void TestCreate_Valid_ReturnsNull(string input)
+    {
+        var result = ProduceManaComponent.Create(input);
+
+        Assert.True(result.IsSuccess);
+        Assert.Null(result.Value);
     }
 }
