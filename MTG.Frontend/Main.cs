@@ -2,7 +2,6 @@ using Godot;
 using Microsoft.Extensions.Logging;
 using MTG.Core.Enums;
 using MTG.Core.Helper;
-using MTG.Engine.Enums;
 using MTG.Engine.Gameplay;
 using MTG.Opponent;
 using System;

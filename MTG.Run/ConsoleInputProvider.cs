@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using MTG.Core;
+using MTG.Core.Enums;
 using MTG.Core.Helper;
 using MTG.Core.Types;
 using MTG.Engine.Enums;

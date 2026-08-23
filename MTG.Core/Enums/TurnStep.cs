@@ -1,4 +1,4 @@
-﻿namespace MTG.Engine.Enums;
+﻿namespace MTG.Core.Enums;
 
 public enum TurnStep
 {

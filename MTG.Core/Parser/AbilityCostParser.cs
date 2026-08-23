@@ -1,7 +1,6 @@
 ﻿using MTG.Core.Abilities;
 using MTG.Core.Helper;
 using System.Text.RegularExpressions;
-using static MTG.Core.Abilities.AbilityCosts;
 
 namespace MTG.Core.Parser;
 

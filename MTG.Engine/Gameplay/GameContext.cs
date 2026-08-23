@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
+using MTG.Core.Enums;
 using MTG.Core.Helper;
 using MTG.Core.Types;
-using MTG.Engine.Enums;
 using MTG.Engine.TurnSteps;
 using MTG.Resources.Enums;
 using System.Text;

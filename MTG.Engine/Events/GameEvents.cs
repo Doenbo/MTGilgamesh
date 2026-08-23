@@ -1,4 +1,4 @@
-﻿using MTG.Engine.Enums;
+﻿using MTG.Core.Enums;
 using MTG.Engine.Gameplay;
 
 namespace MTG.Engine.Events;

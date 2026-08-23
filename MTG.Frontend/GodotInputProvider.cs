@@ -1,4 +1,5 @@
 using Godot;
+using MTG.Core.Enums;
 using MTG.Engine.Enums;
 using MTG.Engine.Gameplay;
 using System;

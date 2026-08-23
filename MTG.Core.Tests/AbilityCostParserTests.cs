@@ -1,6 +1,5 @@
 ﻿using MTG.Core.Abilities;
 using MTG.Core.Parser;
-using static MTG.Core.Abilities.AbilityCosts;
 
 namespace MTG.Core.Tests;
 

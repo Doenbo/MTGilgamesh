@@ -2,10 +2,12 @@
 
 public enum TargetType
 {
+    Any,
     Creature,
     Artifact,
     Player,
     Permanent,
     NonLandPermanent,
-    CardInGraveyard
+    CardInGraveyard,
+    Planeswalker,
 }

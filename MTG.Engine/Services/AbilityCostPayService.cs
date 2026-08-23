@@ -1,42 +1,53 @@
 ﻿using MTG.Core.Abilities;
 using MTG.Engine.Gameplay;
-using static MTG.Core.Abilities.AbilityCosts;
 
 namespace MTG.Engine.Services;
 
 public class AbilityCostPayService : IAbilityCostPayService
 {
+    private readonly ManaPayService _manaPayService;
+
+    public AbilityCostPayService(ManaPayService? manaPayService = null)
+    {
+        _manaPayService = manaPayService ?? new ManaPayService();
+    }
+
     public bool CanPay(IAbilityCost cost, GameContext context, CardInstance source, CommanderPlayer player)
     {
-        var mps = new ManaPayService();
         return cost switch
         {
             TapCost => !source.IsTapped,
             PayLifeCost life => player.LifeTotal > life.Amount,
-            //ManaCostData mana => mps.CanPay(mana.Mana, player.ManaPool),
-            //SacrificeCost sac => context.GetPermanentsControlledBy(player).Any(p => p.HasType(sac.TargetType)),
+            ManaCostData mana => _manaPayService.CanAfford(mana.Mana, player.ManaPool).IsSuccess,
             _ => false
         };
     }
 
     public void Pay(IAbilityCost cost, GameContext context, CardInstance source, CommanderPlayer player)
     {
+        if (!CanPay(cost, context, source, player))
+        {
+            throw new InvalidOperationException("Cost cannot be paid.");
+        }
+
         switch (cost)
         {
             case TapCost:
                 source.IsTapped = true;
                 break;
+
             case PayLifeCost life:
                 player.LifeTotal -= life.Amount;
                 break;
+
             case ManaCostData mana:
-                var mps = new ManaPayService();
-                var res = mps.TryPay(mana.Mana, player.ManaPool);
+                var res = _manaPayService.TryPay(mana.Mana, player.ManaPool);
                 if (res.IsFailure)
-                    throw new Exception(); //TODO
+                {
+                    throw new InvalidOperationException(res.Error);
+                }
                 player.UpdateManaPool(res.Value);
                 break;
-                // ...
         }
     }
 }

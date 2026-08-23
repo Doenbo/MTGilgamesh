@@ -9,9 +9,18 @@ using System.Text.Json;
 
 namespace MTG.Scryfall.Helper;
 
-public class ScryfallCardConverter
+public class ScryfallCardConverter : IScryfallCardConverter
 {
-    public static Result<ICard> DoubleConvert(JsonString json)
+    private readonly IOracleTextParser _oracleTextParser;
+
+    public ScryfallCardConverter() : this(new OracleTextParser()) { }
+
+    public ScryfallCardConverter(IOracleTextParser oracleTextParser)
+    {
+        _oracleTextParser = oracleTextParser;
+    }
+
+    public Result<ICard> DoubleConvert(JsonString json)
     {
 
         if (json == null || string.IsNullOrEmpty(json.Value))
@@ -25,7 +34,7 @@ public class ScryfallCardConverter
         return card.IsSuccess ? card : card.ToFailure<ICard>();
     }
 
-    public static Result<ScryfallCard> Convert(JsonString json)
+    public Result<ScryfallCard> Convert(JsonString json)
     {
         if (json == null || string.IsNullOrEmpty(json.Value))
             return Result<ScryfallCard>.Failure("JSon can't be null or empty!");
@@ -43,7 +52,7 @@ public class ScryfallCardConverter
                                 Result<ScryfallCard>.Success(sfCard);
     }
 
-    private static Result<ICardFace> CreateCardFace(
+    private Result<ICardFace> CreateCardFace(
         string name, string typeline, string? oracleText, string? manaCost, float cmc, List<string> colorIdentity,
         List<string>? colorIndicator, List<string>? colors, string? power, string? toughness, string? defense,
         string? loyalty, List<ScryfallColor>? producedMana, List<string> keywords)
@@ -128,13 +137,14 @@ public class ScryfallCardConverter
         }
 
         // Oracle Text Parser
-        if (oracleText != null)
+        if (!string.IsNullOrWhiteSpace(oracleText))
         {
-            var otp = new OracleTextParser().Parse(oracleText);
-            if(otp.IsFailure)
-                return otp.ToFailure<ICardFace>();
+            var parseResult = _oracleTextParser.Parse(oracleText);
 
-            cardface.AddComponents(otp.Value);
+            if (parseResult.IsFailure)
+                return parseResult.ToFailure<ICardFace>();
+
+            cardface.AddComponents(parseResult.Value);
         }
 
         // TODO this card
@@ -144,7 +154,7 @@ public class ScryfallCardConverter
         return Result<ICardFace>.Success(cardface);
     }
 
-    public static Result<ICard> Convert(ScryfallCard dto)
+    public Result<ICard> Convert(ScryfallCard dto)
     {
         if (dto.Object != "card")
             return Result<ICard>.Failure("Object is not a card!");

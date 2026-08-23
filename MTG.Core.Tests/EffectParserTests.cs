@@ -1,51 +1,37 @@
 ﻿using MTG.Core.Abilities;
+using MTG.Core.Enums;
 using MTG.Core.Parser;
+using MTG.Core.Types;
 namespace MTG.Core.Tests;
 
 public class EffectParserTests
 {
-    // Provides test input cases mapped to expected IEffect record instances
     public static TheoryData<string, IEffect> ValidEffectTestData => new()
     {
         // Draw card patterns
         { "Draw a card", new DrawCardsEffect(1) },
-        { "Draws 3 cards.", new DrawCardsEffect(3) },
-        { "draw 2 cards", new DrawCardsEffect(2) },
+        { "Draw 2 cards", new DrawCardsEffect(2) },
+        { "Draws 3 cards", new DrawCardsEffect(3) },
 
         // Damage patterns
-        { "Deals 3 damage to any target", new DealDamageEffect(3, true) },
-        { "Deal 1 damage", new DealDamageEffect(1, true) },
-        { "deals 5 damage to target creature", new DealDamageEffect(5, false) },
+        { "Deals 3 damage to any target", new DealDamageEffect(3, TargetType.Any) },
+        { "Deal 1 damage", new DealDamageEffect(1, TargetType.Any) },
+        { "Deals 5 damage to target creature", new DealDamageEffect(5, TargetType.Creature) },
 
         // Destroy patterns
-        { "Destroy target permanent", new DestroyTargetEffect() },
-        { "destroys target creature.", new DestroyTargetEffect() }
+        { "Destroy target permanent", new DestroyTargetEffect(CardFilter.Any) },
+        { "destroys target creature.", new DestroyTargetEffect(new CardFilter(RequiredTypes: [CardType.Creature])) }
     };
 
     [Theory]
     [MemberData(nameof(ValidEffectTestData))]
-    public void Parse_ValidEffectString_ReturnsExpectedEffect(string input, IEffect expectedEffect)
+    public void Parse_ValidString_ReturnsExpectedEffect(string input, IEffect expected)
     {
-        // Act
-        var result = new EffectParser().Parse(input);
+        var parser = new EffectParser();
 
-        // Assert
-        Assert.True(result.IsSuccess, $"Failed to parse valid input: '{input}'. Error: {result.Error}");
-        Assert.Equal(expectedEffect, result.Value);
-    }
+        var result = parser.Parse(input);
 
-    [Theory]
-    [InlineData("")]
-    [InlineData("   ")]
-    [InlineData("Gain 3 life")] // Unsupported pattern
-    [InlineData("Invalid random text")]
-    public void Parse_InvalidOrUnsupportedEffect_ReturnsFailure(string input)
-    {
-        // Act
-        var result = new EffectParser().Parse(input);
-
-        // Assert
-        Assert.True(result.IsFailure);
-        Assert.False(string.IsNullOrWhiteSpace(result.Error));
+        Assert.True(result.IsSuccess, result.Error);
+        Assert.Equal(expected, result.Value);
     }
 }

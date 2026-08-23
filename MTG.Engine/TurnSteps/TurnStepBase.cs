@@ -1,5 +1,7 @@
 using MTG.Core;
 using MTG.Core.Components;
+using MTG.Core.Components.OracleText;
+using MTG.Core.Enums;
 using MTG.Engine.Enums;
 using MTG.Engine.Events;
 using MTG.Engine.Gameplay;
@@ -133,7 +135,7 @@ public abstract class TurnStepBase : ITurnStep
             return;
         }
 
-        foreach (var mana in pmc.Mana.ToList())
+        foreach (var mana in pmc.ManaUnits.ToList())
         {
             if (pmc.RequiresTap) card.IsTapped = true;
             player.ManaPool.AddMana(mana);

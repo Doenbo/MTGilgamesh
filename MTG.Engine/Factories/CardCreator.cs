@@ -1,5 +1,6 @@
 ﻿using MTG.Core.Cards;
 using MTG.Core.Helper;
+using MTG.Core.Parser;
 using MTG.DB;
 using MTG.Scryfall._Getter;
 using MTG.Scryfall.Helper;
@@ -11,18 +12,21 @@ public static class CardCreator
     public static async Task<Result<ICard>> GetExact(CardRef cref)
     {
         //Get JSON from DB
-        //var sql = new AppDbContext();
         var sqlCard = AppDbContext.GetExact(cref);
+
+        //TODO ???
+        var conv = new ScryfallCardConverter(new OracleTextParser());
 
         if (sqlCard.IsSuccess)
         {
             //Convert into ScryfallCard Object
-            var sfCard1 = ScryfallCardConverter.Convert(sqlCard.Value);
+
+            var sfCard1 = conv.Convert(sqlCard.Value);
             if (sfCard1.IsFailure)
                 return sfCard1.ToFailure<ICard>();
 
             //Convert into Card Object
-            var card1 = ScryfallCardConverter.Convert(sfCard1.Value);
+            var card1 = conv.Convert(sfCard1.Value);
             if (card1.IsFailure)
                 return card1.ToFailure<ICard>();
 
@@ -37,12 +41,12 @@ public static class CardCreator
                 return json2.ToFailure<ICard>();
 
             //Convert into ScryfallCard Object
-            var sfCard2 = ScryfallCardConverter.Convert(json2.Value);
+            var sfCard2 = conv.Convert(json2.Value);
             if (sfCard2.IsFailure)
                 return sfCard2.ToFailure<ICard>();
 
             //Convert into Card Object
-            var card2 = ScryfallCardConverter.Convert(sfCard2.Value);
+            var card2 = conv.Convert(sfCard2.Value);
             if (card2.IsFailure)
                 return card2.ToFailure<ICard>();
 

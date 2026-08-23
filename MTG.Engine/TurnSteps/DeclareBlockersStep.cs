@@ -1,4 +1,4 @@
-using MTG.Engine.Enums;
+using MTG.Core.Enums;
 
 namespace MTG.Engine.TurnSteps;
 

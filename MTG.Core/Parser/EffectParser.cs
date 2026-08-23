@@ -1,5 +1,7 @@
 ﻿using MTG.Core.Abilities;
+using MTG.Core.Enums;
 using MTG.Core.Helper;
+using MTG.Core.Types;
 using System.Text.RegularExpressions;
 
 namespace MTG.Core.Parser;
@@ -29,15 +31,63 @@ public class EffectParser : IEffectParser
                 {
                     int damage = int.Parse(match.Groups["damage"].Value);
                     string targetText = match.Groups["target"].Value;
-                    bool isAnyTarget = string.IsNullOrEmpty(targetText) || targetText.Contains("any target");
-
-                    return new DealDamageEffect(damage, isAnyTarget);
+            
+                    TargetType targetType = TargetType.Any;
+            
+                    if (!string.IsNullOrEmpty(targetText) && !targetText.Contains("any target"))
+                    {
+                        if (targetText.Contains("creature"))
+                            targetType = TargetType.Creature;
+                        else if (targetText.Contains("player"))
+                            targetType = TargetType.Player;
+                    }
+            
+                    return new DealDamageEffect(damage, targetType);
                 }),
 
             // 3. "destroy target..."
             new PatternRule(
                 @"^destroys?\s+target\s+(?<target>.+)$",
-                match => new DestroyTargetEffect())
+                match =>
+                {
+                    string targetText = match.Groups["target"].Value.ToLowerInvariant();
+            
+                    IReadOnlyList<CardType>? requiredTypes = null;
+                    if (targetText.Contains("creature"))
+                    {
+                        requiredTypes = [CardType.Creature]; // C# Collection Expression
+                    }
+                    else if (targetText.Contains("artifact"))
+                    {
+                        requiredTypes = [CardType.Artifact];
+                    }
+                    else if (targetText.Contains("enchantment"))
+                    {
+                        requiredTypes = [CardType.Enchantment];
+                    }
+                    else if (targetText.Contains("land"))
+                    {
+                        requiredTypes = [CardType.Land];
+                    }
+            
+                    IReadOnlyList<CardType>? excludedTypes = null;
+                    if (targetText.Contains("nonartifact"))
+                    {
+                        excludedTypes = [CardType.Artifact];
+                    }
+            
+                    bool onlyYou = targetText.Contains("you control");
+                    bool onlyOpponent = targetText.Contains("an opponent controls");
+            
+                    var filter = new CardFilter(
+                        RequiredTypes: requiredTypes,
+                        ExcludedTypes: excludedTypes,
+                        OnlyControlledByYou: onlyYou,
+                        OnlyControlledByOpponent: onlyOpponent
+                    );
+            
+                    return new DestroyTargetEffect(filter);
+                }),
         ];
     }
 

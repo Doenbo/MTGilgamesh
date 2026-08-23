@@ -60,7 +60,7 @@ public class ScryfallCardConverterTests
     [MemberData(nameof(ScryfallCardConverterValidTestData))]
     public async Task TestGetExactTestSpace(JsonString json)
     {
-        var act = ScryfallCardConverter.Convert(json);
+        var act = new ScryfallCardConverter().Convert(json);
         Assert.True(act.IsSuccess);
         Assert.Equal(name, act.Value.Name);
     }
