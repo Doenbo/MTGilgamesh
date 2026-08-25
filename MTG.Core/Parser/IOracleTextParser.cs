@@ -6,5 +6,5 @@ namespace MTG.Core.Parser;
 
 public interface IOracleTextParser
 {
-    Result<IReadOnlyList<ICardComponent>> Parse(string oracleText, CardContext? context = null);
+    Result<IReadOnlyList<ICardComponent>> Parse(string oracleText, CardContext cref);
 }

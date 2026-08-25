@@ -1,4 +1,5 @@
-﻿using MTG.Core.Cards;
+﻿using MTG.Core.Abilities;
+using MTG.Core.Cards;
 using MTG.Core.Components;
 using MTG.Core.Enums;
 using MTG.Core.Helper;
@@ -53,9 +54,9 @@ public class ScryfallCardConverter : IScryfallCardConverter
     }
 
     private Result<ICardFace> CreateCardFace(
-        string name, string typeline, string? oracleText, string? manaCost, float cmc, List<string> colorIdentity,
-        List<string>? colorIndicator, List<string>? colors, string? power, string? toughness, string? defense,
-        string? loyalty, List<ScryfallColor>? producedMana, List<string> keywords)
+        ICard card, string name, string typeline, string? oracleText, string? manaCost, float cmc,
+        List<string> colorIdentity, List<string>? colorIndicator, List<string>? colors, string? power, string? toughness,
+        string? defense, string? loyalty, List<ScryfallColor>? producedMana, List<string> keywords)
     {
 
         //TypeLine
@@ -139,7 +140,7 @@ public class ScryfallCardConverter : IScryfallCardConverter
         // Oracle Text Parser
         if (!string.IsNullOrWhiteSpace(oracleText))
         {
-            var parseResult = _oracleTextParser.Parse(oracleText);
+            var parseResult = _oracleTextParser.Parse(oracleText, new CardContext(name));
 
             if (parseResult.IsFailure)
                 return parseResult.ToFailure<ICardFace>();
@@ -171,7 +172,7 @@ public class ScryfallCardConverter : IScryfallCardConverter
         {
             if (dto.CardFaces == null)
             {
-                var noFace = CreateCardFace(dto.Name, dto.TypeLine, dto.OracleText, dto.ManaCost,
+                var noFace = CreateCardFace(card, dto.Name, dto.TypeLine, dto.OracleText, dto.ManaCost,
                                             dto.CMC, dto.ColorIdentity, dto.ColorIndicator, dto.Colors,
                                             dto.Power, dto.Toughness, dto.Defense, dto.Loyalty, dto.ProducedMana,
                                             dto.Keywords);
@@ -186,7 +187,7 @@ public class ScryfallCardConverter : IScryfallCardConverter
                 if (cardFace == null || cardFace.Object != "card_face")
                     return Result<ICard>.Failure("Object is not a card face!");
 
-                var iFace = CreateCardFace(cardFace.Name, cardFace.TypeLine, cardFace.OracleText, cardFace.ManaCost,
+                var iFace = CreateCardFace(card, cardFace.Name, cardFace.TypeLine, cardFace.OracleText, cardFace.ManaCost,
                                            cardFace.CMC ?? -1, null!, cardFace.ColorIndicator, cardFace.Colors,
                                            cardFace.Power, cardFace.Toughness, cardFace.Defense, cardFace.Loyalty,
                                            dto.ProducedMana,

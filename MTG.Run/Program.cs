@@ -1,4 +1,6 @@
-﻿using MTG.Core.Cards;
+﻿using Microsoft.Extensions.Logging;
+using MTG.Core;
+using MTG.Core.Cards;
 using MTG.Core.Helper;
 using MTG.Engine.Factories;
 using MTG.Engine.Gameplay;
@@ -10,6 +12,14 @@ public class Program
 {
     public static async Task Main()
     {
+        Cheats.EnableAll();
+
+        LogManager.Factory = LoggerFactory.Create(builder =>
+        {
+            builder.AddConsole();
+            builder.SetMinimumLevel(LogLevel.Warning);
+        });
+
         IPlayerInputProvider human = new ConsoleInputProvider();
         IPlayerInputProvider ai = new OpponentInputProvider();
 

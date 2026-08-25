@@ -2,17 +2,39 @@
 
 public class Cheats
 {
-#pragma warning disable CA2211 // Non-constant fields should not be visible
     // Skips
-    public static bool SkipUpkeepAndDraw = true;
-    public static bool SkipCompleteCombatPhase = true;
-    public static bool SkipEndStep = true;
-    public static bool SkipPrio = true;
+    public static bool SkipUpkeepAndDraw { get; set; } = false;
+    public static bool SkipCompleteCombatPhase { get; set; } = false;
+    public static bool SkipEndStep { get; set; } = false;
+    public static bool SkipPrio { get; set; } = false;
 
     // Infinites
-    public static bool CanPlayInfiniteLands = true;
-    public static bool CanPlaySpellsWithoutPaying = true;
-    public static bool CanTapLandsInfiniteTimes = true;
-    public static bool CanUseAbilitiesInfiniteTimes = true;
-#pragma warning restore CA2211 // Non-constant fields should not be visible
+    public static bool CanPlayInfiniteLands { get; set; } = false;
+    public static bool CanPlaySpellsWithoutPaying { get; set; } = false;
+    public static bool CanTapLandsInfiniteTimes { get; set; } = false;
+    public static bool CanUseAbilitiesInfiniteTimes { get; set; } = false;
+
+    public static void EnableAll()
+    {
+        SkipUpkeepAndDraw = true;
+        SkipCompleteCombatPhase = true;
+        SkipEndStep = true;
+        SkipPrio = true;
+        CanPlayInfiniteLands = true;
+        CanPlaySpellsWithoutPaying = true;
+        CanTapLandsInfiniteTimes = true;
+        CanUseAbilitiesInfiniteTimes = true;
+    }
+
+    public static void DisableAll()
+    {
+        SkipUpkeepAndDraw = false;
+        SkipCompleteCombatPhase = false;
+        SkipEndStep = false;
+        SkipPrio = false;
+        CanPlayInfiniteLands = false;
+        CanPlaySpellsWithoutPaying = false;
+        CanTapLandsInfiniteTimes = false;
+        CanUseAbilitiesInfiniteTimes = false;
+    }
 }
