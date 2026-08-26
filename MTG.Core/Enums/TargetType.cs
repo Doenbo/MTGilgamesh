@@ -10,4 +10,6 @@ public enum TargetType
     NonLandPermanent,
     CardInGraveyard,
     Planeswalker,
+    TargetPlayer,
+    TargetCreature,
 }

@@ -21,7 +21,41 @@ public record CardFilter(
     public static CardFilter ForSubtype(string subtype)
         => new(RequiredSubtypes: [subtype]);
 
-    // Value-Equality für Sammlungen, damit xUnit-Tests immer grün werden
+    /// <summary>
+    /// Parses a raw target string (e.g., "creature", "artifact", "nonland permanent") into a CardFilter.
+    /// </summary>
+    public static CardFilter Parse(string rawText)
+    {
+        if (string.IsNullOrWhiteSpace(rawText))
+            return Any;
+
+        string normalized = rawText.Trim().ToLowerInvariant();
+        var requiredTypes = new List<CardType>();
+        var excludedTypes = new List<CardType>();
+
+        // Check for "nonland" or other exclusions
+        if (normalized.Contains("nonland"))
+        {
+            excludedTypes.Add(CardType.Land);
+        }
+
+        // Match against known CardType enum values
+        foreach (CardType type in Enum.GetValues<CardType>())
+        {
+            string typeName = type.ToString().ToLowerInvariant();
+            if (normalized.Contains(typeName))
+            {
+                requiredTypes.Add(type);
+            }
+        }
+
+        return new CardFilter(
+            RequiredTypes: requiredTypes.Count > 0 ? requiredTypes.AsReadOnly() : null,
+            ExcludedTypes: excludedTypes.Count > 0 ? excludedTypes.AsReadOnly() : null
+        );
+    }
+
+    // Value-Equality für Sammlungen...
     public virtual bool Equals(CardFilter? other)
     {
         if (other is null) return false;

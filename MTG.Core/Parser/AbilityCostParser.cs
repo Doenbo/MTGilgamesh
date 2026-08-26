@@ -32,10 +32,23 @@ public class AbilityCostParser : IAbilityCostParser
                     return new DiscardCost(amount);
                 }),
 
-            // 4. Sacrifice: "Sacrifice a permanent/creature/land..."
+            // 4. Sacrifice: "Sacrifice a permanent", "Sacrifice this artifact", "Sacrifice 2 lands"
             new CostPatternRule(
-                @"^sacrifice\s+(?:a|an)\s+(?<type>.+)$",
-                match => new SacrificeCost(match.Groups["type"].Value.Trim())),
+                @"^sacrifice\s+(?:(?<amount>\d+|a|an)\s+)?(?<type>.+)$",
+                match =>
+                {
+                    string rawType = match.Groups["type"].Value.Trim();
+                    string amountGroup = match.Groups["amount"].Value;
+                    int amount = string.IsNullOrEmpty(amountGroup) ? 1 : ParseNumber(amountGroup);
+
+                    if (rawType.StartsWith("this", StringComparison.OrdinalIgnoreCase) ||
+                        rawType.Equals("{this}", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return new SacrificeSelfCost();
+                    }
+
+                    return new SacrificeCost(rawType, amount);
+                }),
 
             // 5. Mana cost: e.g., "{1}{R}" or "{G}"
             new CostPatternRule(
@@ -79,9 +92,8 @@ public class AbilityCostParser : IAbilityCostParser
             }
 
             if (!matched)
-            {
                 return Result<IReadOnlyList<IAbilityCost>>.Failure($"Unknown or unsupported cost segment: '{segment}'");
-            }
+
         }
 
         return Result<IReadOnlyList<IAbilityCost>>.Success(parsedCosts.AsReadOnly());

@@ -35,5 +35,7 @@ public class TriggeredAbilityParser : ILineComponentParser
     }
 
     private static string ExtractTriggerCondition(string line) => line.Split(',', 2)[0];
-    private static string ExtractTriggerEffect(string line) => line.Contains(',') ? line.Split(',', 2)[1] : line;
+
+    private static string ExtractTriggerEffect(string line) =>
+    line.Contains(',') ? line.Split(',', 2)[1].Trim() : line.Trim();
 }

@@ -1,8 +1,7 @@
-﻿using MTG.Core.Abilities;
+﻿using System.Text.RegularExpressions;
+using MTG.Core.Abilities;
 using MTG.Core.Enums;
 using MTG.Core.Helper;
-using MTG.Core.Types;
-using System.Text.RegularExpressions;
 
 namespace MTG.Core.Parser;
 
@@ -12,11 +11,10 @@ public class EffectParser : IEffectParser
 
     public EffectParser()
     {
-        // Initializing rules inside constructor allows invoking non-static instance methods like ParseNumber
         _rules =
         [
-            // 1. "Draw X card(s)"
-            new PatternRule(
+            // 1. Draw Cards: Optionales 's' bei draw(s) zulassen
+            new EffectPatternRule(
                 @"^draws?\s+(?<amount>\d+|a|an)\s+cards?$",
                 match =>
                 {
@@ -24,80 +22,137 @@ public class EffectParser : IEffectParser
                     return new DrawCardsEffect(amount);
                 }),
 
-            // 2. "deals X damage to any target / to target..."
-            new PatternRule(
-                @"^deals?\s+(?<damage>\d+)\s+damage(?:\s+to\s+(?<target>.+))?$",
+            // 2. Gain Life: "you gain X life"
+            new EffectPatternRule(
+                @"^you\s+gain\s+(?<amount>\d+)\s+life$",
                 match =>
                 {
-                    int damage = int.Parse(match.Groups["damage"].Value);
-                    string targetText = match.Groups["target"].Value;
+                    int amount = int.Parse(match.Groups["amount"].Value);
+                    return new GainLifeEffect(amount);
+                }),
+
+            // 3. Lose Life: "you lose X life", "target player loses X life"
+            new EffectPatternRule(
+                @"^(?:you|target\s+player)\s+loses?\s+(?<amount>\d+)\s+life$",
+                match =>
+                {
+                    int amount = int.Parse(match.Groups["amount"].Value);
+                    return new LoseLifeEffect(amount);
+                }),
+
+            // 4. Modify Power / Toughness: "gets +X/+Y until end of turn", "gets +1/+1"
+            new EffectPatternRule(
+                @"^gets?\s+(?<power>[\+\-]\d+)/(?<toughness>[\+\-]\d+)(?:\s+(?<eot>until\s+end\s+of\s+turn))?$",
+                match =>
+                {
+                    int power = int.Parse(match.Groups["power"].Value);
+                    int toughness = int.Parse(match.Groups["toughness"].Value);
+                    bool untilEot = match.Groups["eot"].Success;
+                    return new ModifyPowerToughnessEffect(power, toughness, untilEot);
+                }),
+
+            // 5. Create Token: "create a 1/1 white Soldier creature token with lifelink"
+            new EffectPatternRule(
+                @"^create\s+(?<amount>\d+|a|an)\s+(?<power>\d+)/(?<toughness>\d+)\s+(?<color>\w+)\s+(?<subtype>\w+)\s+creature\s+token(?:\s+with\s+(?<keywords>.+))?$",
+                match =>
+                {
+                    int amount = ParseNumber(match.Groups["amount"].Value);
+                    int power = int.Parse(match.Groups["power"].Value);
+                    int toughness = int.Parse(match.Groups["toughness"].Value);
+                    string color = match.Groups["color"].Value;
+                    string subtype = match.Groups["subtype"].Value;
+
+                    var keywords = match.Groups["keywords"].Success
+                        ? match.Groups["keywords"].Value.Split("and", StringSplitOptions.TrimEntries)
+                        : Array.Empty<string>();
+
+                    return new CreateTokenEffect(amount, power, toughness, color, subtype, keywords);
+                }),
+
+            // 6. Deal Damage: Optional 's' at deal(s) and optional target (to ...)
+            new EffectPatternRule(
+                @"^deals?\s+(?<amount>\d+)\s+damage(?:\s+to\s+(?<target>.+))?$",
+                match =>
+                {
+                    int damage = int.Parse(match.Groups["amount"].Value);
+                    string rawTarget = match.Groups["target"].Success ? match.Groups["target"].Value.ToLowerInvariant() : "any";
             
-                    TargetType targetType = TargetType.Any;
-            
-                    if (!string.IsNullOrEmpty(targetText) && !targetText.Contains("any target"))
+                    TargetType targetType = rawTarget switch
                     {
-                        if (targetText.Contains("creature"))
-                            targetType = TargetType.Creature;
-                        else if (targetText.Contains("player"))
-                            targetType = TargetType.Player;
-                    }
+                        var t when t.Contains("creature") => TargetType.Creature,
+                        var t when t.Contains("player") => TargetType.Player,
+                        _ => TargetType.Any
+                    };
             
                     return new DealDamageEffect(damage, targetType);
                 }),
-
-            // 3. "destroy target..."
-            new PatternRule(
+            
+            // 7. Destroy Target: Optionales 's' bei destroy(s)
+            new EffectPatternRule(
                 @"^destroys?\s+target\s+(?<target>.+)$",
                 match =>
                 {
-                    string targetText = match.Groups["target"].Value.ToLowerInvariant();
-            
-                    IReadOnlyList<CardType>? requiredTypes = null;
-                    if (targetText.Contains("creature"))
-                    {
-                        requiredTypes = [CardType.Creature]; // C# Collection Expression
-                    }
-                    else if (targetText.Contains("artifact"))
-                    {
-                        requiredTypes = [CardType.Artifact];
-                    }
-                    else if (targetText.Contains("enchantment"))
-                    {
-                        requiredTypes = [CardType.Enchantment];
-                    }
-                    else if (targetText.Contains("land"))
-                    {
-                        requiredTypes = [CardType.Land];
-                    }
-            
-                    IReadOnlyList<CardType>? excludedTypes = null;
-                    if (targetText.Contains("nonartifact"))
-                    {
-                        excludedTypes = [CardType.Artifact];
-                    }
-            
-                    bool onlyYou = targetText.Contains("you control");
-                    bool onlyOpponent = targetText.Contains("an opponent controls");
-            
-                    var filter = new CardFilter(
-                        RequiredTypes: requiredTypes,
-                        ExcludedTypes: excludedTypes,
-                        OnlyControlledByYou: onlyYou,
-                        OnlyControlledByOpponent: onlyOpponent
-                    );
-            
-                    return new DestroyTargetEffect(filter);
+                    string rawTarget = match.Groups["target"].Value;
+                    return new DestroyTargetEffect(CardFilter.Parse(rawTarget));
                 }),
+
+            // 8. Add Counters: "put X +1/+1 counters on target creature"
+            new EffectPatternRule(
+                @"^put\s+(?<amount>\d+|a|an)\s+(?<type>[\+\-\w]+)\s+counters?\s+on\s+(?<target>.+)$",
+                match =>
+                {
+                    int amount = ParseNumber(match.Groups["amount"].Value);
+                    return new AddCountersEffect(MarkerType.PlusOnePlusOne, amount);
+                }),
+
+            // 9. Discard Cards: "target player discards X cards", "discard a card"
+            new EffectPatternRule(
+                @"^(?:target\s+player\s+discards?|discard)\s+(?<amount>\d+|a|an)\s+cards?$",
+                match =>
+                {
+                    int amount = ParseNumber(match.Groups["amount"].Value);
+                    return new DiscardCardEffect(amount);
+                }),
+
+            // 10. Scry: "scry X"
+            new EffectPatternRule(
+                @"^scry\s+(?<amount>\d+)$",
+                match => new ScryEffect(int.Parse(match.Groups["amount"].Value)))
         ];
     }
 
-    public Result<IEffect> Parse(string rawEffect)
+    public Result<IEffect> Parse(string rawEffectText)
     {
-        if (string.IsNullOrWhiteSpace(rawEffect))
+        if (string.IsNullOrWhiteSpace(rawEffectText))
             return Result<IEffect>.Failure("Effect text cannot be empty.");
 
-        // Normalize text: trim white spaces, strip trailing dots, and convert to lower-case for pattern matching
-        string normalizedText = rawEffect.Trim().TrimEnd('.').ToLowerInvariant();
+        // Handle multiple effects separated by period or "and" (e.g., "You gain 1 life. Draw a card.")
+        string[] effectSegments = rawEffectText
+            .Split(new[] { '.', ';' }, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+
+        if (effectSegments.Length > 1)
+        {
+            var parsedSubEffects = new List<IEffect>();
+            foreach (var segment in effectSegments)
+            {
+                var subResult = ParseSingleEffect(segment);
+                if (subResult.IsSuccess)
+                {
+                    parsedSubEffects.Add(subResult.Value);
+                }
+            }
+
+            if (parsedSubEffects.Count > 0)
+                return Result<IEffect>.Success(new MultipleEffects(parsedSubEffects.AsReadOnly()));
+        }
+
+        return ParseSingleEffect(rawEffectText.Trim());
+    }
+
+    private Result<IEffect> ParseSingleEffect(string text)
+    {
+        // Trim end punctuation so "destroys target creature." becomes "destroys target creature"
+        string normalizedText = text.TrimEnd('.').ToLowerInvariant().Trim();
 
         foreach (var rule in _rules)
         {
@@ -108,10 +163,10 @@ public class EffectParser : IEffectParser
             }
         }
 
-        return Result<IEffect>.Failure($"Unknown or unsupported effect text: '{rawEffect}'");
+        return Result<IEffect>.Success(new UnhandledEffect(text));
     }
 
-    private int ParseNumber(string value)
+    private static int ParseNumber(string value)
     {
         return value switch
         {
@@ -120,18 +175,17 @@ public class EffectParser : IEffectParser
         };
     }
 
-    // Internal interface for clean pattern encapsulation
     private interface IEffectPatternRule
     {
         Result<IEffect> TryMatch(string text);
     }
 
-    private class PatternRule : IEffectPatternRule
+    private class EffectPatternRule : IEffectPatternRule
     {
         private readonly Regex _regex;
         private readonly Func<Match, IEffect> _factory;
 
-        public PatternRule(string pattern, Func<Match, IEffect> factory)
+        public EffectPatternRule(string pattern, Func<Match, IEffect> factory)
         {
             _regex = new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
             _factory = factory;
@@ -150,7 +204,7 @@ public class EffectParser : IEffectParser
             }
             catch (Exception ex)
             {
-                return Result<IEffect>.Failure($"Error building effect: {ex.Message}");
+                return Result<IEffect>.Failure($"Error parsing effect: {ex.Message}");
             }
         }
     }
