@@ -21,6 +21,7 @@ public class CardFaceFactory
     private class CardFace : ICardFace
     {
         private readonly Dictionary<Type, List<ICardComponent>> _components = [];
+        public ICardComponent[] DebugComponents => _components.Values.SelectMany(x => x).ToArray();
 
         public CardFace() { }
 

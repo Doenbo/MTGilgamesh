@@ -7,12 +7,13 @@ namespace MTG.Core.Decks;
 
 public class CommanderDeck : Deck
 {
-    private ICard FirstCommander { get; set; } //TODO not nullable? -> warning @constructor
+    // Make explicit nullable to remove constructor compiler warnings
+    private ICard? FirstCommander { get; set; }
     private ICard? SecondCommander { get; set; }
 
+    // Standard constructor for builders/creators
     public CommanderDeck()
     {
-
     }
 
     public Result AddCommander(ICard card)
@@ -32,18 +33,33 @@ public class CommanderDeck : Deck
         return Result.Failure("There can't be more than 2 Commanders!");
     }
 
-    public Result<ICard> GetFirstCommander() => Result<ICard>.Success(FirstCommander);
+    public Result<ICard> GetFirstCommander()
+    {
+        return FirstCommander == null
+            ? Result<ICard>.Failure("No primary Commander set.")
+            : Result<ICard>.Success(FirstCommander);
+    }
 
     public Result<ICard> GetSecondCommander()
     {
-        return SecondCommander == null ?
-            Result<ICard>.Failure("There is no second Commander") : Result<ICard>.Success(SecondCommander);
+        return SecondCommander == null
+            ? Result<ICard>.Failure("There is no second Commander.")
+            : Result<ICard>.Success(SecondCommander);
     }
 
-    public Result<ICard> GetRandomCard() => Result<ICard>.Success(Cards[new Random().Next(1, Cards.Count) - 1]);
+    public Result<ICard> GetRandomCard()
+    {
+        if (Cards.Count == 0)
+            return Result<ICard>.Failure("Deck is empty.");
+
+        return Result<ICard>.Success(Cards[Random.Shared.Next(0, Cards.Count)]);
+    }
 
     public Result<ManaType> GetDeckColorIdentity()
     {
+        if (FirstCommander == null)
+            return Result<ManaType>.Failure("Cannot calculate color identity without a Commander.");
+
         ManaType result = 0;
         var fc = FirstCommander.GetCardColorIdentity();
         if (fc.IsFailure)
@@ -66,31 +82,29 @@ public class CommanderDeck : Deck
     public Result<bool> IsValidCommanderDeck()
     {
         if (FirstCommander == null)
-            return Result<bool>.Failure("No Commander!");
+            return Result<bool>.Failure("No Commander found in the deck!");
 
-        if (SecondCommander == null && Cards.Count != 99)
-            return Result<bool>.Failure($"Not the right amount of Cards in the Deck! {Cards.Count}/99");
-
-        if (SecondCommander != null && Cards.Count != 98)
-            return Result<bool>.Failure($"Not the right amount of Cards in the Deck! {Cards.Count}/98");
+        int expectedCards = SecondCommander == null ? 99 : 98;
+        if (Cards.Count != expectedCards)
+            return Result<bool>.Failure($"Not the right amount of Cards in the Deck! {Cards.Count}/{expectedCards}");
 
         var deckColor = GetDeckColorIdentity();
         if (deckColor.IsFailure)
             return deckColor.ToFailure<bool>();
 
-        foreach (var card in Cards.ToList())
+        foreach (var card in Cards)
         {
-            if (card.Legalities[Format.Commander] != Legality.Legal)
-                return Result<bool>.Failure("Card is not legal in Commander!");
+            if (card.Legalities.TryGetValue(Format.Commander, out var legality) && legality != Legality.Legal)
+                return Result<bool>.Failure($"Card '{card}' is not legal in Commander!");
 
-            foreach (var face in card.Faces.ToList())
+            foreach (var face in card.Faces)
             {
                 if (!face.TryGetComponent<ColorComponent>(out var ident))
-                    return Result<bool>.Failure("No Color Component?");
+                    return Result<bool>.Failure($"Missing Color Component on card face: {card}");
 
                 var isLegal = (ident.ColorIdentity & ~deckColor.Value) == ManaType.Colorless;
                 if (!isLegal)
-                    return Result<bool>.Failure($"Illegal Card: {card}");
+                    return Result<bool>.Failure($"Illegal Card for color identity: {card}");
             }
         }
 

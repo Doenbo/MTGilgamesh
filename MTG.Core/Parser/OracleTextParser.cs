@@ -15,11 +15,19 @@ public class OracleTextParser : IOracleTextParser
         _lineParsers = lineParsers;
     }
 
-    public OracleTextParser() : this([
-        new ProduceManaParser(),
-        new ActivatedAbilityParser(new AbilityCostParser(), new EffectParser()),
-        new TriggeredAbilityParser(new EffectParser())])
+    public OracleTextParser() : this(CreateDefaultParsers())
     { }
+
+    private static ILineComponentParser[] CreateDefaultParsers()
+    {
+        var effectParser = new EffectParser();
+
+        return [
+            new ProduceManaParser(),
+            new ActivatedAbilityParser(new AbilityCostParser(), effectParser),
+            new TriggeredAbilityParser(new TriggerConditionParser(), effectParser)
+        ];
+    }
 
     public Result<IReadOnlyList<ICardComponent>> Parse(string oracleText, CardContext cref)
     {

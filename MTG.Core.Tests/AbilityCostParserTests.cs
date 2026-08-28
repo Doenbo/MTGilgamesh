@@ -10,7 +10,7 @@ public class AbilityCostParserTests
         // Single costs
         { "{T}", new List<IAbilityCost> { new TapCost() } },
         { "Pay 2 life", new List<IAbilityCost> { new PayLifeCost(2) } },
-        { "Discard a card", new List<IAbilityCost> { new DiscardCost(1) } },
+        { "Discard a card", new List<IAbilityCost> { new DiscardCardCost(1) } },
 
         // Multiple comma-separated costs
         {

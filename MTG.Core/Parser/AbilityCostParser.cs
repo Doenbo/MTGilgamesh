@@ -23,16 +23,21 @@ public class AbilityCostParser : IAbilityCostParser
                 @"^pay\s+(?<amount>\d+)\s+life$",
                 match => new PayLifeCost(int.Parse(match.Groups["amount"].Value))),
 
-            // 3. Discard: "Discard X card(s)"
+            // 3. Discard Hand: "Discard your hand"
+            new CostPatternRule(
+                @"^discard\s+your\s+hand$",
+                _ => new DiscardHandCost()),
+
+            // 4. Discard Cards: "Discard X card(s)"
             new CostPatternRule(
                 @"^discard\s+(?<amount>\d+|a|an)\s+cards?$",
                 match =>
                 {
-                    int amount = ParseNumber(match.Groups["amount"].Value); // Works now!
-                    return new DiscardCost(amount);
+                    int amount = ParseNumber(match.Groups["amount"].Value);
+                    return new DiscardCardCost(amount);
                 }),
 
-            // 4. Sacrifice: "Sacrifice a permanent", "Sacrifice this artifact", "Sacrifice 2 lands"
+            // 5. Sacrifice: "Sacrifice a permanent", "Sacrifice this artifact", "Sacrifice 2 lands"
             new CostPatternRule(
                 @"^sacrifice\s+(?:(?<amount>\d+|a|an)\s+)?(?<type>.+)$",
                 match =>
@@ -50,7 +55,7 @@ public class AbilityCostParser : IAbilityCostParser
                     return new SacrificeCost(rawType, amount);
                 }),
 
-            // 5. Mana cost: e.g., "{1}{R}" or "{G}"
+            // 6. Mana cost: e.g., "{1}{R}" or "{G}"
             new CostPatternRule(
                 @"^(?:\{[0-9a-zA-Z/]+\})+$",
                 match =>
@@ -93,7 +98,6 @@ public class AbilityCostParser : IAbilityCostParser
 
             if (!matched)
                 return Result<IReadOnlyList<IAbilityCost>>.Failure($"Unknown or unsupported cost segment: '{segment}'");
-
         }
 
         return Result<IReadOnlyList<IAbilityCost>>.Success(parsedCosts.AsReadOnly());

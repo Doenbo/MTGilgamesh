@@ -1,15 +1,16 @@
 ﻿using MTG.Core.Cards;
 using MTG.Core.Enums;
+using System.Numerics;
 
 namespace MTG.Engine.Gameplay;
 
 public class CardInstance
 {
-    public CardInstance(ICard c, CommanderPlayer cp)
+    public CardInstance(ICard card, CommanderPlayer owner)
     {
-        CardData = c;
-        Owner = cp;
-        Controller = cp;
+        CardData = card;
+        Owner = owner;
+        Controller = owner;
     }
 
     public ICard CardData { get; set; }
@@ -28,5 +29,10 @@ public class CardInstance
     {
         Counters.TryGetValue(type, out int current);
         Counters[type] = current + amount;
+    }
+
+    public override string ToString()
+    {
+        return CardData.FullName;
     }
 }

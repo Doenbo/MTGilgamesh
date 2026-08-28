@@ -36,7 +36,7 @@ public class CommanderPlayer
     public IReadOnlyList<CardInstance> Exile => _exile.AsReadOnly();
 
     //CommandZone
-    public readonly (CardInstance, CardInstance) Commander;
+    public CommandZone CommandZone { get; init; } = new();
 
 
     private CommanderPlayer(string name, int life, CommanderDeck cd, IPlayerInputProvider pip)
@@ -44,10 +44,10 @@ public class CommanderPlayer
         Name = name;
         LifeTotal = life;
         Deck = cd;
-
         _inputProvider = pip;
-
         ManaPool = new ManaPool();
+
+        InitializeCommandZone(cd);
     }
 
     public static async Task<Result<CommanderPlayer>> Create(string name, int life, CommanderPrecon cp, IPlayerInputProvider pip)
@@ -68,16 +68,31 @@ public class CommanderPlayer
         return Result<CommanderPlayer>.Success(player);
     }
 
-    private void InitializePlayer(Deck deck)
+    private void InitializePlayer(CommanderDeck deck)
     {
-        for (int i = 0; i < 7; i++)
+        foreach (var card in deck.Cards)
         {
-            _hand.Add(new CardInstance(deck.Cards[i], this));
+            _library.Push(new CardInstance(card, this));
         }
 
-        for (int i = deck.Cards.Count - 1; i >= 7; i--)
+        for (int i = 0; i < 7; i++)
         {
-            _library.Push(new CardInstance(deck.Cards[i], this));
+            _ = DrawCard();
+        }
+    }
+
+    private void InitializeCommandZone(CommanderDeck cd)
+    {
+        var first = cd.GetFirstCommander();
+        if (first.IsSuccess)
+        {
+            CommandZone.AddCommander(new CardInstance(first.Value, this));
+        }
+
+        var second = cd.GetSecondCommander();
+        if (second.IsSuccess)
+        {
+            CommandZone.AddCommander(new CardInstance(second.Value, this));
         }
     }
 

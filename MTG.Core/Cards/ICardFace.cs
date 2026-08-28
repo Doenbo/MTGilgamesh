@@ -8,6 +8,8 @@ namespace MTG.Core.Cards;
 
 public interface ICardFace
 {
+    public ICardComponent[] DebugComponents { get; }
+
     //100% Mandatory Properties
     public string Name { get; }
     public TypeLine TypeLine { get; }
