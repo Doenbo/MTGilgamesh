@@ -24,6 +24,7 @@ public class OracleTextParser : IOracleTextParser
 
         return [
             new ProduceManaParser(),
+            new KeywordAbilityParser(),
             new ActivatedAbilityParser(new AbilityCostParser(), effectParser),
             new TriggeredAbilityParser(new TriggerConditionParser(), effectParser)
         ];

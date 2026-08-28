@@ -1,4 +1,6 @@
-﻿namespace MTG.Core.Abilities;
+﻿using MTG.Core.Enums;
+
+namespace MTG.Core.Abilities;
 
 public interface IAbilityCost { }
 
@@ -17,3 +19,9 @@ public record SacrificeSelfCost : IAbilityCost;
 public record DiscardCardCost(int Amount) : IAbilityCost;
 
 public record DiscardHandCost : IAbilityCost;
+
+public record TapCreaturesCost(int Amount, CardFilter? Filter = null) : IAbilityCost;
+
+public record RemoveCounterCost(MarkerType CounterType, int Amount = 1) : IAbilityCost;
+
+public record PutCounterOnSelfCost(MarkerType CounterType, int Amount = 1) : IAbilityCost;

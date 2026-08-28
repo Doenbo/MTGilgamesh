@@ -9,13 +9,19 @@ namespace MTG.Core.Parser;
 
 public partial class ProduceManaParser : ILineComponentParser
 {
-    [GeneratedRegex(@"Add\s+([^\.\n]+)", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"^\s*\(?(?:[^:]+:\s*)?add\s+(?:\{|\d+|one|two|three|four|five|\w+\s+mana)", RegexOptions.IgnoreCase)]
+    private static partial Regex GetCanParseRegex();
+
+    [GeneratedRegex(@"Add\s+([^\.\)\n]+)", RegexOptions.IgnoreCase)]
     private static partial Regex GetAddManaLineRegex();
 
     [GeneratedRegex(@"\{([WUBRGC0-9])\}", RegexOptions.IgnoreCase)]
     private static partial Regex GetManaSymbolRegex();
 
-    public bool CanParse(string line) => line.Contains("Add", StringComparison.OrdinalIgnoreCase);
+    public bool CanParse(string line)
+    {
+        return GetCanParseRegex().IsMatch(line);
+    }
 
     public Result<ICardComponent?> Parse(string line, CardContext cref)
     {
@@ -49,7 +55,7 @@ public partial class ProduceManaParser : ILineComponentParser
 
         var match = GetAddManaLineRegex().Match(line);
         if (!match.Success)
-            return Result<List<ManaUnit>>.Failure($"Line contained 'Add' but did not match mana pattern.");
+            return Result<List<ManaUnit>>.Failure("Line contained 'Add' but did not match mana pattern.");
 
         string capturedText = match.Groups[1].Value;
         var symbolMatches = GetManaSymbolRegex().Matches(capturedText);

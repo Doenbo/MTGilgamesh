@@ -9,5 +9,6 @@ public enum MarkerType //normally CounterType, but thats a c# thing
     Energy,
     Charge,
     Time,
-    Shield
+    Shield,
+    Page,
 }

@@ -1,4 +1,5 @@
 ﻿using MTG.Core.Abilities;
+using MTG.Core.Enums;
 using MTG.Core.Helper;
 using System.Text.RegularExpressions;
 
@@ -66,7 +67,34 @@ public class AbilityCostParser : IAbilityCostParser
                         throw new InvalidOperationException(manaCostResult.Error);
 
                     return new ManaCostData(manaCostResult.Value);
-                })
+                }),
+
+            // 7. "Tap four untapped creatures you control" / "Tap an untapped creature you control"
+            new CostPatternRule(
+                @"^tap\s+(?<amount>\d+|four|three|two|one|a|an)?\s*(?<filter>.+)\s+you\s+control$",
+                match =>
+                {
+                    int amount = ParseNumber(match.Groups["amount"].Value);
+                    return new TapCreaturesCost(amount, CardFilter.Parse(match.Groups["filter"].Value));
+                }),
+            
+            // 8. "Remove a page counter from this artifact" / "Remove a -1/-1 counter from this creature"
+            new CostPatternRule(
+                @"^remove\s+a\s+(?<type>.+?)\s+counter\s+from\s+this",
+                match =>
+                {
+                    string typeStr = match.Groups["type"].Value;
+                    MarkerType type = typeStr.Equals("-1/-1") ? MarkerType.MinusOneMinusOne : MarkerType.Page;
+                    return new RemoveCounterCost(type, 1);
+                }),
+            
+            // 9. "Put a -1/-1 counter on this creature"
+            new CostPatternRule(
+                @"^put\s+a\s+(?<type>.+?)\s+counter\s+on\s+this\s+creature$",
+                match =>
+                {
+                    return new PutCounterOnSelfCost(MarkerType.MinusOneMinusOne, 1);
+                }),
         ];
     }
 
