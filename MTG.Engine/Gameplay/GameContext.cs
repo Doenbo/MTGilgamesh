@@ -331,4 +331,44 @@ public class GameContext
         sb.AppendLine($"\\------------------------------------/");
         return sb.ToString();
     }
+
+    public string ToConsoleOpponentsHands()
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine($"/------------------------------------\\");
+        foreach (var p in _players)
+        {
+            if (p == ActivePlayer) continue;
+            sb.AppendLine($"[{p.Name}]");
+            foreach (var card in p.Hand.ToList())
+            {
+                sb.Append($"{card.CardData.FullName}");
+                if (card.IsTapped) sb.Append("[Tapped]");
+                sb.AppendLine();
+            }
+            sb.AppendLine();
+        }
+        sb.AppendLine($"\\------------------------------------/");
+        return sb.ToString();
+    }
+
+    public string ToConsoleOpponentsLibraries()
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine($"/------------------------------------\\");
+        foreach (var p in _players)
+        {
+            if (p == ActivePlayer) continue;
+            sb.AppendLine($"[{p.Name}]");
+            foreach (var card in p.Library.ToList())
+            {
+                sb.Append($"{card.CardData.FullName}");
+                if (card.IsTapped) sb.Append("[Tapped]");
+                sb.AppendLine();
+            }
+            sb.AppendLine();
+        }
+        sb.AppendLine($"\\------------------------------------/");
+        return sb.ToString();
+    }
 }

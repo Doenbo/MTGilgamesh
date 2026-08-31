@@ -6,23 +6,13 @@ using MTG.Core.Types;
 using MTG.Engine.Enums;
 using MTG.Engine.Gameplay;
 
+using ENV = System.Environment;
+using CIS = MTG.Run.ConsoleInputStrings;
+
 namespace MTG.Run;
 
 public class ConsoleInputProvider : IPlayerInputProvider
 {
-    private static readonly string[] miscCommand = { "B", "M", "S" };
-    private const string s_board = "B: Show Board";
-    private const string s_manap = "M: Show Own Mana Pool";
-    private const string s_stack = "S: Show Stack";
-
-    private const string o_passp = "0: Pass Priority";
-    private const string o_endph = "0: End Phase";
-    private const string o_retur = "0: Return";
-
-    private const string f_passp = $"{s_board} | {s_manap} | {s_stack} | {o_passp}";
-    private const string f_endph = $"{s_board} | {s_manap} | {s_stack} | {o_endph}";
-    private const string f_retur = $"{s_board} | {s_manap} | {s_stack} | {o_retur}";
-
     public async Task<PlayerAction> GetNextAction(GameContext context, CommanderPlayer player)
     {
         bool holdsStackPriority = context.StackCount > 0;
@@ -48,10 +38,13 @@ public class ConsoleInputProvider : IPlayerInputProvider
         while (true)
         {
             context.Display.LogInfo(
-                $"{Environment.NewLine}[{context.TurnStep}] {context.PriorityPlayer.Name}, it's your main phase. What do you do?" +
-                $"{Environment.NewLine}1: Play a Card from your Hand | 2: Tap Land for Mana | 3: Activate Ability | {f_endph}");
+                $"{ENV.NewLine}[{context.TurnStep}] {context.PriorityPlayer.Name}, it's your main phase. What do you do?" +
+                $"{ENV.NewLine}1: Play a Card from your Hand | 2: Tap Land for Mana | 3: Activate Ability | " +
+                $"{(Cheats.CanSeeOtherPlayersHands ? CIS.s_ohand + " | " : "")}" +
+                $"{(Cheats.CanSeeOtherPlayersLibraries ? CIS.s_olibr + " | " : "")}" +
+                $"{CIS.f_endph}");
 
-            var input = Console.ReadLine();
+            var input = Console.ReadLine(); //TODO? via other class?
 
             switch (input)
             {
@@ -91,6 +84,16 @@ public class ConsoleInputProvider : IPlayerInputProvider
                     context.Display.RenderStack(context);
                     continue;
 
+                case "OH":
+                    if (Cheats.CanSeeOtherPlayersHands)
+                    { context.Display.RenderOpponentsHands(context); }
+                    continue;
+
+                case "OL":
+                    if (Cheats.CanSeeOtherPlayersLibraries)
+                    { context.Display.RenderOpponentsLibraries(context); }
+                    continue;
+
                 case "0":
                     return new PlayerAction(player, ActionType.PassPriority);
 
@@ -113,9 +116,9 @@ public class ConsoleInputProvider : IPlayerInputProvider
             string casterName = topStackCard.Owner.Name;
 
             context.Display.LogInfo(
-                $"{Environment.NewLine}[{casterName}] has casted {topStackCard.CardData.FullName}." +
+                $"{ENV.NewLine}[{casterName}] has casted {topStackCard.CardData.FullName}." +
                 $"[{player.Name}] How do you react?" +
-                $"{Environment.NewLine}1: Play a Card from your Hand | {f_passp}");
+                $"{ENV.NewLine}1: Play a Card from your Hand | {CIS.f_passp}");
 
             string? input = Console.ReadLine();
 
@@ -168,8 +171,8 @@ public class ConsoleInputProvider : IPlayerInputProvider
         while (true)
         {
             context.Display.LogInfo(
-                $"{Environment.NewLine}[{context.TurnStep}] Priority: {player.Name}. What do you do?" +
-                $"{Environment.NewLine}1: Play a Card from your Hand | 2: Tap a Card | {f_passp}");
+                $"{ENV.NewLine}[{context.TurnStep}] Priority: {player.Name}. What do you do?" +
+                $"{ENV.NewLine}1: Play a Card from your Hand | 2: Tap a Card | {CIS.f_passp}");
 
             var input = Console.ReadLine();
 
@@ -221,7 +224,7 @@ public class ConsoleInputProvider : IPlayerInputProvider
             var c = player.Hand[i];
             text += $"{i + 1}: {c.CardData.FullName} | ";
         }
-        text += f_retur;
+        text += CIS.f_retur;
 
         while (true)
         {
@@ -235,7 +238,7 @@ public class ConsoleInputProvider : IPlayerInputProvider
             if (input == "0")
                 return Result<CardInstance>.Failure("Return!");
 
-            if (miscCommand.Contains(input))
+            if (CIS.stdCommands.Contains(input))
             {
                 ExecMiscCommand(context, input);
                 continue;
@@ -267,7 +270,7 @@ public class ConsoleInputProvider : IPlayerInputProvider
             var c = playerBoard.ElementAt(i);
             text += $"{i + 1}: {c.CardData.FullName} | ";
         }
-        text += f_retur;
+        text += CIS.f_retur;
 
         while (true)
         {
@@ -281,7 +284,7 @@ public class ConsoleInputProvider : IPlayerInputProvider
             if (input == "0")
                 return Result<CardInstance>.Failure("Return!");
 
-            if (miscCommand.Contains(input))
+            if (CIS.stdCommands.Contains(input))
             {
                 ExecMiscCommand(context, input);
                 continue;

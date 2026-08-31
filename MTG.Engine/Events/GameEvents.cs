@@ -18,7 +18,7 @@ public record SpellResolvedEvent(string SpellName) : IGameEvent
 public record StepTransitionEvent(TurnStep Step, string ActivePlayerName) : IGameEvent
 {
     public DateTime Timestamp { get; } = DateTime.UtcNow;
-    public string Description => $"\n--- [{Step}] for {ActivePlayerName} ---";
+    public string Description => $"--- [{Step}] for {ActivePlayerName} ---";
 }
 
 public record DamageDealtEvent(string Source, string Target, int Amount, bool IsCombat) : IGameEvent

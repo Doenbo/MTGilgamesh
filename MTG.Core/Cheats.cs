@@ -16,7 +16,7 @@ public class Cheats
 
     // Other Players
     public static bool CanSeeOtherPlayersHands { get; set; } = false; //TODO
-    public static bool CanSeeOtherPlayersLibrary { get; set; } = false; //TODO
+    public static bool CanSeeOtherPlayersLibraries { get; set; } = false; //TODO
 
     public static void EnableAll()
     {
@@ -29,7 +29,7 @@ public class Cheats
         CanTapLandsInfiniteTimes = true;
         CanUseAbilitiesInfiniteTimes = true;
         CanSeeOtherPlayersHands = true;
-        CanSeeOtherPlayersLibrary = true;
+        CanSeeOtherPlayersLibraries = true;
     }
 
     public static void DisableAll()
@@ -43,6 +43,6 @@ public class Cheats
         CanTapLandsInfiniteTimes = false;
         CanUseAbilitiesInfiniteTimes = false;
         CanSeeOtherPlayersHands = false;
-        CanSeeOtherPlayersLibrary = false;
+        CanSeeOtherPlayersLibraries = false;
     }
 }

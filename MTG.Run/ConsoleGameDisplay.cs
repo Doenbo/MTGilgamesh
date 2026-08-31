@@ -56,6 +56,16 @@ public class ConsoleGameDisplay : IGameDisplay
         Console.WriteLine($"{context.ToConsoleStack()}");
     }
 
+    public void RenderOpponentsHands(GameContext context)
+    {
+        Console.WriteLine($"{context.ToConsoleOpponentsHands()}");
+    }
+
+    public void RenderOpponentsLibraries(GameContext context)
+    {
+        Console.WriteLine($"{context.ToConsoleOpponentsLibraries()}");
+    }
+
     public void OnCardPlayed(CommanderPlayer player, ICard card)
     {
         throw new NotImplementedException();

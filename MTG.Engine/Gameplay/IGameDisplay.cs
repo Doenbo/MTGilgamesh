@@ -16,6 +16,8 @@ public interface IGameDisplay
     void RenderBattlefield(GameContext context);
     void RenderManaPool(GameContext context);
     void RenderStack(GameContext context);
+    void RenderOpponentsHands(GameContext context);
+    void RenderOpponentsLibraries(GameContext context);
 
     // Optional visual event hooks with default empty implementations
     void OnCardPlayed(CommanderPlayer player, ICard card) { }
