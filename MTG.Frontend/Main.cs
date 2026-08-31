@@ -27,10 +27,11 @@ public partial class Main : Node2D
 	private Button _prevBoardBtn;
 	private Button _nextBoardBtn;
 
-	// 3-Bot Opponent Dashboard Widgets
-	private readonly List<PanelContainer> _botWidgets = [];
-	private readonly List<Label> _botLifeLabels = [];
-	private readonly List<Label> _botHandLabels = [];
+	// 4-Player Top Dashboard Widgets (Human + 3 Bots)
+	private readonly List<PanelContainer> _playerWidgets = [];
+	private readonly List<Label> _playerNameLabels = [];
+	private readonly List<Label> _playerLifeLabels = [];
+	private readonly List<Label> _playerHandLabels = [];
 
 	// Fullscreen Board UI
 	private VBoxContainer _battlefieldContainer;
@@ -56,6 +57,12 @@ public partial class Main : Node2D
 	// Phase Tracker Bar Labels
 	private readonly Dictionary<TurnStep, Label> _phasePillLabels = [];
 
+	// Interactive Targeting & Game Over Overlay
+	private TargetingLine _targetingLine;
+	private PanelContainer _gameOverOverlay;
+	private Label _gameOverTitleLabel;
+	private Label _gameOverDescLabel;
+
 	private ILoggerFactory _loggerFactory;
 
 	public override void _Ready()
@@ -72,6 +79,38 @@ public partial class Main : Node2D
 		var canvasLayer = new CanvasLayer();
 		AddChild(canvasLayer);
 
+		_targetingLine = new TargetingLine();
+		canvasLayer.AddChild(_targetingLine);
+
+		// Match End GameOver Overlay Modal
+		_gameOverOverlay = new PanelContainer();
+		_gameOverOverlay.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+		_gameOverOverlay.AnchorRight = 1.0f;
+		_gameOverOverlay.AnchorBottom = 1.0f;
+		_gameOverOverlay.Visible = false;
+
+		var overlayStyle = new StyleBoxFlat();
+		overlayStyle.BgColor = new Color(0.02f, 0.04f, 0.08f, 0.88f);
+		_gameOverOverlay.AddThemeStyleboxOverride("panel", overlayStyle);
+		canvasLayer.AddChild(_gameOverOverlay);
+
+		var gameOverVBox = new VBoxContainer();
+		gameOverVBox.Alignment = BoxContainer.AlignmentMode.Center;
+		_gameOverOverlay.AddChild(gameOverVBox);
+
+		_gameOverTitleLabel = new Label();
+		_gameOverTitleLabel.Text = "VICTORY!";
+		_gameOverTitleLabel.AddThemeFontSizeOverride("font_size", 48);
+		_gameOverTitleLabel.HorizontalAlignment = HorizontalAlignment.Center;
+		_gameOverTitleLabel.Modulate = new Color(1.0f, 0.85f, 0.2f);
+		gameOverVBox.AddChild(_gameOverTitleLabel);
+
+		_gameOverDescLabel = new Label();
+		_gameOverDescLabel.Text = "All bot opponents have been defeated!";
+		_gameOverDescLabel.AddThemeFontSizeOverride("font_size", 18);
+		_gameOverDescLabel.HorizontalAlignment = HorizontalAlignment.Center;
+		gameOverVBox.AddChild(_gameOverDescLabel);
+
 		var mainVBox = new VBoxContainer();
 		mainVBox.SetAnchorsPreset(Control.LayoutPreset.FullRect);
 		mainVBox.AnchorRight = 1.0f;
@@ -79,15 +118,15 @@ public partial class Main : Node2D
 		mainVBox.AddThemeConstantOverride("separation", 6);
 		canvasLayer.AddChild(mainVBox);
 
-        // ==========================================
-        // 1. TOP BAR: Interactive Phase Tracker + 3-Bot Dashboard + Board Switcher Arrows
-        // ==========================================
-        var topBarHBox = new HBoxContainer
-        {
-            CustomMinimumSize = new Vector2(0, 50),
-            SizeFlagsHorizontal = Control.SizeFlags.ExpandFill
-        };
-        mainVBox.AddChild(topBarHBox);
+		// ==========================================
+		// 1. TOP BAR: Interactive Phase Tracker + 3-Bot Dashboard + Board Switcher Arrows
+		// ==========================================
+		var topBarHBox = new HBoxContainer
+		{
+			CustomMinimumSize = new Vector2(0, 50),
+			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill
+		};
+		mainVBox.AddChild(topBarHBox);
 
 		// Visual Phase Tracker Bar
 		var phaseTrackerHBox = new HBoxContainer();
@@ -98,92 +137,93 @@ public partial class Main : Node2D
 		TurnStep[] stepsToTrack = { TurnStep.Untap, TurnStep.Upkeep, TurnStep.Draw, TurnStep.Main1, TurnStep.CombatBegin, TurnStep.Main2, TurnStep.EndStep };
 		foreach (var step in stepsToTrack)
 		{
-            var pill = new Label
-            {
-                Text = $" {step} "
-            };
-            pill.AddThemeFontSizeOverride("font_size", 10);
+			var pill = new Label
+			{
+				Text = $" {step} "
+			};
+			pill.AddThemeFontSizeOverride("font_size", 10);
 			pill.Modulate = new Color(0.6f, 0.6f, 0.6f);
 			phaseTrackerHBox.AddChild(pill);
 			_phasePillLabels[step] = pill;
 		}
 
-		// 3-Bot Opponent Dashboard Widgets
-		var botsDashboardHBox = new HBoxContainer();
-		botsDashboardHBox.AddThemeConstantOverride("separation", 8);
-		topBarHBox.AddChild(botsDashboardHBox);
+		// 4-Player Top Dashboard Widgets (Human + 3 Bots)
+		var playersDashboardHBox = new HBoxContainer();
+		playersDashboardHBox.AddThemeConstantOverride("separation", 8);
+		topBarHBox.AddChild(playersDashboardHBox);
 
-		for (int i = 1; i <= 3; i++)
+		for (int i = 0; i < 4; i++)
 		{
-			int botIndex = i;
-            var botWidget = new PanelContainer
-            {
-                CustomMinimumSize = new Vector2(130, 42)
-            };
+			int playerIndex = i;
+			var playerWidget = new PanelContainer
+			{
+				CustomMinimumSize = new Vector2(130, 42)
+			};
 
-            var botStyle = new StyleBoxFlat
-            {
-                BgColor = new Color(0.12f, 0.15f, 0.2f, 0.95f),
-                BorderWidthBottom = 1,
-                BorderWidthLeft = 1,
-                BorderWidthRight = 1,
-                BorderWidthTop = 1,
-                BorderColor = new Color(0.3f, 0.4f, 0.5f),
-                CornerRadiusBottomLeft = 6,
-                CornerRadiusBottomRight = 6,
-                CornerRadiusTopLeft = 6,
-                CornerRadiusTopRight = 6
-            };
-            botWidget.AddThemeStyleboxOverride("panel", botStyle);
+			var playerStyle = new StyleBoxFlat
+			{
+				BgColor = new Color(0.12f, 0.15f, 0.2f, 0.95f),
+				BorderWidthBottom = 1,
+				BorderWidthLeft = 1,
+				BorderWidthRight = 1,
+				BorderWidthTop = 1,
+				BorderColor = new Color(0.3f, 0.4f, 0.5f),
+				CornerRadiusBottomLeft = 6,
+				CornerRadiusBottomRight = 6,
+				CornerRadiusTopLeft = 6,
+				CornerRadiusTopRight = 6
+			};
+			playerWidget.AddThemeStyleboxOverride("panel", playerStyle);
 
-			var botVBox = new VBoxContainer();
-			botVBox.AddThemeConstantOverride("separation", 1);
-			botWidget.AddChild(botVBox);
+			var playerVBox = new VBoxContainer();
+			playerVBox.AddThemeConstantOverride("separation", 1);
+			playerWidget.AddChild(playerVBox);
 
-            var nameLabel = new Label
-            {
-                Text = $"Bot {botIndex}"
-            };
-            nameLabel.AddThemeFontSizeOverride("font_size", 11);
+			var nameLabel = new Label
+			{
+				Text = playerIndex == 0 ? "You" : $"Bot {playerIndex}"
+			};
+			nameLabel.AddThemeFontSizeOverride("font_size", 11);
 			nameLabel.HorizontalAlignment = HorizontalAlignment.Center;
-			botVBox.AddChild(nameLabel);
+			playerVBox.AddChild(nameLabel);
 
-            var statsHBox = new HBoxContainer
-            {
-                Alignment = BoxContainer.AlignmentMode.Center
-            };
-            botVBox.AddChild(statsHBox);
+			var statsHBox = new HBoxContainer
+			{
+				Alignment = BoxContainer.AlignmentMode.Center
+			};
+			playerVBox.AddChild(statsHBox);
 
-            var lifeLabel = new Label
-            {
-                Text = "❤ 40"
-            };
-            lifeLabel.AddThemeFontSizeOverride("font_size", 10);
+			var lifeLabel = new Label
+			{
+				Text = "❤ 40"
+			};
+			lifeLabel.AddThemeFontSizeOverride("font_size", 10);
 			lifeLabel.Modulate = new Color(0.3f, 1.0f, 0.4f);
 			statsHBox.AddChild(lifeLabel);
 
-            var handLabel = new Label
-            {
-                Text = " | 🂠 7"
-            };
-            handLabel.AddThemeFontSizeOverride("font_size", 10);
+			var handLabel = new Label
+			{
+				Text = " | 🂠 7"
+			};
+			handLabel.AddThemeFontSizeOverride("font_size", 10);
 			statsHBox.AddChild(handLabel);
 
-			_botWidgets.Add(botWidget);
-			_botLifeLabels.Add(lifeLabel);
-			_botHandLabels.Add(handLabel);
+			_playerWidgets.Add(playerWidget);
+			_playerNameLabels.Add(nameLabel);
+			_playerLifeLabels.Add(lifeLabel);
+			_playerHandLabels.Add(handLabel);
 
-			// 1-Click Board Switch to Bot
-			botWidget.GuiInput += (@evt) =>
+			// 1-Click Board Switch to Player
+			playerWidget.GuiInput += (@evt) =>
 			{
 				if (@evt is InputEventMouseButton mb && mb.Pressed && mb.ButtonIndex == MouseButton.Left)
 				{
-					_viewingPlayerIndex = botIndex;
+					_viewingPlayerIndex = playerIndex;
 					UpdateBoardView();
 				}
 			};
 
-			botsDashboardHBox.AddChild(botWidget);
+			playersDashboardHBox.AddChild(playerWidget);
 		}
 
 		// Top-Right Board Switcher Arrows Controls
@@ -191,167 +231,166 @@ public partial class Main : Node2D
 		boardNavHBox.AddThemeConstantOverride("separation", 4);
 		topBarHBox.AddChild(boardNavHBox);
 
-        _prevBoardBtn = new Button
-        {
-            Text = " ◄ ",
-            CustomMinimumSize = new Vector2(36, 36)
-        };
-        _prevBoardBtn.Pressed += OnPrevBoardPressed;
+		_prevBoardBtn = new Button
+		{
+			Text = " ◄ ",
+			CustomMinimumSize = new Vector2(36, 36)
+		};
+		_prevBoardBtn.Pressed += OnPrevBoardPressed;
 		boardNavHBox.AddChild(_prevBoardBtn);
 
-        _boardTitleLabel = new Label
-        {
-            Text = " BOARD: Dön (You) "
-        };
-        _boardTitleLabel.AddThemeFontSizeOverride("font_size", 14);
+		_boardTitleLabel = new Label
+		{
+			Text = " BOARD: Dön (You) "
+		};
+		_boardTitleLabel.AddThemeFontSizeOverride("font_size", 14);
 		_boardTitleLabel.VerticalAlignment = VerticalAlignment.Center;
 		boardNavHBox.AddChild(_boardTitleLabel);
 
-        _nextBoardBtn = new Button
-        {
-            Text = " ► ",
-            CustomMinimumSize = new Vector2(36, 36)
-        };
-        _nextBoardBtn.Pressed += OnNextBoardPressed;
+		_nextBoardBtn = new Button
+		{
+			Text = " ► ",
+			CustomMinimumSize = new Vector2(36, 36)
+		};
+		_nextBoardBtn.Pressed += OnNextBoardPressed;
 		boardNavHBox.AddChild(_nextBoardBtn);
 
-        // ==========================================
-        // 2. MIDDLE AREA: Fullscreen Active Board View + Inspector Preview + Stack Overlay + Logs
-        // ==========================================
-        var middleHSplit = new HBoxContainer
-        {
-            SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
-            SizeFlagsVertical = Control.SizeFlags.ExpandFill,
-            SizeFlagsStretchRatio = 7.0f
-        };
-        mainVBox.AddChild(middleHSplit);
+		// ==========================================
+		// 2. MIDDLE AREA: Fullscreen Active Board View + Inspector Preview + Stack Overlay + Logs
+		// ==========================================
+		var middleHSplit = new HBoxContainer
+		{
+			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
+			SizeFlagsVertical = Control.SizeFlags.ExpandFill,
+			SizeFlagsStretchRatio = 7.0f
+		};
+		mainVBox.AddChild(middleHSplit);
 
-        // Card Inspector Preview Panel (Left Overlay Panel)
-        _previewPanel = new PanelContainer
-        {
-            CustomMinimumSize = new Vector2(200, 0),
-            Visible = false
-        };
+		// Card Inspector Preview Panel (Left Overlay Panel - Always Visible)
+		_previewPanel = new PanelContainer
+		{
+			CustomMinimumSize = new Vector2(210, 0),
+			Visible = true
+		};
 
-        var previewStyle = new StyleBoxFlat
-        {
-            BgColor = new Color(0.08f, 0.1f, 0.14f, 0.98f),
-            BorderWidthBottom = 2,
-            BorderWidthLeft = 2,
-            BorderWidthRight = 2,
-            BorderWidthTop = 2,
-            BorderColor = new Color(0.8f, 0.7f, 0.3f),
-            CornerRadiusBottomLeft = 6,
-            CornerRadiusBottomRight = 6,
-            CornerRadiusTopLeft = 6,
-            CornerRadiusTopRight = 6
-        };
-        _previewPanel.AddThemeStyleboxOverride("panel", previewStyle);
+		var previewStyle = new StyleBoxFlat
+		{
+			BgColor = new Color(0.08f, 0.1f, 0.14f, 0.98f),
+			BorderWidthBottom = 2,
+			BorderWidthLeft = 2,
+			BorderWidthRight = 2,
+			BorderWidthTop = 2,
+			BorderColor = new Color(0.8f, 0.7f, 0.3f),
+			CornerRadiusBottomLeft = 6,
+			CornerRadiusBottomRight = 6,
+			CornerRadiusTopLeft = 6,
+			CornerRadiusTopRight = 6
+		};
+		_previewPanel.AddThemeStyleboxOverride("panel", previewStyle);
 		middleHSplit.AddChild(_previewPanel);
 
 		var previewVBox = new VBoxContainer();
 		_previewPanel.AddChild(previewVBox);
 
-        _previewTitleLabel = new Label
-        {
-            Text = "Card Preview"
-        };
-        _previewTitleLabel.AddThemeFontSizeOverride("font_size", 13);
+		_previewTitleLabel = new Label
+		{
+			Text = "Card Preview"
+		};
+		_previewTitleLabel.AddThemeFontSizeOverride("font_size", 13);
 		_previewTitleLabel.Modulate = new Color(1.0f, 0.9f, 0.5f);
 		previewVBox.AddChild(_previewTitleLabel);
 
-        _previewTypeLabel = new Label
-        {
-            Text = "Type Line"
-        };
-        _previewTypeLabel.AddThemeFontSizeOverride("font_size", 10);
+		_previewTypeLabel = new Label
+		{
+			Text = "Type Line"
+		};
+		_previewTypeLabel.AddThemeFontSizeOverride("font_size", 10);
 		_previewTypeLabel.Modulate = new Color(0.8f, 0.85f, 0.95f);
 		previewVBox.AddChild(_previewTypeLabel);
 
-        _previewTextureRect = new TextureRect
-        {
-            CustomMinimumSize = new Vector2(0, 140),
-            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
-            Visible = false
-        };
-        previewVBox.AddChild(_previewTextureRect);
+		_previewTextureRect = new TextureRect
+		{
+			CustomMinimumSize = new Vector2(0, 140),
+			ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+			StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+			Visible = false
+		};
+		previewVBox.AddChild(_previewTextureRect);
 
-        _previewOracleLabel = new RichTextLabel
-        {
-            SizeFlagsVertical = Control.SizeFlags.ExpandFill,
-            BbcodeEnabled = true,
-            FocusMode = Control.FocusModeEnum.None,
-            MouseFilter = Control.MouseFilterEnum.Ignore
-        };
-        _previewOracleLabel.AddThemeFontSizeOverride("normal_font_size", 10);
+		_previewOracleLabel = new RichTextLabel
+		{
+			SizeFlagsVertical = Control.SizeFlags.ExpandFill,
+			BbcodeEnabled = true,
+			FocusMode = Control.FocusModeEnum.None,
+			MouseFilter = Control.MouseFilterEnum.Ignore
+		};
+		_previewOracleLabel.AddThemeFontSizeOverride("normal_font_size", 10);
 		previewVBox.AddChild(_previewOracleLabel);
 
-        // Fullscreen Board Panel (Center 70% width)
-        var boardPanel = new PanelContainer
-        {
-            SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
-            SizeFlagsVertical = Control.SizeFlags.ExpandFill,
-            SizeFlagsStretchRatio = 3.0f
-        };
+		// Fullscreen Board Panel (Center 70% width)
+		var boardPanel = new BattlefieldDropZone
+		{
+			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
+			SizeFlagsVertical = Control.SizeFlags.ExpandFill,
+			SizeFlagsStretchRatio = 3.0f
+		};
+		boardPanel.OnCardDropped = OnCardDroppedOnBattlefield;
 
-        var boardStyle = new StyleBoxFlat
-        {
-            BgColor = new Color(0.08f, 0.1f, 0.13f, 0.95f),
-            BorderWidthBottom = 2,
-            BorderWidthLeft = 2,
-            BorderWidthRight = 2,
-            BorderWidthTop = 2,
-            BorderColor = new Color(0.25f, 0.35f, 0.45f)
-        };
-        boardPanel.AddThemeStyleboxOverride("panel", boardStyle);
+		var boardStyle = new StyleBoxFlat
+		{
+			BgColor = new Color(0.08f, 0.1f, 0.13f, 0.95f),
+			BorderWidthBottom = 2,
+			BorderWidthLeft = 2,
+			BorderWidthRight = 2,
+			BorderWidthTop = 2,
+			BorderColor = new Color(0.25f, 0.35f, 0.45f)
+		};
+		boardPanel.AddThemeStyleboxOverride("panel", boardStyle);
 		middleHSplit.AddChild(boardPanel);
 
 		var boardVBox = new VBoxContainer();
 		boardPanel.AddChild(boardVBox);
 
-        _battlefieldEmptyLabel = new Label
-        {
-            Text = "\n\n   (Battlefield is currently empty)",
-            HorizontalAlignment = HorizontalAlignment.Center
-        };
-        _battlefieldEmptyLabel.AddThemeFontSizeOverride("font_size", 14);
+		_battlefieldEmptyLabel = new Label
+		{
+			Text = "\n\n   (Battlefield is currently empty)",
+			HorizontalAlignment = HorizontalAlignment.Center
+		};
+		_battlefieldEmptyLabel.AddThemeFontSizeOverride("font_size", 14);
 		_battlefieldEmptyLabel.Modulate = new Color(0.6f, 0.6f, 0.6f);
-		boardVBox.AddChild(_battlefieldEmptyLabel);
+		_battlefieldContainer = new VBoxContainer
+		{
+			SizeFlagsVertical = Control.SizeFlags.ExpandFill
+		};
+		boardVBox.AddChild(_battlefieldContainer);
 
-        _battlefieldContainer = new VBoxContainer
-        {
-            SizeFlagsVertical = Control.SizeFlags.ExpandFill
-        };
-        boardVBox.AddChild(_battlefieldContainer);
+		// Center Stack Window Overlay
+		_stackPanel = new PanelContainer
+		{
+			CustomMinimumSize = new Vector2(210, 130),
+			Visible = false
+		};
 
-        // Center Stack Window Overlay
-        _stackPanel = new PanelContainer
-        {
-            CustomMinimumSize = new Vector2(210, 130),
-            Visible = false
-        };
-
-        var stackStyle = new StyleBoxFlat
-        {
-            BgColor = new Color(0.18f, 0.12f, 0.25f, 0.95f),
-            BorderWidthBottom = 2,
-            BorderWidthLeft = 2,
-            BorderWidthRight = 2,
-            BorderWidthTop = 2,
-            BorderColor = new Color(0.8f, 0.3f, 0.9f) // Magenta stack border
-        };
-        _stackPanel.AddThemeStyleboxOverride("panel", stackStyle);
+		var stackStyle = new StyleBoxFlat
+		{
+			BgColor = new Color(0.18f, 0.12f, 0.25f, 0.95f),
+			BorderWidthBottom = 2,
+			BorderWidthLeft = 2,
+			BorderWidthRight = 2,
+			BorderWidthTop = 2,
+			BorderColor = new Color(0.8f, 0.3f, 0.9f) // Magenta stack border
+		};
+		_stackPanel.AddThemeStyleboxOverride("panel", stackStyle);
 		middleHSplit.AddChild(_stackPanel);
 
 		var stackVBox = new VBoxContainer();
 		_stackPanel.AddChild(stackVBox);
 
-        var stackTitle = new Label
-        {
-            Text = "⚡ THE STACK ⚡"
-        };
-        stackTitle.AddThemeFontSizeOverride("font_size", 12);
+		var stackTitle = new Label
+		{
+			Text = "⚡ THE STACK ⚡"
+		};
+		stackTitle.AddThemeFontSizeOverride("font_size", 12);
 		stackTitle.HorizontalAlignment = HorizontalAlignment.Center;
 		stackTitle.Modulate = new Color(0.9f, 0.4f, 1.0f);
 		stackVBox.AddChild(stackTitle);
@@ -359,14 +398,14 @@ public partial class Main : Node2D
 		_stackListVBox = new VBoxContainer();
 		stackVBox.AddChild(_stackListVBox);
 
-        // Right Log Panel (Right 25% width)
-        var logVBox = new VBoxContainer
-        {
-            SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
-            SizeFlagsVertical = Control.SizeFlags.ExpandFill,
-            SizeFlagsStretchRatio = 1.0f
-        };
-        middleHSplit.AddChild(logVBox);
+		// Right Log Panel (Right 25% width)
+		var logVBox = new VBoxContainer
+		{
+			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
+			SizeFlagsVertical = Control.SizeFlags.ExpandFill,
+			SizeFlagsStretchRatio = 1.0f
+		};
+		middleHSplit.AddChild(logVBox);
 
 		GameLog ??= new RichTextLabel();
 		GameLog.BbcodeEnabled = true;
@@ -385,79 +424,79 @@ public partial class Main : Node2D
 		DevLog.Visible = false;
 		logVBox.AddChild(DevLog);
 
-        // ==========================================
-        // 3. BOTTOM HUD: Human Player Hand & Priority Control Bar
-        // ==========================================
-        var hudPanel = new PanelContainer
-        {
-            CustomMinimumSize = new Vector2(0, 185),
-            SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
-            SizeFlagsVertical = Control.SizeFlags.ShrinkEnd
-        };
+		// ==========================================
+		// 3. BOTTOM HUD: Human Player Hand & Priority Control Bar
+		// ==========================================
+		var hudPanel = new PanelContainer
+		{
+			CustomMinimumSize = new Vector2(0, 185),
+			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
+			SizeFlagsVertical = Control.SizeFlags.ShrinkEnd
+		};
 
-        var hudStyle = new StyleBoxFlat
-        {
-            BgColor = new Color(0.05f, 0.07f, 0.1f, 0.98f),
-            BorderWidthTop = 3,
-            BorderColor = new Color(0.8f, 0.65f, 0.2f) // Golden accent
-        };
-        hudPanel.AddThemeStyleboxOverride("panel", hudStyle);
+		var hudStyle = new StyleBoxFlat
+		{
+			BgColor = new Color(0.05f, 0.07f, 0.1f, 0.98f),
+			BorderWidthTop = 3,
+			BorderColor = new Color(0.8f, 0.65f, 0.2f) // Golden accent
+		};
+		hudPanel.AddThemeStyleboxOverride("panel", hudStyle);
 		mainVBox.AddChild(hudPanel);
 
 		var hudHBox = new HBoxContainer();
 		hudHBox.AddThemeConstantOverride("separation", 12);
 		hudPanel.AddChild(hudHBox);
 
-        // Player Stats & Mana Pool Dashboard Box
-        var statsVBox = new VBoxContainer
-        {
-            CustomMinimumSize = new Vector2(170, 0),
-            Alignment = BoxContainer.AlignmentMode.Center
-        };
-        hudHBox.AddChild(statsVBox);
+		// Player Stats & Mana Pool Dashboard Box
+		var statsVBox = new VBoxContainer
+		{
+			CustomMinimumSize = new Vector2(170, 0),
+			Alignment = BoxContainer.AlignmentMode.Center
+		};
+		hudHBox.AddChild(statsVBox);
 
-        _humanLifeLabel = new Label
-        {
-            Text = "❤ Dön: 40 HP"
-        };
-        _humanLifeLabel.AddThemeFontSizeOverride("font_size", 16);
+		_humanLifeLabel = new Label
+		{
+			Text = "❤ Dön: 40 HP"
+		};
+		_humanLifeLabel.AddThemeFontSizeOverride("font_size", 16);
 		_humanLifeLabel.Modulate = new Color(0.3f, 1.0f, 0.4f);
 		statsVBox.AddChild(_humanLifeLabel);
 
-        _humanManaLabel = new Label
-        {
-            Text = "Pool: W:0 U:0 B:0 R:0 G:0 C:0"
-        };
-        _humanManaLabel.AddThemeFontSizeOverride("font_size", 11);
+		_humanManaLabel = new Label
+		{
+			Text = "Pool: W:0 U:0 B:0 R:0 G:0 C:0"
+		};
+		_humanManaLabel.AddThemeFontSizeOverride("font_size", 11);
 		_humanManaLabel.Modulate = new Color(0.9f, 0.85f, 0.5f);
 		statsVBox.AddChild(_humanManaLabel);
 
-        // Scrollable Hand Container
-        var handScroll = new ScrollContainer
-        {
-            SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
-            SizeFlagsVertical = Control.SizeFlags.ExpandFill
-        };
-        hudHBox.AddChild(handScroll);
+		// Scrollable Hand Container
+		var handScroll = new ScrollContainer
+		{
+			SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
+			SizeFlagsVertical = Control.SizeFlags.ExpandFill
+		};
+		hudHBox.AddChild(handScroll);
 
 		_handContainer = new HBoxContainer();
 		_handContainer.AddThemeConstantOverride("separation", 8);
 		handScroll.AddChild(_handContainer);
 
-        // Action Bar
-        var actionVBox = new VBoxContainer
-        {
-            CustomMinimumSize = new Vector2(165, 0),
-            Alignment = BoxContainer.AlignmentMode.Center
-        };
-        hudHBox.AddChild(actionVBox);
+		// Action Bar
+		var actionVBox = new VBoxContainer
+		{
+			CustomMinimumSize = new Vector2(165, 0),
+			Alignment = BoxContainer.AlignmentMode.Center
+		};
+		hudHBox.AddChild(actionVBox);
 
-        _passPriorityBtn = new Button
-        {
-            Text = "END PHASE",
-            CustomMinimumSize = new Vector2(155, 50)
-        };
-        _passPriorityBtn.AddThemeFontSizeOverride("font_size", 13);
+		_passPriorityBtn = new Button
+		{
+			Text = "END PHASE",
+			CustomMinimumSize = new Vector2(155, 50)
+		};
+		_passPriorityBtn.AddThemeFontSizeOverride("font_size", 13);
 		_passPriorityBtn.Pressed += OnPassPriorityPressed;
 		actionVBox.AddChild(_passPriorityBtn);
 	}
@@ -489,7 +528,7 @@ public partial class Main : Node2D
 		IGameDisplay display = new GodotGameDisplay(GameLog);
 		var engine = new GameEngine(_context, display);
 
-		UpdateOpponentsDashboard();
+		UpdatePlayersDashboard();
 		UpdateBoardView();
 		UpdateHumanHand();
 
@@ -500,6 +539,7 @@ public partial class Main : Node2D
 
 	public void SetPriorityPrompt(CommanderPlayer priorityPlayer, TurnStep step, bool isStackActive)
 	{
+		CheckGameOverState();
 		UpdatePhaseTracker(step);
 
 		bool isHumanTurn = priorityPlayer == _context.Players[0];
@@ -524,7 +564,7 @@ public partial class Main : Node2D
 			_passPriorityBtn.Modulate = new Color(0.6f, 0.6f, 0.6f); // Disabled Gray
 		}
 
-		UpdateOpponentsDashboard();
+		UpdatePlayersDashboard();
 		UpdateStackOverlay();
 		UpdateHumanHand();
 		UpdateBoardView();
@@ -579,28 +619,47 @@ public partial class Main : Node2D
 
 	public void HideCardPreview()
 	{
-		_previewPanel.Visible = false;
+		// Panel stays permanently visible on the left to avoid annoying layout shifting
 	}
 
-	private void UpdateOpponentsDashboard()
+	private void UpdatePlayersDashboard()
 	{
 		if (_context == null || _context.Players.Count < 4) return;
 
-		for (int i = 1; i <= 3; i++)
+		for (int i = 0; i < 4; i++)
 		{
-			var bot = _context.Players[i];
-			var widget = _botWidgets[i - 1];
-			_botLifeLabels[i - 1].Text = $"❤ {bot.LifeTotal}";
-			_botHandLabels[i - 1].Text = $" | 🂠 {bot.Hand.Count}";
+			var player = _context.Players[i];
+			var widget = _playerWidgets[i];
 
-			// Active Turn / Priority Glow
-			bool isBotActive = _context.PriorityPlayer == bot;
+			_playerNameLabels[i].Text = i == 0 ? $"{player.Name} (You)" : player.Name;
+			_playerLifeLabels[i].Text = $"❤ {player.LifeTotal}";
+			_playerHandLabels[i].Text = $" | 🂠 {player.Hand.Count}";
+
+			// Active Turn / Priority Glow & Viewing Board Highlight
+			bool isPlayerActive = _context.PriorityPlayer == player;
+			bool isViewingThisBoard = _viewingPlayerIndex == i;
+
 			var style = widget.GetThemeStylebox("panel") as StyleBoxFlat;
 			if (style != null)
 			{
-				style.BorderColor = isBotActive ? new Color(0.3f, 1.0f, 0.4f) : new Color(0.3f, 0.4f, 0.5f);
-				style.BorderWidthBottom = isBotActive ? 2 : 1;
-				style.BorderWidthTop = isBotActive ? 2 : 1;
+				if (isPlayerActive)
+				{
+					style.BorderColor = new Color(0.3f, 1.0f, 0.4f); // Glowing Green
+					style.BorderWidthBottom = 2; style.BorderWidthTop = 2;
+					style.BorderWidthLeft = 2; style.BorderWidthRight = 2;
+				}
+				else if (isViewingThisBoard)
+				{
+					style.BorderColor = new Color(0.9f, 0.8f, 0.3f); // Golden Accent
+					style.BorderWidthBottom = 2; style.BorderWidthTop = 2;
+					style.BorderWidthLeft = 2; style.BorderWidthRight = 2;
+				}
+				else
+				{
+					style.BorderColor = new Color(0.3f, 0.4f, 0.5f);
+					style.BorderWidthBottom = 1; style.BorderWidthTop = 1;
+					style.BorderWidthLeft = 1; style.BorderWidthRight = 1;
+				}
 			}
 		}
 	}
@@ -621,11 +680,11 @@ public partial class Main : Node2D
 		{
 			foreach (var card in _context.Stack.ToList())
 			{
-                var lbl = new Label
-                {
-                    Text = $"• {card.CardData.FullName} ({card.Owner.Name})"
-                };
-                lbl.AddThemeFontSizeOverride("font_size", 10);
+				var lbl = new Label
+				{
+					Text = $"• {card.CardData.FullName} ({card.Owner.Name})"
+				};
+				lbl.AddThemeFontSizeOverride("font_size", 10);
 				_stackListVBox.AddChild(lbl);
 			}
 		}
@@ -662,13 +721,7 @@ public partial class Main : Node2D
 		{
 			var cardNode = new CardNode();
 			cardNode.Setup(cardInstance, isPlayable: isHumanTurn);
-			cardNode.OnCardClicked = (node) =>
-			{
-				if (_context.PriorityPlayer == human)
-				{
-					_guiInput.OnCardClicked(human, node.CardInstance);
-				}
-			};
+			// Drag & Drop only: cards in hand must be dragged onto the battlefield panel to be cast
 			_handContainer.AddChild(cardNode);
 		}
 	}
@@ -690,11 +743,11 @@ public partial class Main : Node2D
 
 		if (boardCards.Count > 0)
 		{
-            var grid = new GridContainer
-            {
-                Columns = 6
-            };
-            _battlefieldContainer.AddChild(grid);
+			var grid = new GridContainer
+			{
+				Columns = 6
+			};
+			_battlefieldContainer.AddChild(grid);
 
 			foreach (var cardInstance in boardCards.ToList())
 			{
@@ -739,6 +792,59 @@ public partial class Main : Node2D
 		if (_context != null && _context.PriorityPlayer == _context.Players[0])
 		{
 			_guiInput.OnPassPriorityPressed(_context.Players[0]);
+		}
+	}
+
+	public void CheckGameOverState()
+	{
+		if (_context == null || _context.Players.Count < 4) return;
+
+		var human = _context.Players[0];
+		if (human.LifeTotal <= 0)
+		{
+			ShowGameOver(isVictory: false, "Your life total reached 0 HP.");
+			return;
+		}
+
+		bool allBotsDefeated = _context.Players.Skip(1).All(b => b.LifeTotal <= 0);
+		if (allBotsDefeated)
+		{
+			ShowGameOver(isVictory: true, "All bot opponents have been eliminated!");
+		}
+	}
+
+	private void ShowGameOver(bool isVictory, string details)
+	{
+		_gameOverOverlay.Visible = true;
+		_gameOverTitleLabel.Text = isVictory ? "🏆 VICTORY!" : "💀 DEFEAT";
+		_gameOverTitleLabel.Modulate = isVictory ? new Color(1.0f, 0.85f, 0.2f) : new Color(1.0f, 0.3f, 0.3f);
+		_gameOverDescLabel.Text = details;
+	}
+
+	public override void _UnhandledInput(InputEvent @event)
+	{
+		if (@event is InputEventKey keyEv && keyEv.Pressed && !keyEv.Echo)
+		{
+			if (keyEv.Keycode == Key.Left || keyEv.Keycode == Key.A)
+			{
+				OnPrevBoardPressed();
+			}
+			else if (keyEv.Keycode == Key.Right || keyEv.Keycode == Key.D)
+			{
+				OnNextBoardPressed();
+			}
+		}
+	}
+
+	private void OnCardDroppedOnBattlefield(CardNode cardNode)
+	{
+		if (_context != null && cardNode?.CardInstance != null)
+		{
+			var human = _context.Players[0];
+			if (_context.PriorityPlayer == human)
+			{
+				_guiInput?.OnCardClicked(human, cardNode.CardInstance);
+			}
 		}
 	}
 }

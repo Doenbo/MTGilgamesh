@@ -202,24 +202,73 @@ public partial class CardNode : PanelContainer
         }
     }
 
+    private Vector2 _dragStartPos;
+    private bool _isMouseDown;
+
+    public override Variant _GetDragData(Vector2 atPosition)
+    {
+        _isMouseDown = false;
+        if (CardInstance == null) return default;
+
+        var previewNode = new PanelContainer();
+        previewNode.CustomMinimumSize = CustomMinimumSize;
+        previewNode.Modulate = new Color(1.0f, 1.0f, 1.0f, 0.85f);
+
+        var style = new StyleBoxFlat();
+        style.BgColor = new Color(0.12f, 0.16f, 0.22f, 0.95f);
+        style.BorderWidthBottom = 2; style.BorderWidthLeft = 2;
+        style.BorderWidthRight = 2; style.BorderWidthTop = 2;
+        style.BorderColor = new Color(0.3f, 1.0f, 0.5f);
+        style.CornerRadiusBottomLeft = 8; style.CornerRadiusBottomRight = 8;
+        style.CornerRadiusTopLeft = 8; style.CornerRadiusTopRight = 8;
+        previewNode.AddThemeStyleboxOverride("panel", style);
+
+        var label = new Label();
+        label.Text = CardInstance.CardData?.FullName ?? "Card";
+        label.HorizontalAlignment = HorizontalAlignment.Center;
+        label.VerticalAlignment = VerticalAlignment.Center;
+        previewNode.AddChild(label);
+
+        SetDragPreview(previewNode);
+        return this;
+    }
+
     private void OnGuiInput(InputEvent @event)
     {
-        if (@event is InputEventMouseButton mouseBtn && mouseBtn.Pressed && mouseBtn.ButtonIndex == MouseButton.Left)
+        if (@event is InputEventMouseButton mouseBtn && mouseBtn.ButtonIndex == MouseButton.Left)
         {
-            OnCardClicked?.Invoke(this);
+            if (mouseBtn.Pressed)
+            {
+                _isMouseDown = true;
+                _dragStartPos = mouseBtn.Position;
+            }
+            else if (_isMouseDown)
+            {
+                _isMouseDown = false;
+                if (_dragStartPos.DistanceTo(mouseBtn.Position) < 8.0f)
+                {
+                    OnCardClicked?.Invoke(this);
+                }
+            }
         }
     }
 
+    private Tween _hoverTween;
+
     private void OnMouseEntered()
     {
-        Scale = new Vector2(1.05f, 1.05f);
         PivotOffset = CustomMinimumSize / 2.0f;
+        _hoverTween?.Kill();
+        _hoverTween = CreateTween().SetParallel(true);
+        _hoverTween.TweenProperty(this, "scale", new Vector2(1.08f, 1.08f), 0.15);
         Main.Instance?.ShowCardPreview(CardInstance);
     }
 
     private void OnMouseExited()
     {
-        Scale = new Vector2(1.0f, 1.0f);
+        _hoverTween?.Kill();
+        _hoverTween = CreateTween().SetParallel(true);
+        _hoverTween.TweenProperty(this, "scale", new Vector2(1.0f, 1.0f), 0.15);
         Main.Instance?.HideCardPreview();
     }
 }
