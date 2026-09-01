@@ -1,4 +1,5 @@
-﻿using MTG.Core.Abilities;
+﻿using FluentAssertions;
+using MTG.Core.Abilities;
 using MTG.Core.Enums;
 using MTG.Core.OracleTextParsers;
 using MTG.Core.Types;
@@ -31,7 +32,7 @@ public class EffectParserTests
 
         var result = parser.Parse(input);
 
-        Assert.True(result.IsSuccess, result.Error);
-        Assert.Equal(expected, result.Value);
+        result.IsSuccess.Should().BeTrue(result.Error);
+        result.Value.Should().Be(expected);
     }
 }

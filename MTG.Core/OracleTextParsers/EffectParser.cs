@@ -1,11 +1,10 @@
-﻿using MTG.Core.Abilities;
+﻿using System.Collections.Immutable;
+using System.Text.RegularExpressions;
+using MTG.Core.Abilities;
 using MTG.Core.Enums;
 using MTG.Core.Helper;
 using MTG.Core.Types;
 using MTG.Core.Wrapper;
-using System.Collections.Immutable;
-using System.Data;
-using System.Text.RegularExpressions;
 
 namespace MTG.Core.OracleTextParsers;
 
@@ -20,29 +19,17 @@ public class EffectParser : IEffectParser
             // 1. Draw Cards: Optionales 's' bei draw(s) zulassen
             new EffectPatternRule(
                 @"^draws?\s+(?<amount>\d+|a|an)\s+cards?$",
-                match =>
-                {
-                    int amount = ParseNumber(match.Groups["amount"].Value);
-                    return new DrawCardsEffect(amount);
-                }),
+                match => Result<IEffect>.Success(new DrawCardsEffect(ParseNumber(match.Groups["amount"].Value)))),
 
             // 2. Gain Life: "you gain X life"
             new EffectPatternRule(
                 @"^you\s+gain\s+(?<amount>\d+)\s+life$",
-                match =>
-                {
-                    int amount = int.Parse(match.Groups["amount"].Value);
-                    return new GainLifeEffect(amount);
-                }),
+                match => Result<IEffect>.Success(new GainLifeEffect(int.Parse(match.Groups["amount"].Value)))),
 
             // 3. Lose Life: "you lose X life", "target player loses X life"
             new EffectPatternRule(
                 @"^(?:you|target\s+player)\s+loses?\s+(?<amount>\d+)\s+life$",
-                match =>
-                {
-                    int amount = int.Parse(match.Groups["amount"].Value);
-                    return new LoseLifeEffect(amount);
-                }),
+                match => Result<IEffect>.Success(new LoseLifeEffect(int.Parse(match.Groups["amount"].Value)))),
 
             // 4. Modify Power / Toughness: "gets +X/+Y until end of turn", "gets +1/+1"
             new EffectPatternRule(
@@ -52,10 +39,10 @@ public class EffectParser : IEffectParser
                     int power = int.Parse(match.Groups["power"].Value);
                     int toughness = int.Parse(match.Groups["toughness"].Value);
                     bool untilEot = match.Groups["eot"].Success;
-                    return new ModifyPowerToughnessEffect(power, toughness, untilEot);
+                    return Result<IEffect>.Success(new ModifyPowerToughnessEffect(power, toughness, untilEot));
                 }),
 
-            // 5. Create Token: "create a 1/1 white Soldier creature token with lifelink"
+            // 5. Create Token: Saubere Behandlung von Parse-Fehlern ohne `null`
             new EffectPatternRule(
                 @"^create\s+(?<amount>\d+|a|an)\s+(?<power>\d+)/(?<toughness>\d+)\s+(?<color>\w+)\s+(?<subtype>\w+)\s+creature\s+token(?:\s+with\s+(?<keywords>.+))?$",
                 match =>
@@ -63,19 +50,23 @@ public class EffectParser : IEffectParser
                     int amount = ParseNumber(match.Groups["amount"].Value);
                     int power = int.Parse(match.Groups["power"].Value);
                     int toughness = int.Parse(match.Groups["toughness"].Value);
-            
-                    if (!Enum.TryParse<ManaType>(match.Groups["color"].Value, ignoreCase: true, out var manaType) ||
-                        !SubtypeWrapper.TryParse(match.Groups["subtype"].Value, out var subtype))
+
+                    if (!Enum.TryParse<ManaType>(match.Groups["color"].Value, ignoreCase: true, out var manaType))
                     {
-                        return null;
+                        return Result<IEffect>.Failure($"Invalid mana type: '{match.Groups["color"].Value}'");
                     }
-            
+
+                    if (!SubtypeWrapper.TryParse(match.Groups["subtype"].Value, out var subtype))
+                    {
+                        return Result<IEffect>.Failure($"Invalid subtype: '{match.Groups["subtype"].Value}'");
+                    }
+
                     var keywords = new List<KeywordWrapper>();
                     if (match.Groups["keywords"].Success)
                     {
                         var rawKeywords = match.Groups["keywords"].Value
                             .Split([",", " and "], StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-            
+
                         foreach (var raw in rawKeywords)
                         {
                             if (KeywordWrapper.TryParse(raw, out var kw))
@@ -84,16 +75,15 @@ public class EffectParser : IEffectParser
                             }
                         }
                     }
-            
-                    // C# wandelt [...] dank ImmutableArray-Target-Typing automatisch perfekt um!
-                    return new CreateTokenEffect(
+
+                    return Result<IEffect>.Success(new CreateTokenEffect(
                         amount,
                         power,
                         toughness,
                         manaType,
                         [subtype],
                         [..keywords]
-                    );
+                    ));
                 }),
 
             // 6. Deal Damage: Optional 's' at deal(s) and optional target (to ...)
@@ -111,40 +101,34 @@ public class EffectParser : IEffectParser
                         _ => TargetType.Any
                     };
 
-                    return new DealDamageEffect(damage, targetType);
+                    return Result<IEffect>.Success(new DealDamageEffect(damage, targetType));
                 }),
             
-            // 7. Destroy Target: Optionales 's' bei destroy(s)
+            // 7. Destroy Target: CardFilter-Result direkt über `IsSuccess` oder Extension-Map weiterleiten
             new EffectPatternRule(
                 @"^destroys?\s+target\s+(?<target>.+)$",
                 match =>
                 {
-                    string rawTarget = match.Groups["target"].Value;
-                    return new DestroyTargetEffect(CardFilter.Parse(rawTarget));
+                    var filterResult = CardFilter.Parse(match.Groups["target"].Value);
+                    return filterResult.IsSuccess
+                        ? Result<IEffect>.Success(new DestroyTargetEffect(filterResult.Value))
+                        : Result<IEffect>.Failure(filterResult.Error);
                 }),
 
             // 8. Add Counters: "put X +1/+1 counters on target creature"
             new EffectPatternRule(
                 @"^put\s+(?<amount>\d+|a|an)\s+(?<type>[\+\-\w]+)\s+counters?\s+on\s+(?<target>.+)$",
-                match =>
-                {
-                    int amount = ParseNumber(match.Groups["amount"].Value);
-                    return new AddCountersEffect(MarkerType.PlusOnePlusOne, amount);
-                }),
+                match => Result<IEffect>.Success(new AddCountersEffect(MarkerType.PlusOnePlusOne, ParseNumber(match.Groups["amount"].Value)))),
 
             // 9. Discard Cards: "target player discards X cards", "discard a card"
             new EffectPatternRule(
                 @"^(?:target\s+player\s+discards?|discard)\s+(?<amount>\d+|a|an)\s+cards?$",
-                match =>
-                {
-                    int amount = ParseNumber(match.Groups["amount"].Value);
-                    return new DiscardCardEffect(amount);
-                }),
+                match => Result<IEffect>.Success(new DiscardCardEffect(ParseNumber(match.Groups["amount"].Value)))),
 
             // 10. Scry: "scry X"
             new EffectPatternRule(
                 @"^scry\s+(?<amount>\d+)$",
-                match => new ScryEffect(int.Parse(match.Groups["amount"].Value)))
+                match => Result<IEffect>.Success(new ScryEffect(int.Parse(match.Groups["amount"].Value))))
         ];
     }
 
@@ -153,9 +137,8 @@ public class EffectParser : IEffectParser
         if (string.IsNullOrWhiteSpace(rawEffectText))
             return Result<IEffect>.Failure("Effect text cannot be empty.");
 
-        // Handle multiple effects separated by period or "and" (e.g., "You gain 1 life. Draw a card.")
         string[] effectSegments = rawEffectText
-            .Split(new[] { '.', ';' }, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            .Split(['.', ';'], StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
         if (effectSegments.Length > 1)
         {
@@ -166,6 +149,10 @@ public class EffectParser : IEffectParser
                 if (subResult.IsSuccess)
                 {
                     parsedSubEffects.Add(subResult.Value);
+                }
+                else
+                {
+                    return Result<IEffect>.Failure($"Failed to parse sub-effect: '{segment}'");
                 }
             }
 
@@ -178,7 +165,6 @@ public class EffectParser : IEffectParser
 
     private Result<IEffect> ParseSingleEffect(string text)
     {
-        // Trim end punctuation so "destroys target creature." becomes "destroys target creature"
         string normalizedText = text.TrimEnd('.').ToLowerInvariant().Trim();
 
         foreach (var rule in _rules)
@@ -186,21 +172,18 @@ public class EffectParser : IEffectParser
             var result = rule.TryMatch(normalizedText);
             if (result.IsSuccess)
             {
-                return Result<IEffect>.Success(result.Value);
+                return result;
             }
         }
 
         return Result<IEffect>.Success(new UnhandledEffect(text));
     }
 
-    private static int ParseNumber(string value)
+    private static int ParseNumber(string value) => value switch
     {
-        return value switch
-        {
-            "a" or "an" => 1,
-            _ => int.TryParse(value, out int result) ? result : 1
-        };
-    }
+        "a" or "an" => 1,
+        _ => int.TryParse(value, out int result) ? result : 1
+    };
 
     private interface IEffectPatternRule
     {
@@ -210,9 +193,9 @@ public class EffectParser : IEffectParser
     private class EffectPatternRule : IEffectPatternRule
     {
         private readonly Regex _regex;
-        private readonly Func<Match, IEffect> _factory;
+        private readonly Func<Match, Result<IEffect>> _factory;
 
-        public EffectPatternRule(string pattern, Func<Match, IEffect> factory)
+        public EffectPatternRule(string pattern, Func<Match, Result<IEffect>> factory)
         {
             _regex = new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
             _factory = factory;
@@ -224,15 +207,7 @@ public class EffectParser : IEffectParser
             if (!match.Success)
                 return Result<IEffect>.Failure("No match");
 
-            try
-            {
-                var effect = _factory(match);
-                return Result<IEffect>.Success(effect);
-            }
-            catch (Exception ex)
-            {
-                return Result<IEffect>.Failure($"Error parsing effect: {ex.Message}");
-            }
+            return _factory(match);
         }
     }
 }

@@ -1,10 +1,7 @@
-﻿using MTG.Core.Abilities;
+﻿using System.Text.RegularExpressions;
+using MTG.Core.Abilities;
 using MTG.Core.Enums;
 using MTG.Core.Helper;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Text.RegularExpressions;
 
 namespace MTG.Core.OracleTextParsers;
 
@@ -19,17 +16,20 @@ public class TriggerConditionParser : ITriggerConditionParser
             // 1. Enters: "When this land enters, ...", "Whenever a creature enters the battlefield"
             new TriggerPatternRule(
                 @"^(?:when|whenever)\s+(?<target>.+?)\s+enters?(?:\s+the\s+battlefield)?$",
-                match => new EntersBattlefieldCondition(CardFilter.Parse(match.Groups["target"].Value))),
+                match => CardFilter.Parse(match.Groups["target"].Value)
+                    .Map(filter => (ITriggerCondition)new EntersBattlefieldCondition(filter))),
 
             // 2. Dies: "Whenever target creature dies"
             new TriggerPatternRule(
                 @"^(?:when|whenever)\s+(?<target>.+?)\s+dies$",
-                match => new DiesCondition(CardFilter.Parse(match.Groups["target"].Value))),
+                match => CardFilter.Parse(match.Groups["target"].Value)
+                    .Map(filter => (ITriggerCondition)new DiesCondition(filter))),
 
             // 3. Attacks: "Whenever a creature attacks"
             new TriggerPatternRule(
                 @"^(?:when|whenever)\s+(?<target>.+?)\s+attacks$",
-                match => new AttacksCondition(CardFilter.Parse(match.Groups["target"].Value))),
+                match => CardFilter.Parse(match.Groups["target"].Value)
+                    .Map(filter => (ITriggerCondition)new AttacksCondition(filter))),
 
             // 4. Phase Start: "At the beginning of your upkeep"
             new TriggerPatternRule(
@@ -44,14 +44,19 @@ public class TriggerConditionParser : ITriggerConditionParser
                         _ => RelativePlayer.Any
                     };
 
-                    Enum.TryParse<TurnStep>(match.Groups["step"].Value, true, out var step);
-                    return new PhaseStartCondition(step, player);
+                    if (!Enum.TryParse<TurnStep>(match.Groups["step"].Value, true, out var step))
+                    {
+                        return Result<ITriggerCondition>.Failure($"Unknown turn step: '{match.Groups["step"].Value}'");
+                    }
+
+                    return Result<ITriggerCondition>.Success(new PhaseStartCondition(step, player));
                 }),
 
             // 5. Becomes Tapped
             new TriggerPatternRule(
                 @"whenever\s+(?<card>.*?)\s+becomes\s+tapped",
-                match => new BecomesTappedCondition(CardFilter.Parse(match.Groups["card"].Value))),
+                match => CardFilter.Parse(match.Groups["card"].Value)
+                    .Map(filter => (ITriggerCondition)new BecomesTappedCondition(filter))),
         ];
     }
 
@@ -67,7 +72,7 @@ public class TriggerConditionParser : ITriggerConditionParser
             var result = rule.TryMatch(normalized);
             if (result.IsSuccess)
             {
-                return Result<ITriggerCondition>.Success(result.Value);
+                return result; // Direktes Durchreichen des Results
             }
         }
 
@@ -83,9 +88,9 @@ public class TriggerConditionParser : ITriggerConditionParser
     private class TriggerPatternRule : ITriggerPatternRule
     {
         private readonly Regex _regex;
-        private readonly Func<Match, ITriggerCondition> _factory;
+        private readonly Func<Match, Result<ITriggerCondition>> _factory;
 
-        public TriggerPatternRule(string pattern, Func<Match, ITriggerCondition> factory)
+        public TriggerPatternRule(string pattern, Func<Match, Result<ITriggerCondition>> factory)
         {
             _regex = new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
             _factory = factory;
@@ -97,15 +102,7 @@ public class TriggerConditionParser : ITriggerConditionParser
             if (!match.Success)
                 return Result<ITriggerCondition>.Failure("No match");
 
-            try
-            {
-                var condition = _factory(match);
-                return Result<ITriggerCondition>.Success(condition);
-            }
-            catch (Exception ex)
-            {
-                return Result<ITriggerCondition>.Failure($"Error parsing condition: {ex.Message}");
-            }
+            return _factory(match);
         }
     }
 }

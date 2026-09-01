@@ -1,7 +1,7 @@
-﻿using MTG.Core.Abilities;
+﻿using System.Text.RegularExpressions;
+using MTG.Core.Abilities;
 using MTG.Core.Enums;
 using MTG.Core.Helper;
-using System.Text.RegularExpressions;
 
 namespace MTG.Core.OracleTextParsers;
 
@@ -11,90 +11,62 @@ public class AbilityCostParser : IAbilityCostParser
 
     public AbilityCostParser()
     {
-        // Initializing rules inside the constructor allows using instance methods like ParseNumber
         _rules =
         [
             // 1. Tap symbol: {T}
-            new CostPatternRule(
-                @"^\{t\}$",
-                _ => new TapCost()),
+            new CostPatternRule(@"^\{t\}$", _ => Result<IAbilityCost>.Success(new TapCost())),
 
             // 2. Pay life: "Pay X life"
-            new CostPatternRule(
-                @"^pay\s+(?<amount>\d+)\s+life$",
-                match => new PayLifeCost(int.Parse(match.Groups["amount"].Value))),
+            new CostPatternRule(@"^pay\s+(?<amount>\d+)\s+life$", match =>
+                Result<IAbilityCost>.Success(new PayLifeCost(int.Parse(match.Groups["amount"].Value)))),
 
             // 3. Discard Hand: "Discard your hand"
-            new CostPatternRule(
-                @"^discard\s+your\s+hand$",
-                _ => new DiscardHandCost()),
+            new CostPatternRule(@"^discard\s+your\s+hand$", _ => Result<IAbilityCost>.Success(new DiscardHandCost())),
 
             // 4. Discard Cards: "Discard X card(s)"
-            new CostPatternRule(
-                @"^discard\s+(?<amount>\d+|a|an)\s+cards?$",
-                match =>
-                {
-                    int amount = ParseNumber(match.Groups["amount"].Value);
-                    return new DiscardCardCost(amount);
-                }),
+            new CostPatternRule(@"^discard\s+(?<amount>\d+|a|an)\s+cards?$", match =>
+                Result<IAbilityCost>.Success(new DiscardCardCost(ParseNumber(match.Groups["amount"].Value)))),
 
-            // 5. Sacrifice: "Sacrifice a permanent", "Sacrifice this artifact", "Sacrifice 2 lands"
-            new CostPatternRule(
-                @"^sacrifice\s+(?:(?<amount>\d+|a|an)\s+)?(?<type>.+)$",
-                match =>
-                {
-                    string rawType = match.Groups["type"].Value.Trim();
-                    string amountGroup = match.Groups["amount"].Value;
-                    int amount = string.IsNullOrEmpty(amountGroup) ? 1 : ParseNumber(amountGroup);
+            // 5. Sacrifice
+            new CostPatternRule(@"^sacrifice\s+(?:(?<amount>\d+|a|an)\s+)?(?<type>.+)$", match =>
+            {
+                string rawType = match.Groups["type"].Value.Trim();
+                string amountGroup = match.Groups["amount"].Value;
+                int amount = string.IsNullOrEmpty(amountGroup) ? 1 : ParseNumber(amountGroup);
 
-                    if (rawType.StartsWith("this", StringComparison.OrdinalIgnoreCase) ||
-                        rawType.Equals("{this}", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return new SacrificeSelfCost();
-                    }
+                IAbilityCost cost = rawType.StartsWith("this", StringComparison.OrdinalIgnoreCase) ||
+                                    rawType.Equals("{this}", StringComparison.OrdinalIgnoreCase)
+                    ? new SacrificeSelfCost()
+                    : new SacrificeCost(rawType, amount);
 
-                    return new SacrificeCost(rawType, amount);
-                }),
+                return Result<IAbilityCost>.Success(cost);
+            }),
 
-            // 6. Mana cost: e.g., "{1}{R}" or "{G}"
-            new CostPatternRule(
-                @"^(?:\{[0-9a-zA-Z/]+\})+$",
-                match =>
-                {
-                    string upperMana = match.Value.ToUpperInvariant();
-                    var manaCostResult = ManaCost.Create(upperMana);
-                    if (manaCostResult.IsFailure)
-                        throw new InvalidOperationException(manaCostResult.Error);
+            // 6. Mana cost: Kein `throw` mehr nötig! Result wird gemappt.
+            new CostPatternRule(@"^(?:\{[0-9a-zA-Z/]+\})+$", match =>
+                ManaCost.Create(match.Value.ToUpperInvariant())
+                    .Map(manaData => (IAbilityCost)new ManaCostData(manaData))),
 
-                    return new ManaCostData(manaCostResult.Value);
-                }),
+            // 7. Filtered Cost: Kein `null` mehr nötig! Result wird gemappt.
+            new CostPatternRule(@"^tap\s+(?<amount>\d+|four|three|two|one|a|an)?\s*(?<filter>.+)\s+you\s+control$", match =>
+            {
+                int amount = ParseNumber(match.Groups["amount"].Value);
 
-            // 7. "Tap four untapped creatures you control" / "Tap an untapped creature you control"
-            new CostPatternRule(
-                @"^tap\s+(?<amount>\d+|four|three|two|one|a|an)?\s*(?<filter>.+)\s+you\s+control$",
-                match =>
-                {
-                    int amount = ParseNumber(match.Groups["amount"].Value);
-                    return new TapCreaturesCost(amount, CardFilter.Parse(match.Groups["filter"].Value));
-                }),
-            
-            // 8. "Remove a page counter from this artifact" / "Remove a -1/-1 counter from this creature"
-            new CostPatternRule(
-                @"^remove\s+a\s+(?<type>.+?)\s+counter\s+from\s+this",
-                match =>
-                {
-                    string typeStr = match.Groups["type"].Value;
-                    MarkerType type = typeStr.Equals("-1/-1") ? MarkerType.MinusOneMinusOne : MarkerType.Page;
-                    return new RemoveCounterCost(type, 1);
-                }),
-            
-            // 9. "Put a -1/-1 counter on this creature"
-            new CostPatternRule(
-                @"^put\s+a\s+(?<type>.+?)\s+counter\s+on\s+this\s+creature$",
-                match =>
-                {
-                    return new PutCounterOnSelfCost(MarkerType.MinusOneMinusOne, 1);
-                }),
+                return CardFilter.Parse(match.Groups["filter"].Value)
+                    .Map(filter => (IAbilityCost)new TapCreaturesCost(amount, filter));
+            }),
+
+            // 8. Remove counters
+            new CostPatternRule(@"^remove\s+a\s+(?<type>.+?)\s+counter\s+from\s+this", match =>
+            {
+                string typeStr = match.Groups["type"].Value;
+                MarkerType type = typeStr.Equals("-1/-1") ? MarkerType.MinusOneMinusOne : MarkerType.Page;
+                return Result<IAbilityCost>.Success(new RemoveCounterCost(type, 1));
+            }),
+
+            // 9. Put counters
+            new CostPatternRule(@"^put\s+a\s+(?<type>.+?)\s+counter\s+on\s+this\s+creature$", _ =>
+                Result<IAbilityCost>.Success(new PutCounterOnSelfCost(MarkerType.MinusOneMinusOne, 1))),
         ];
     }
 
@@ -104,8 +76,6 @@ public class AbilityCostParser : IAbilityCostParser
             return Result<IReadOnlyList<IAbilityCost>>.Failure("Cost text cannot be empty.");
 
         var parsedCosts = new List<IAbilityCost>();
-
-        // Split comma-separated cost components (e.g., "{1}{R}, {T}, Pay 2 life")
         string[] costSegments = rawCosts.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
         foreach (var segment in costSegments)
@@ -131,14 +101,14 @@ public class AbilityCostParser : IAbilityCostParser
         return Result<IReadOnlyList<IAbilityCost>>.Success(parsedCosts.AsReadOnly());
     }
 
-    private int ParseNumber(string value)
+    private int ParseNumber(string value) => value switch
     {
-        return value switch
-        {
-            "a" or "an" => 1,
-            _ => int.TryParse(value, out int result) ? result : 1
-        };
-    }
+        "a" or "an" or "one" => 1,
+        "two" => 2,
+        "three" => 3,
+        "four" => 4,
+        _ => int.TryParse(value, out int result) ? result : 1
+    };
 
     private interface ICostPatternRule
     {
@@ -148,9 +118,9 @@ public class AbilityCostParser : IAbilityCostParser
     private class CostPatternRule : ICostPatternRule
     {
         private readonly Regex _regex;
-        private readonly Func<Match, IAbilityCost> _factory;
+        private readonly Func<Match, Result<IAbilityCost>> _factory;
 
-        public CostPatternRule(string pattern, Func<Match, IAbilityCost> factory)
+        public CostPatternRule(string pattern, Func<Match, Result<IAbilityCost>> factory)
         {
             _regex = new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
             _factory = factory;
@@ -162,15 +132,8 @@ public class AbilityCostParser : IAbilityCostParser
             if (!match.Success)
                 return Result<IAbilityCost>.Failure("No match");
 
-            try
-            {
-                var cost = _factory(match);
-                return Result<IAbilityCost>.Success(cost);
-            }
-            catch (Exception ex)
-            {
-                return Result<IAbilityCost>.Failure($"Error parsing cost: {ex.Message}");
-            }
+            // Die Factory liefert direkt ein Result<IAbilityCost> zurück!
+            return _factory(match);
         }
     }
 }
