@@ -18,4 +18,6 @@ public record DealsDamageCondition(DamageType DamageType = DamageType.Combat, Ta
 
 public record CastsSpellCondition(SpellFilter? Filter = null) : ITriggerCondition;
 
-public record RawTriggerCondition(string OriginalText) : ITriggerCondition;
+public record BecomesTappedCondition(CardFilter? TargetFilter = null) : ITriggerCondition;
+
+public record UnhandledTriggerCondition(string OriginalText) : ITriggerCondition;

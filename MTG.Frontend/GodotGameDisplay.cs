@@ -53,4 +53,14 @@ public class GodotGameDisplay : IGameDisplay
 	{
 		
 	}
+
+	public void RenderOpponentsHands(GameContext context)
+	{
+		
+	}
+
+	public void RenderOpponentsLibraries(GameContext context)
+	{
+		
+	}
 }

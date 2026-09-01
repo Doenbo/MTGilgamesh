@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace MTG.Core.Parser;
+namespace MTG.Core.OracleTextParsers;
 
 public class TriggerConditionParser : ITriggerConditionParser
 {
@@ -46,7 +46,12 @@ public class TriggerConditionParser : ITriggerConditionParser
 
                     Enum.TryParse<TurnStep>(match.Groups["step"].Value, true, out var step);
                     return new PhaseStartCondition(step, player);
-                })
+                }),
+
+            // 5. Becomes Tapped
+            new TriggerPatternRule(
+                @"whenever\s+(?<card>.*?)\s+becomes\s+tapped",
+                match => new BecomesTappedCondition(CardFilter.Parse(match.Groups["card"].Value))),
         ];
     }
 
@@ -67,7 +72,7 @@ public class TriggerConditionParser : ITriggerConditionParser
         }
 
         // Fallback: Custom classes remain intact while preventing crashes
-        return Result<ITriggerCondition>.Success(new RawTriggerCondition(rawConditionText));
+        return Result<ITriggerCondition>.Success(new UnhandledTriggerCondition(rawConditionText));
     }
 
     private interface ITriggerPatternRule

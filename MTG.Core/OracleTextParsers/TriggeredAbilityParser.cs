@@ -3,7 +3,7 @@ using MTG.Core.Components;
 using MTG.Core.Components.OracleText;
 using MTG.Core.Helper;
 
-namespace MTG.Core.Parser;
+namespace MTG.Core.OracleTextParsers;
 
 public class TriggeredAbilityParser : ILineComponentParser
 {

@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="MTG.Complete.Tests/MTG.Complete.Tests.csproj" Id="7494ef4b-fd4f-4e11-a623-b478b48e12f8" />
   <Project Path="MTG.Core.Tests/MTG.Core.Tests.csproj" />
   <Project Path="MTG.Core/MTG.Core.csproj" />
   <Project Path="MTG.DB/MTG.DB.csproj" />

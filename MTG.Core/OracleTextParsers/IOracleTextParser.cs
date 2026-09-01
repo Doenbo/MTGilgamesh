@@ -2,7 +2,7 @@
 using MTG.Core.Components;
 using MTG.Core.Helper;
 
-namespace MTG.Core.Parser;
+namespace MTG.Core.OracleTextParsers;
 
 public interface IOracleTextParser
 {

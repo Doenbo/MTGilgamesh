@@ -187,6 +187,7 @@ public partial class TypeLine
     {
         return cardType switch
         {
+            //TODO
             CardType.Artifact => IsArtifact(),
             CardType.Battle => IsBattle(),
             //CardType.Boss => IsBoss(),

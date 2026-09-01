@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace MTG.Core.Parser;
+namespace MTG.Core.OracleTextParsers;
 
 public class KeywordAbilityParser : ILineComponentParser
 {

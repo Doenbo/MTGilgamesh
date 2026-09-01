@@ -12,7 +12,6 @@ public record CardFilter(
     bool ExcludeTokens = false
 )
 {
-    // Statische Helper für den schnellen Zugriff
     public static CardFilter Any => new();
 
     public static CardFilter ForType(CardType type)
@@ -21,9 +20,6 @@ public record CardFilter(
     public static CardFilter ForSubtype(string subtype)
         => new(RequiredSubtypes: [subtype]);
 
-    /// <summary>
-    /// Parses a raw target string (e.g., "creature", "artifact", "nonland permanent") into a CardFilter.
-    /// </summary>
     public static CardFilter Parse(string rawText)
     {
         if (string.IsNullOrWhiteSpace(rawText))
@@ -55,7 +51,6 @@ public record CardFilter(
         );
     }
 
-    // Value-Equality für Sammlungen...
     public virtual bool Equals(CardFilter? other)
     {
         if (other is null) return false;

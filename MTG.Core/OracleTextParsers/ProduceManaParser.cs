@@ -4,6 +4,7 @@ using MTG.Core.Components;
 using MTG.Core.Components.OracleText;
 using MTG.Core.Enums;
 using MTG.Core.Helper;
+using MTG.Core.OracleTextParsers;
 
 namespace MTG.Core.Parser;
 

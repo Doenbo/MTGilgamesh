@@ -1,5 +1,5 @@
 ﻿using MTG.Core.Abilities;
-using MTG.Core.Parser;
+using MTG.Core.OracleTextParsers;
 
 namespace MTG.Core.Tests;
 

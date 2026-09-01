@@ -34,30 +34,14 @@ public interface ICardFace
     public bool IsCardType(CardType cardType);
 
     //Component Methods
-    
-    /// <summary>
-    /// Fügt eine einzelne Komponente unter ihrem konkreten Laufzeittyp hinzu.
-    /// </summary>
     void AddComponent(ICardComponent component);
 
-    /// <summary>
-    /// Fügt eine Sammlung von Komponenten hinzu.
-    /// </summary>
     void AddComponents(IEnumerable<ICardComponent> components);
 
-    /// <summary>
-    /// Versucht, die erste/einzige Komponente vom Typ T abzurufen.
-    /// </summary>
     bool TryGetComponent<T>([NotNullWhen(true)] out T? component) where T : class, ICardComponent;
 
-    /// <summary>
-    /// Versucht, alle Komponenten vom Typ T abzurufen.
-    /// </summary>
     bool TryGetComponents<T>(out IReadOnlyList<T> components) where T : class, ICardComponent;
 
-    /// <summary>
-    /// Prüft, ob mindestens eine Komponente vom Typ T vorhanden ist.
-    /// </summary>
     bool HasComponent<T>() where T : class, ICardComponent;
 
     //ToStrings

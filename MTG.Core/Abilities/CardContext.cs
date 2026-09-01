@@ -4,12 +4,19 @@ namespace MTG.Core.Abilities;
 
 public record CardContext(
     string Name,
-    IReadOnlyList<CardType>? CardTypes = null,
-    IReadOnlyList<string>? Subtypes = null
-)
+    IReadOnlyList<CardType> CardTypes,
+    IReadOnlyList<object> Subtypes,
+    string? StartingLoyalty = null)
 {
-    public IReadOnlyList<CardType> Types => CardTypes ?? [];
-    public IReadOnlyList<string> SubtypeList => Subtypes ?? [];
+    public CardContext(
+        string name,
+        IEnumerable<CardType>? cardTypes = null,
+        IEnumerable<object>? subtypes = null)
+        : this(
+            name,
+            (cardTypes ?? []).ToList().AsReadOnly(),
+            (subtypes ?? []).ToList().AsReadOnly())
+    { }
 
     public static CardContext ForName(string name) => new(name);
 }

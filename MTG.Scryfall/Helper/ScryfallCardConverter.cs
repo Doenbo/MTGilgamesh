@@ -3,6 +3,7 @@ using MTG.Core.Cards;
 using MTG.Core.Components;
 using MTG.Core.Enums;
 using MTG.Core.Helper;
+using MTG.Core.OracleTextParsers;
 using MTG.Core.Parser;
 using MTG.Core.Properties;
 using MTG.Scryfall.API.Cards;

@@ -1,5 +1,6 @@
 ﻿using MTG.Core.Enums;
 using MTG.Core.Helper;
+using MTG.Core.Properties;
 
 namespace MTG.Core.Cards;
 
@@ -32,9 +33,16 @@ public interface ICard
     public Result<ManaType> GetCardColorIdentity();
 
     //Simple Yes/No Checks
-    public bool IsPermanent() => MainFace.IsPermanent();
+    public bool IsArtifact() => MainFace.IsArtifact();
+    public bool IsBasic() => MainFace.IsBasic();
+    public bool IsBattle() => MainFace.IsBattle();
+    public bool IsCreature() => MainFace.IsCreature();
+    public bool IsHistoric() => MainFace.IsHistoric();
     public bool IsInstant() => MainFace.IsInstant();
     public bool IsLand() => MainFace.IsLand();
+    public bool IsLegendary() => MainFace.IsLegendary();
+    public bool IsPermanent() => MainFace.IsPermanent();
+    public bool IsPlaneswalker() => MainFace.IsPlaneswalker();
     public bool IsMultifaced() => Faces.Count > 1;
 
     //ToStrings

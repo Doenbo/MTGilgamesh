@@ -3,7 +3,7 @@ using MTG.Core.Enums;
 using MTG.Core.Helper;
 using System.Text.RegularExpressions;
 
-namespace MTG.Core.Parser;
+namespace MTG.Core.OracleTextParsers;
 
 public class AbilityCostParser : IAbilityCostParser
 {

@@ -1,9 +1,13 @@
-﻿using System.Text.RegularExpressions;
-using MTG.Core.Abilities;
+﻿using MTG.Core.Abilities;
 using MTG.Core.Enums;
 using MTG.Core.Helper;
+using MTG.Core.Types;
+using MTG.Core.Wrapper;
+using System.Collections.Immutable;
+using System.Data;
+using System.Text.RegularExpressions;
 
-namespace MTG.Core.Parser;
+namespace MTG.Core.OracleTextParsers;
 
 public class EffectParser : IEffectParser
 {
@@ -59,14 +63,37 @@ public class EffectParser : IEffectParser
                     int amount = ParseNumber(match.Groups["amount"].Value);
                     int power = int.Parse(match.Groups["power"].Value);
                     int toughness = int.Parse(match.Groups["toughness"].Value);
-                    string color = match.Groups["color"].Value;
-                    string subtype = match.Groups["subtype"].Value;
-
-                    var keywords = match.Groups["keywords"].Success
-                        ? match.Groups["keywords"].Value.Split("and", StringSplitOptions.TrimEntries)
-                        : Array.Empty<string>();
-
-                    return new CreateTokenEffect(amount, power, toughness, color, subtype, keywords);
+            
+                    if (!Enum.TryParse<ManaType>(match.Groups["color"].Value, ignoreCase: true, out var manaType) ||
+                        !SubtypeWrapper.TryParse(match.Groups["subtype"].Value, out var subtype))
+                    {
+                        return null;
+                    }
+            
+                    var keywords = new List<KeywordWrapper>();
+                    if (match.Groups["keywords"].Success)
+                    {
+                        var rawKeywords = match.Groups["keywords"].Value
+                            .Split([",", " and "], StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            
+                        foreach (var raw in rawKeywords)
+                        {
+                            if (KeywordWrapper.TryParse(raw, out var kw))
+                            {
+                                keywords.Add(kw);
+                            }
+                        }
+                    }
+            
+                    // C# wandelt [...] dank ImmutableArray-Target-Typing automatisch perfekt um!
+                    return new CreateTokenEffect(
+                        amount,
+                        power,
+                        toughness,
+                        manaType,
+                        [subtype],
+                        [..keywords]
+                    );
                 }),
 
             // 6. Deal Damage: Optional 's' at deal(s) and optional target (to ...)
@@ -76,14 +103,14 @@ public class EffectParser : IEffectParser
                 {
                     int damage = int.Parse(match.Groups["amount"].Value);
                     string rawTarget = match.Groups["target"].Success ? match.Groups["target"].Value.ToLowerInvariant() : "any";
-            
+
                     TargetType targetType = rawTarget switch
                     {
                         var t when t.Contains("creature") => TargetType.Creature,
                         var t when t.Contains("player") => TargetType.Player,
                         _ => TargetType.Any
                     };
-            
+
                     return new DealDamageEffect(damage, targetType);
                 }),
             

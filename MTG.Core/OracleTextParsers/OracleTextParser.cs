@@ -2,20 +2,30 @@
 using MTG.Core.Abilities;
 using MTG.Core.Components;
 using MTG.Core.Helper;
+using MTG.Core.Parser;
 
-namespace MTG.Core.Parser;
+namespace MTG.Core.OracleTextParsers;
 
 public class OracleTextParser : IOracleTextParser
 {
+    private readonly IEnumerable<ICardTypeOracleParser> _specializedParsers;
     private readonly IEnumerable<ILineComponentParser> _lineParsers;
     private static readonly ILogger<OracleTextParser> _logger = LogManager.GetLogger<OracleTextParser>();
 
-    public OracleTextParser(IEnumerable<ILineComponentParser> lineParsers)
+    public OracleTextParser(
+        IEnumerable<ICardTypeOracleParser> specializedParsers,
+        IEnumerable<ILineComponentParser> lineParsers)
     {
+        _specializedParsers = specializedParsers;
         _lineParsers = lineParsers;
     }
 
-    public OracleTextParser() : this(CreateDefaultParsers())
+    public OracleTextParser(IEnumerable<ILineComponentParser> lineParsers)
+        : this([], lineParsers)
+    { }
+
+    public OracleTextParser()
+        : this([], CreateDefaultParsers())
     { }
 
     private static ILineComponentParser[] CreateDefaultParsers()
@@ -35,6 +45,12 @@ public class OracleTextParser : IOracleTextParser
         if (string.IsNullOrWhiteSpace(oracleText))
             return Result<IReadOnlyList<ICardComponent>>.Success([]);
 
+        var specializedParser = _specializedParsers.FirstOrDefault(p => p.CanHandle(cref));
+        if (specializedParser != null)
+        {
+            return specializedParser.Parse(oracleText, cref);
+        }
+
         var components = new List<ICardComponent>();
         var lines = oracleText.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
@@ -51,7 +67,6 @@ public class OracleTextParser : IOracleTextParser
                 }
                 else if (result.IsFailure)
                 {
-                    // TODO Currently No Error but Logging -> Change?
                     _logger.LogWarning(
                         "Card context '{CardName}' - Line ignored: \"{Line}\" | Reason: {Error}",
                         cref.Name, line, result.Error);

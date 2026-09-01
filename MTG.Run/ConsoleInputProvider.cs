@@ -40,8 +40,7 @@ public class ConsoleInputProvider : IPlayerInputProvider
             context.Display.LogInfo(
                 $"{ENV.NewLine}[{context.TurnStep}] {context.PriorityPlayer.Name}, it's your main phase. What do you do?" +
                 $"{ENV.NewLine}1: Play a Card from your Hand | 2: Tap Land for Mana | 3: Activate Ability | " +
-                $"{(Cheats.CanSeeOtherPlayersHands ? CIS.s_ohand + " | " : "")}" +
-                $"{(Cheats.CanSeeOtherPlayersLibraries ? CIS.s_olibr + " | " : "")}" +
+                $"{(Cheats.CanSeeOtherPlayersStuff ? CIS.f_ocheat + " | " : "")}" +
                 $"{CIS.f_endph}");
 
             var input = Console.ReadLine(); //TODO? via other class?
@@ -85,12 +84,12 @@ public class ConsoleInputProvider : IPlayerInputProvider
                     continue;
 
                 case "OH":
-                    if (Cheats.CanSeeOtherPlayersHands)
+                    if (Cheats.CanSeeOtherPlayersStuff)
                     { context.Display.RenderOpponentsHands(context); }
                     continue;
 
                 case "OL":
-                    if (Cheats.CanSeeOtherPlayersLibraries)
+                    if (Cheats.CanSeeOtherPlayersStuff)
                     { context.Display.RenderOpponentsLibraries(context); }
                     continue;
 

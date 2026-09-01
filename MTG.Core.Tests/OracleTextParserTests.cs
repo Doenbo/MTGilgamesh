@@ -1,7 +1,7 @@
 ﻿using MTG.Core.Abilities;
 using MTG.Core.Components.OracleText;
 using MTG.Core.Enums;
-using MTG.Core.Parser;
+using MTG.Core.OracleTextParsers;
 
 namespace MTG.Core.Tests;
 

@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="10.0.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="FluentAssertions" Version="8.10.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="4.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MTG.Core\MTG.Core.csproj" />
+    <ProjectReference Include="..\MTG.DB\MTG.DB.csproj" />
+    <ProjectReference Include="..\MTG.Engine\MTG.Engine.csproj" />
+    <ProjectReference Include="..\MTG.Frontend\MTG.Frontend.csproj" />
+    <ProjectReference Include="..\MTG.Opponent\MTG.Opponent.csproj" />
+    <ProjectReference Include="..\MTG.Resources\MTG.Resources.csproj" />
+    <ProjectReference Include="..\MTG.Run\MTG.Run.csproj" />
+    <ProjectReference Include="..\MTG.Scryfall\MTG.Scryfall.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>
