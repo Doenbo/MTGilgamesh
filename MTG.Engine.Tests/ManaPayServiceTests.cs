@@ -1,4 +1,5 @@
-﻿using MTG.Core;
+﻿using FluentAssertions;
+using MTG.Core;
 using MTG.Core.Abilities;
 using MTG.Core.Enums;
 using MTG.Engine.Gameplay;
@@ -41,13 +42,13 @@ public class ManaPayServiceTests
         Cheats.CanPlaySpellsWithoutPaying = false;
 
         var cost = ManaCost.Create(mana);
-        Assert.True(cost.IsSuccess);
+        cost.IsSuccess.Should().BeTrue();
 
         var pool = new ManaPool();
         AddMana(pool, w, u, b, r, g, c);
 
         var mps = new ManaPayService();
-        Assert.True(mps.CanAfford(cost.Value, pool).IsSuccess);
+        mps.CanAfford(cost.Value, pool).IsSuccess.Should().BeTrue();
     }
 
     [Theory]
@@ -64,13 +65,13 @@ public class ManaPayServiceTests
         Cheats.CanPlaySpellsWithoutPaying = false;
 
         var cost = ManaCost.Create(mana);
-        Assert.True(cost.IsSuccess);
+        cost.IsSuccess.Should().BeTrue();
 
         var pool = new ManaPool();
         AddMana(pool, w, u, b, r, g, c);
 
         var mps = new ManaPayService();
-        Assert.True(mps.CanAfford(cost.Value, pool).IsFailure);
+        mps.CanAfford(cost.Value, pool).IsFailure.Should().BeTrue();
     }
 
     private static void AddMana(ManaPool pool, int w, int u, int b, int r, int g, int c)
@@ -88,7 +89,7 @@ public class ManaPayServiceTests
         for (int i = 0; i < amount; i++)
         {
             var mu = ManaUnit.CreateFixed(mt);
-            Assert.True(mu.IsSuccess);
+            mu.IsSuccess.Should().BeTrue();
             pool.AddMana(mu.Value);
         }
     }

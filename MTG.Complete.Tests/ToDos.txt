@@ -1,5 +1,3 @@
 ﻿TODOS
 -----
--Results in parser und so einbauen. gibt bestimmt viele stellen!!
--nugets aufräumen?
 -überall FluentAssertions verwenden

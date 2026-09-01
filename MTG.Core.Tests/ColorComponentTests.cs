@@ -1,4 +1,5 @@
-﻿using MTG.Core.Components;
+﻿using FluentAssertions;
+using MTG.Core.Components;
 using MTG.Core.Enums;
 
 namespace MTG.Core.Tests;
@@ -17,10 +18,10 @@ public class ColorComponentTests
         Assert.True(result.IsSuccess);
 
         var act = result.Value;
-        Assert.NotNull(act);
-        Assert.Equal(new ManaType(), act.ColorIdentity);
-        Assert.Equal(new ManaType(), act.ColorIndicator);
-        Assert.Equal(new ManaType(), act.Colors);
+        act.Should().NotBeNull();
+        act.ColorIdentity.Should().Be(new ManaType());
+        act.ColorIndicator.Should().Be(new ManaType());
+        act.Colors.Should().Be(new ManaType());
     }
 
     [Theory]
@@ -36,19 +37,19 @@ public class ColorComponentTests
         var indicator = new List<string> { s };
 
         var result = ColorComponent.Create(identity, colors, indicator);
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
 
         var act = result.Value;
-        Assert.NotNull(act);
+        act.Should().NotBeNull();
 
-        Assert.Equal(c, act.ColorIdentity);
-        Assert.True(act.ColorIdentity.HasFlag(c));
+        act.ColorIdentity.Should().Be(c);
+        act.ColorIdentity.HasFlag(c).Should().BeTrue();
 
-        Assert.Equal(c, act.Colors);
-        Assert.True(act.Colors.HasFlag(c));
+        act.Colors.Should().Be(c);
+        act.Colors.HasFlag(c).Should().BeTrue();
 
-        Assert.Equal(c, act.ColorIndicator);
-        Assert.True(act.ColorIndicator.HasFlag(c));
+        act.ColorIndicator.Should().Be(c);
+        act.ColorIndicator.HasFlag(c).Should().BeTrue();
     }
 
     [Theory]
@@ -60,18 +61,16 @@ public class ColorComponentTests
         var indicator = new List<string> { s1, s2 };
 
         var result = ColorComponent.Create(identity, colors, indicator);
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
 
         var act = result.Value;
-        Assert.NotNull(act);
+        act.Should().NotBeNull();
 
-        Assert.True(act.ColorIdentity.HasFlag(c1));
-        Assert.True(act.ColorIdentity.HasFlag(c2));
-
-        Assert.True(act.Colors.HasFlag(c1));
-        Assert.True(act.Colors.HasFlag(c2));
-
-        Assert.True(act.ColorIndicator.HasFlag(c1));
-        Assert.True(act.ColorIndicator.HasFlag(c2));
+        act.ColorIdentity.HasFlag(c1).Should().BeTrue();
+        act.ColorIdentity.HasFlag(c2).Should().BeTrue();
+        act.Colors.HasFlag(c1).Should().BeTrue();
+        act.Colors.HasFlag(c2).Should().BeTrue();
+        act.ColorIndicator.HasFlag(c1).Should().BeTrue();
+        act.ColorIndicator.HasFlag(c2).Should().BeTrue();
     }
 }

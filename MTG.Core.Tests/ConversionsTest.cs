@@ -1,4 +1,5 @@
-﻿using MTG.Core.Enums;
+﻿using FluentAssertions;
+using MTG.Core.Enums;
 using MTG.Core.Helper;
 
 namespace MTG.Core.Tests;
@@ -13,7 +14,7 @@ public class ConversionsTest
     public void TestToCamelCase(string input, string exp)
     {
         var act = Conversions.ToCamelCase(input);
-        Assert.Equal(exp, act);
+        act.Should().Be(exp);
     }
 
     [Theory]
@@ -22,8 +23,8 @@ public class ConversionsTest
     [InlineData("More Than Meets the Eye", KeywordAbility.MoreThanMeetsTheEye)]
     public void TestKeyword(string s, KeywordAbility exp)
     {
-        Assert.True(Enum.TryParse(Conversions.ToCamelCase(s), out KeywordAbility act));
-        Assert.Equal(exp, act);
+        Enum.TryParse(Conversions.ToCamelCase(s), out KeywordAbility act).Should().BeTrue();
+        act.Should().Be(exp);
     }
 
     [Theory]
@@ -32,7 +33,7 @@ public class ConversionsTest
     [InlineData("art_crop", ImageSize.ArtCrop)]
     public void TestImageSize(string s, ImageSize exp)
     {
-        Assert.True(Enum.TryParse(Conversions.ToCamelCase(s), out ImageSize act));
-        Assert.Equal(exp, act);
+        Enum.TryParse(Conversions.ToCamelCase(s), out ImageSize act).Should().BeTrue();
+        act.Should().Be(exp);
     }
 }

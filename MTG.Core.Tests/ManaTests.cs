@@ -1,4 +1,6 @@
-﻿namespace MTG.Core.Tests;
+﻿using FluentAssertions;
+
+namespace MTG.Core.Tests;
 
 public class ManaCostTests
 {
@@ -15,8 +17,8 @@ public class ManaCostTests
     public void TestCreateValid(string exp, float _)
     {
         var act = ManaCost.Create(exp);
-        Assert.True(act.IsSuccess);
-        Assert.Equal(exp, act.Value.ToString());
+        act.IsSuccess.Should().BeTrue();
+        act.Value.ToString().Should().Be(exp);
     }
 
     [Theory]
@@ -24,9 +26,9 @@ public class ManaCostTests
     public void TestGetCMC(string exp, float exp2)
     {
         var act = ManaCost.Create(exp);
-        Assert.True(act.IsSuccess);
+        act.IsSuccess.Should().BeTrue();
         var cmc = act.Value.GetCMC();
-        Assert.True(cmc.IsSuccess);
-        Assert.Equal(exp2, cmc.Value);
+        cmc.IsSuccess.Should().BeTrue();
+        cmc.Value.Should().Be(exp2);
     }
 }

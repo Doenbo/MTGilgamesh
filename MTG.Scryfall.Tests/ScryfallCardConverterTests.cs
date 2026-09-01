@@ -1,4 +1,5 @@
-﻿using MTG.Scryfall.Helper;
+﻿using FluentAssertions;
+using MTG.Scryfall.Helper;
 
 namespace MTG.Scryfall.Tests;
 
@@ -61,7 +62,7 @@ public class ScryfallCardConverterTests
     public async Task TestGetExactTestSpace(JsonString json)
     {
         var act = new ScryfallCardConverter().Convert(json);
-        Assert.True(act.IsSuccess);
-        Assert.Equal(name, act.Value.Name);
+        act.IsSuccess.Should().BeTrue();
+        act.Value.Name.Should().Be(name);
     }
 }

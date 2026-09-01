@@ -1,4 +1,5 @@
-﻿using MTG.Core.Abilities;
+﻿using FluentAssertions;
+using MTG.Core.Abilities;
 using MTG.Core.Components.OracleText;
 using MTG.Core.Enums;
 using MTG.Core.OracleTextParsers;
@@ -21,17 +22,17 @@ public class OracleTextParserTests
     {
         var result = _parser.Parse(oracleText, new CardContext(name));
 
-        Assert.True(result.IsSuccess, result.Error);
-        Assert.NotNull(result.Value);
-        Assert.Single(result.Value);
+        result.IsSuccess.Should().BeTrue(result.Error);
+        result.Value.Should().NotBeNull();
+        result.Value.Should().ContainSingle();
 
-        var produced = Assert.IsType<ProduceManaComponent>(result.Value[0]);
-        Assert.True(produced.RequiresTap);
-        Assert.Single(produced.ManaUnits);
+        var produced = result.Value[0].Should().BeOfType<ProduceManaComponent>().Subject;
+        produced.RequiresTap.Should().BeTrue();
+        produced.ManaUnits.Should().ContainSingle();
 
         var manaUnit = produced.ManaUnits[0];
-        Assert.True(manaUnit.IsFixed);
-        Assert.Equal(exp, manaUnit.ManaFixed);
+        manaUnit.IsFixed.Should().BeTrue();
+        manaUnit.ManaFixed.Should().Be(exp);
     }
 
     [Theory]
@@ -41,16 +42,16 @@ public class OracleTextParserTests
     {
         var result = _parser.Parse(oracleText, new CardContext(name));
 
-        Assert.True(result.IsSuccess, result.Error);
-        Assert.NotNull(result.Value);
-        Assert.Single(result.Value);
+        result.IsSuccess.Should().BeTrue(result.Error);
+        result.Value.Should().NotBeNull();
+        result.Value.Should().ContainSingle();
 
-        var produced = Assert.IsType<ProduceManaComponent>(result.Value[0]);
-        Assert.True(produced.RequiresTap);
-        Assert.Equal(2, produced.ManaUnits.Count);
+        var produced = result.Value[0].Should().BeOfType<ProduceManaComponent>().Subject;
+        produced.RequiresTap.Should().BeTrue();
+        produced.ManaUnits.Should().HaveCount(2);
 
-        Assert.Equal(exp0, produced.ManaUnits[0].ManaFixed);
-        Assert.Equal(exp1, produced.ManaUnits[1].ManaFixed);
+        produced.ManaUnits[0].ManaFixed.Should().Be(exp0);
+        produced.ManaUnits[1].ManaFixed.Should().Be(exp1);
     }
 
     // Dual / Triple Lands
@@ -80,22 +81,18 @@ public class OracleTextParserTests
     {
         var result = _parser.Parse(oracleText, new CardContext(name));
 
-        Assert.True(result.IsSuccess, result.Error);
-        Assert.NotNull(result.Value);
-        Assert.Single(result.Value);
+        result.IsSuccess.Should().BeTrue(result.Error);
+        result.Value.Should().NotBeNull();
+        result.Value.Should().ContainSingle();
 
-        var produced = Assert.IsType<ProduceManaComponent>(result.Value[0]);
-        Assert.True(produced.RequiresTap);
-        Assert.Single(produced.ManaUnits);
+        var produced = result.Value[0].Should().BeOfType<ProduceManaComponent>().Subject;
+        produced.RequiresTap.Should().BeTrue();
+        produced.ManaUnits.Should().ContainSingle();
 
         var manaUnit = produced.ManaUnits[0];
-        Assert.True(manaUnit.IsChoice);
-        Assert.Equal(expectedChoices.Length, manaUnit.ManaChoice.Count);
-
-        foreach (var expected in expectedChoices)
-        {
-            Assert.Contains(expected, manaUnit.ManaChoice);
-        }
+        manaUnit.IsChoice.Should().BeTrue();
+        manaUnit.ManaChoice.Should().HaveCount(expectedChoices.Length);
+        manaUnit.ManaChoice.Should().Contain(expectedChoices);
     }
 
     [Theory]
@@ -105,16 +102,16 @@ public class OracleTextParserTests
     {
         var result = _parser.Parse(oracleText, new CardContext(name));
 
-        Assert.True(result.IsSuccess, result.Error);
-        Assert.NotNull(result.Value);
-        Assert.Single(result.Value);
+        result.IsSuccess.Should().BeTrue(result.Error);
+        result.Value.Should().NotBeNull();
+        result.Value.Should().ContainSingle();
 
-        var produced = Assert.IsType<ProduceManaComponent>(result.Value[0]);
-        Assert.True(produced.RequiresTap);
+        var produced = result.Value[0].Should().BeOfType<ProduceManaComponent>().Subject;
+        produced.RequiresTap.Should().BeTrue();
 
         var manaUnit = produced.ManaUnits[0];
-        Assert.True(manaUnit.IsDynamic);
-        Assert.Equal(dmt, manaUnit.ManaDynamic);
+        manaUnit.IsDynamic.Should().BeTrue();
+        manaUnit.ManaDynamic.Should().Be(dmt);
     }
 
     [Theory]
@@ -123,8 +120,8 @@ public class OracleTextParserTests
     {
         var result = _parser.Parse(oracleText, new CardContext(name));
 
-        Assert.True(result.IsSuccess); //TODO Temporary (?) no Error but Errormessage
-        Assert.True(string.IsNullOrWhiteSpace(result.Error));
+        result.IsSuccess.Should().BeTrue(); //TODO Temporary (?) no Error but Errormessage
+        result.Error.Should().BeNullOrWhiteSpace();
     }
 
     [Theory]
@@ -134,7 +131,7 @@ public class OracleTextParserTests
     {
         var result = _parser.Parse(oracleText, new CardContext(name));
 
-        Assert.True(result.IsSuccess);
-        Assert.Empty(result.Value);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeEmpty();
     }
 }

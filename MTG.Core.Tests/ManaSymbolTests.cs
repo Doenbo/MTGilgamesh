@@ -1,4 +1,5 @@
-﻿using MTG.Core.Enums;
+﻿using FluentAssertions;
+using MTG.Core.Enums;
 using MTG.Core.Properties;
 
 namespace MTG.Core.Tests;
@@ -24,8 +25,8 @@ public class ManaSymbolTests
     public void TestCreateValid(string input, float _)
     {
         var act = ManaSymbol.Create(input);
-        Assert.True(act.IsSuccess);
-        Assert.Equal($"{{{input}}}", act.Value.ToString());
+        act.IsSuccess.Should().BeTrue();
+        act.Value.ToString().Should().Be($"{{{input}}}");
     }
 
     [Fact]
@@ -33,9 +34,9 @@ public class ManaSymbolTests
     {
         var input = "1";
         var act = ManaSymbol.Create(input);
-        Assert.True(act.IsSuccess);
-        Assert.Equal($"{{{input}}}", act.Value.ToString());
-        Assert.True(act.Value.IsGenericOnly);
+        act.IsSuccess.Should().BeTrue();
+        act.Value.ToString().Should().Be($"{{{input}}}");
+        act.Value.IsGenericOnly.Should().BeTrue();
     }
 
     [Theory]
@@ -47,13 +48,13 @@ public class ManaSymbolTests
     [InlineData("ABC/B")]
     public void TestCreateInvalid(string input)
     {
-        Assert.True(ManaSymbol.Create(input).IsFailure);
+        ManaSymbol.Create(input).IsFailure.Should().BeTrue();
     }
 
     [Fact]
     public void TestCreateNull()
     {
-        Assert.True(ManaSymbol.Create(null!).IsFailure);
+        ManaSymbol.Create(null!).IsFailure.Should().BeTrue();
     }
 
     //CMC
@@ -63,10 +64,10 @@ public class ManaSymbolTests
     public void TestGetCMCValid(string input, float exp)
     {
         var act = ManaSymbol.Create(input);
-        Assert.True(act.IsSuccess);
+        act.IsSuccess.Should().BeTrue();
         var cmc = act.Value.GetCMC();
-        Assert.True(cmc.IsSuccess);
-        Assert.Equal(exp, cmc.Value);
+        cmc.IsSuccess.Should().BeTrue();
+        cmc.Value.Should().Be(exp);
     }
 
     [Fact]
@@ -91,13 +92,13 @@ public class ManaSymbolTests
     public void TestParseValue(string input, ManaType exp_ac, int exp_gc)
     {
         var act = ManaSymbol.Create(input);
-        Assert.True(act.IsSuccess);
+        act.IsSuccess.Should().BeTrue();
 
         var ac = act.Value.AcceptedColors;
         if (exp_ac != ManaType.Colorless)
             Assert.Contains(exp_ac, ac);
 
         var gc = act.Value.GenericCost;
-        Assert.Equal(exp_gc, gc);
+        gc.Should().Be(exp_gc);
     }
 }

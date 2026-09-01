@@ -1,4 +1,5 @@
-﻿using MTG.Core.Properties;
+﻿using FluentAssertions;
+using MTG.Core.Properties;
 using MTG.Core.Types;
 
 namespace MTG.Core.Tests;
@@ -171,41 +172,26 @@ public class TypeLineComponentTests
     {
 
         var result = TypeLine.Create(typeline);
-        Assert.True(result.IsSuccess);
+        result.IsSuccess.Should().BeTrue();
         var act = result.Value;
 
-        Assert.Equal(cardTypes.Length, act.CardTypes.Count);
-        Assert.Equal(superTypes.Length, act.SuperTypes.Count);
-        Assert.Equal(artifactTypes.Length, act.ArtifactTypes.Count);
-        Assert.Equal(creatureTypes.Length, act.CreatureTypes.Count);
-        Assert.Equal(enchantmentTypes.Length, act.EnchantmentTypes.Count);
-        Assert.Equal(landTypes.Length, act.LandTypes.Count);
-        Assert.Equal(planeswalkerTypes.Length, act.PlaneswalkerTypes.Count);
-        Assert.Equal(spellTypes.Length, act.SpellTypes.Count);
+        act.CardTypes.Count.Should().Be(cardTypes.Length);
+        act.SuperTypes.Count.Should().Be(superTypes.Length);
+        act.ArtifactTypes.Count.Should().Be(artifactTypes.Length);
+        act.CreatureTypes.Count.Should().Be(creatureTypes.Length);
+        act.EnchantmentTypes.Count.Should().Be(enchantmentTypes.Length);
+        act.LandTypes.Count.Should().Be(landTypes.Length);
+        act.PlaneswalkerTypes.Count.Should().Be(planeswalkerTypes.Length);
+        act.SpellTypes.Count.Should().Be(spellTypes.Length);
 
-        foreach (var _ in cardTypes.ToList())
-            Assert.Contains(_, act.CardTypes);
-
-        foreach (var _ in superTypes.ToList())
-            Assert.Contains(_, act.SuperTypes);
-
-        foreach (var _ in artifactTypes.ToList())
-            Assert.Contains(_, act.ArtifactTypes);
-
-        foreach (var _ in creatureTypes.ToList())
-            Assert.Contains(_, act.CreatureTypes);
-
-        foreach (var _ in enchantmentTypes.ToList())
-            Assert.Contains(_, act.EnchantmentTypes);
-
-        foreach (var _ in landTypes.ToList())
-            Assert.Contains(_, act.LandTypes);
-
-        foreach (var _ in planeswalkerTypes.ToList())
-            Assert.Contains(_, act.PlaneswalkerTypes);
-
-        foreach (var _ in spellTypes.ToList())
-            Assert.Contains(_, act.SpellTypes);
+        act.CardTypes.Should().BeEquivalentTo(cardTypes);
+        act.SuperTypes.Should().BeEquivalentTo(superTypes);
+        act.ArtifactTypes.Should().BeEquivalentTo(artifactTypes);
+        act.CreatureTypes.Should().BeEquivalentTo(creatureTypes);
+        act.EnchantmentTypes.Should().BeEquivalentTo(enchantmentTypes);
+        act.LandTypes.Should().BeEquivalentTo(landTypes);
+        act.PlaneswalkerTypes.Should().BeEquivalentTo(planeswalkerTypes);
+        act.SpellTypes.Should().BeEquivalentTo(spellTypes);
     }
 
     public static IEnumerable<object[]> TypeLineInvalidTestData()
@@ -222,8 +208,8 @@ public class TypeLineComponentTests
     {
         var result = TypeLine.Create(invalidTypeLine);
 
-        Assert.True(result.IsFailure);
-        Assert.NotNull(result.Error);
-        Assert.NotEmpty(result.Error);
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().NotBeNull();
+        result.Error.Should().NotBeEmpty();
     }
 }

@@ -1,4 +1,5 @@
-﻿using MTG.Core.Abilities;
+﻿using FluentAssertions;
+using MTG.Core.Abilities;
 using MTG.Core.Enums;
 
 namespace MTG.Core.Tests;
@@ -15,15 +16,15 @@ public class ManaUnitTests
     public void TestCreateFixedValid(ManaType input)
     {
         var pmc = ManaUnit.CreateFixed(input);
-        Assert.True(pmc.IsSuccess);
+        pmc.IsSuccess.Should().BeTrue();
 
         var produced = pmc.Value;
-        Assert.True(produced.IsFixed);
-        Assert.False(produced.IsChoice);
-        Assert.False(produced.IsDynamic);
+        produced.IsFixed.Should().BeTrue();
+        produced.IsChoice.Should().BeFalse();
+        produced.IsDynamic.Should().BeFalse();
 
-        Assert.Equal(input, produced.ManaFixed);
-        Assert.Equal(ManaRestriction.None, produced.ManaRestriction);
+        produced.ManaFixed.Should().Be(input);
+        produced.ManaRestriction.Should().Be(ManaRestriction.None);
     }
 
     public static IEnumerable<object[]> ValidManaStrings =>
@@ -38,15 +39,15 @@ public class ManaUnitTests
     public void TestCreateChoiseValid(IReadOnlyList<ManaType> input)
     {
         var pmc = ManaUnit.CreateChoice(input);
-        Assert.True(pmc.IsSuccess);
+        pmc.IsSuccess.Should().BeTrue();
 
         var produced = pmc.Value;
-        Assert.False(produced.IsFixed);
-        Assert.True(produced.IsChoice);
-        Assert.False(produced.IsDynamic);
+        produced.IsFixed.Should().BeFalse();
+        produced.IsChoice.Should().BeTrue();
+        produced.IsDynamic.Should().BeFalse();
 
-        Assert.Equal(input.Count, produced.ManaChoice.Count);
-        Assert.Equal(ManaRestriction.None, produced.ManaRestriction);
+        produced.ManaChoice.Count.Should().Be(input.Count);
+        produced.ManaRestriction.Should().Be(ManaRestriction.None);
     }
 
     [Theory]
@@ -56,13 +57,13 @@ public class ManaUnitTests
     public void TestCreateDynamicValid(ManaDynamicType input)
     {
         var pmc = ManaUnit.CreateDynamic(input);
-        Assert.True(pmc.IsSuccess);
+        pmc.IsSuccess.Should().BeTrue();
 
         var produced = pmc.Value;
-        Assert.False(produced.IsFixed);
-        Assert.False(produced.IsChoice);
-        Assert.True(produced.IsDynamic);
+        produced.IsFixed.Should().BeFalse();
+        produced.IsChoice.Should().BeFalse();
+        produced.IsDynamic.Should().BeTrue();
 
-        Assert.Equal(input, produced.ManaDynamic);
+        produced.ManaDynamic.Should().Be(input);
     }
 }

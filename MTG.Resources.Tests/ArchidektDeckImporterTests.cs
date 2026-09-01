@@ -1,4 +1,5 @@
-﻿using MTG.Resources.Archidekt;
+﻿using FluentAssertions;
+using MTG.Resources.Archidekt;
 using MTG.Resources.Enums;
 
 namespace MTG.Resources.Tests;
@@ -9,10 +10,10 @@ public class ArchidektDeckImporterTests
     public async Task TestCreateCommanderPreconTT()
     {
         var cp = ArchidektDeckImporter.ImportCommanderPrecon(CommanderPrecon.TokenTriumph);
-        Assert.True(cp.IsSuccess);
-        Assert.Equal(73, cp.Value.Count); //cause of duplicate lands
+        cp.IsSuccess.Should().BeTrue();
+        cp.Value.Count.Should().Be(73); //cause of duplicate lands
 
-        Assert.Contains(cp.Value, card => 
+        cp.Value.Should().ContainSingle(card =>
             card.Name == "Emmara, Soul of the Accord" &&
             card.Quantity == 1 &&
             card.Set == "grn" &&
@@ -20,7 +21,7 @@ public class ArchidektDeckImporterTests
             card.Type == "Commander{top}"
         );
 
-        Assert.Contains(cp.Value, card => 
+        cp.Value.Should().ContainSingle(card =>
             card.Name == "Ajani, Caller of the Pride" &&
             card.Quantity == 1 &&
             card.Set == "fdn" &&
@@ -28,7 +29,7 @@ public class ArchidektDeckImporterTests
             card.Type == "Counters"
         );
 
-        Assert.Contains(cp.Value, card =>
+        cp.Value.Should().ContainSingle(card =>
             card.Name == "Forest" &&
             card.Quantity == 15 &&
             card.Set == "hob" &&
@@ -41,18 +42,18 @@ public class ArchidektDeckImporterTests
     public async Task TestCreateCommanderPreconSAS()
     {
         var cp = ArchidektDeckImporter.ImportCommanderPrecon(CommanderPrecon.ScionsAndSpellcraft);
-        Assert.True(cp.IsSuccess);
-        Assert.Equal(92, cp.Value.Count); //cause of duplicate lands
+        cp.IsSuccess.Should().BeTrue();
+        cp.Value.Count.Should().Be(92); //cause of duplicate lands
 
-        Assert.Contains(cp.Value, card => 
-            card.Name == "Y'shtola, Night's Blessed" &&
-            card.Quantity == 1 &&
-            card.Set == "fic" &&
-            card.CollectorNumber == "7" &&
-            card.Type == "Commander{top}"
-        );
+        cp.Value.Should().ContainSingle(card =>
+    card.Name == "Y'shtola, Night's Blessed" &&
+    card.Quantity == 1 &&
+    card.Set == "fic" &&
+    card.CollectorNumber == "7" &&
+    card.Type == "Commander{top}"
+);
 
-        Assert.Contains(cp.Value, card => 
+        cp.Value.Should().ContainSingle(card =>
             card.Name == "Emet-Selch of the Third Seat" &&
             card.Quantity == 1 &&
             card.Set == "fic" &&
@@ -60,7 +61,7 @@ public class ArchidektDeckImporterTests
             card.Type == "Recursion"
         );
 
-        Assert.Contains(cp.Value, card =>
+        cp.Value.Should().ContainSingle(card =>
             card.Name == "Island" &&
             card.Quantity == 3 &&
             card.Set == "hob" &&
@@ -68,7 +69,7 @@ public class ArchidektDeckImporterTests
             card.Type == "Land"
         );
 
-        Assert.Contains(cp.Value, card =>
+        cp.Value.Should().ContainSingle(card =>
             card.Name == "Hildibrand Manderville // Gentleman's Rise" &&
             card.Quantity == 1 &&
             card.Set == "fic" &&
@@ -76,7 +77,7 @@ public class ArchidektDeckImporterTests
             card.Type == "Tokens"
         );
 
-        Assert.Contains(cp.Value, card =>
+        cp.Value.Should().ContainSingle(card =>
             card.Name == "Summon: Good King Mog XII" &&
             card.Quantity == 1 &&
             card.Set == "fic" &&

@@ -1,4 +1,5 @@
-﻿using MTG.Core.Abilities;
+﻿using FluentAssertions;
+using MTG.Core.Abilities;
 using MTG.Core.Components.OracleText;
 using MTG.Core.Enums;
 
@@ -10,16 +11,16 @@ public class ProduceManaComponentTests
     public void Create_WithValidUnits_ReturnsSuccess()
     {
         var fmana = ManaUnit.CreateFixed(ManaType.White);
-        Assert.True(fmana.IsSuccess, fmana.Error);
+        fmana.IsSuccess.Should().BeTrue(fmana.Error);
 
         var units = new List<ManaUnit> { fmana.Value };
 
         var result = ProduceManaComponent.Create(units, requiresTap: true);
-        Assert.True(result.IsSuccess, result.Error);
-        Assert.NotNull(result.Value);
-        Assert.True(result.Value.RequiresTap);
-        Assert.Single(result.Value.ManaUnits);
-        Assert.Equal(ManaType.White, result.Value.ManaUnits[0].ManaFixed);
+        result.IsSuccess.Should().BeTrue(result.Error);
+        result.Value.Should().NotBeNull();
+        result.Value.RequiresTap.Should().BeTrue();
+        result.Value.ManaUnits.Should().ContainSingle();
+        result.Value.ManaUnits[0].ManaFixed.Should().Be(ManaType.White);
     }
 
     [Fact]
@@ -29,7 +30,7 @@ public class ProduceManaComponentTests
 
         var result = ProduceManaComponent.Create(emptyUnits, requiresTap: true);
 
-        Assert.True(result.IsFailure);
-        Assert.False(string.IsNullOrWhiteSpace(result.Error));
+        result.IsFailure.Should().BeTrue();
+        string.IsNullOrWhiteSpace(result.Error).Should().BeFalse();
     }
 }

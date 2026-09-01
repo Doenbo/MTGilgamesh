@@ -1,4 +1,5 @@
-﻿using MTG.Core.Cards;
+﻿using FluentAssertions;
+using MTG.Core.Cards;
 using MTG.Scryfall._Getter;
 using MTG.Scryfall.Helper;
 
@@ -13,9 +14,9 @@ public class ScryfallGetCardsNamedTests
         var cref = new CardRef() { Name = name };
         var sf = new ScryfallGetCardsNamed();
         var json = await sf.GetExact(cref);
-        Assert.True(json.IsSuccess);
+        json.IsSuccess.Should().BeTrue();
         var act = new ScryfallCardConverter().Convert(json.Value);
-        Assert.True(act.IsSuccess);
-        Assert.Equal(name, act.Value.Name);
+        act.IsSuccess.Should().BeTrue();
+        act.Value.Name.Should().Be(name);
     }
 }

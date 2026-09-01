@@ -72,11 +72,10 @@ public class TriggerConditionParser : ITriggerConditionParser
             var result = rule.TryMatch(normalized);
             if (result.IsSuccess)
             {
-                return result; // Direktes Durchreichen des Results
+                return result;
             }
         }
 
-        // Fallback: Custom classes remain intact while preventing crashes
         return Result<ITriggerCondition>.Success(new UnhandledTriggerCondition(rawConditionText));
     }
 

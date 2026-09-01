@@ -1,4 +1,5 @@
-﻿using MTG.Core.Abilities;
+﻿using FluentAssertions;
+using MTG.Core.Abilities;
 using MTG.Core.OracleTextParsers;
 
 namespace MTG.Core.Tests;
@@ -38,8 +39,8 @@ public class AbilityCostParserTests
     {
         var result = new AbilityCostParser().Parse(input);
 
-        Assert.True(result.IsSuccess, $"Failed to parse input: '{input}'. Error: {result.Error}");
-        Assert.Equal(expectedCosts.Count, result.Value.Count);
+        result.IsSuccess.Should().BeTrue($"Failed to parse input: '{input}'. Error: {result.Error}");
+        result.Value.Count.Should().Be(expectedCosts.Count);
 
         for (int i = 0; i < expectedCosts.Count; i++)
         {
@@ -55,7 +56,7 @@ public class AbilityCostParserTests
     {
         var result = new AbilityCostParser().Parse(input);
 
-        Assert.True(result.IsFailure);
-        Assert.False(string.IsNullOrWhiteSpace(result.Error));
+        result.IsFailure.Should().BeTrue();
+        string.IsNullOrWhiteSpace(result.Error).Should().BeFalse();
     }
 }
