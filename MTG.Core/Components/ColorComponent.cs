@@ -5,22 +5,23 @@ namespace MTG.Core.Components;
 
 public class ColorComponent : ICardComponent
 {
+    public ManaType Colors { get; private set; }
     public ManaType ColorIdentity { get; init; }
     public ManaType ColorIndicator { get; private set; }
-    public ManaType Colors { get; private set; }
 
-    private ColorComponent(ManaType colorIdentity, ManaType colorIndicator, ManaType colors)
+    private ColorComponent(ManaType colors, ManaType colorIdentity, ManaType colorIndicator)
     {
+        Colors = colors;
         ColorIdentity = colorIdentity;
         ColorIndicator = colorIndicator;
-        Colors = colors;
     }
 
     public static Result<ColorComponent> Create(
-        List<string>? colorIdentity, List<string>? colorIndicator, List<string>? color)
+        List<string>? color, List<string>? colorIdentity, List<string>? colorIndicator)
     {
-        //if (colorIdentity == null)
-        //    return Result<ColorComponent>.Failure("Must have a Color Identity!");
+        var colorResult = ParseOptionalColors(color);
+        if (colorResult.IsFailure)
+            return colorResult.ToFailure<ColorComponent>();
 
         var identityResult = ParseOptionalColors(colorIdentity);
         if (identityResult.IsFailure)
@@ -30,31 +31,15 @@ public class ColorComponent : ICardComponent
         if (indicatorResult.IsFailure)
             return indicatorResult.ToFailure<ColorComponent>();
 
-        var colorResult = ParseOptionalColors(color);
-        if (colorResult.IsFailure)
-            return colorResult.ToFailure<ColorComponent>();
-
-        return Result<ColorComponent>.Success(new ColorComponent(identityResult.Value, indicatorResult.Value, colorResult.Value));
+        return Result<ColorComponent>.Success(
+            new ColorComponent(colorResult.Value, identityResult.Value, indicatorResult.Value));
     }
-
-    //public static Result<ColorComponent> CreateS(List<string>? colorIndicator, List<string>? color)
-    //{
-    //    var indicatorResult = ParseOptionalColors(colorIndicator);
-    //    if (indicatorResult.IsFailure)
-    //        return indicatorResult.ToFailure<ColorComponent>();
-
-    //    var colorResult = ParseOptionalColors(color);
-    //    if (colorResult.IsFailure)
-    //        return colorResult.ToFailure<ColorComponent>();
-
-    //    return Result<ColorComponent>.Success(new ColorComponent(new Color() /*TODO*/, indicatorResult.Value, colorResult.Value));
-    //}
 
     private static Result<ManaType> ParseStringToEnum(List<string> colorStrings)
     {
-        ManaType result = ManaType.Colorless;
+        ManaType result = ManaType.None;
 
-        foreach (var str in colorStrings.ToList())
+        foreach (var str in colorStrings)
         {
             var upperStr = str.ToUpperInvariant();
 
@@ -65,6 +50,7 @@ public class ColorComponent : ICardComponent
                 case "B": result |= ManaType.Black; break;
                 case "R": result |= ManaType.Red; break;
                 case "G": result |= ManaType.Green; break;
+                case "C": result |= ManaType.Colorless; break;
                 default:
                     return Result<ManaType>.Failure($"Color '{str}' is invalid!");
             }
@@ -74,5 +60,7 @@ public class ColorComponent : ICardComponent
     }
 
     private static Result<ManaType> ParseOptionalColors(List<string>? colorStrings) =>
-        colorStrings == null || colorStrings.Count == 0 ? Result<ManaType>.Success(ManaType.Colorless) : ParseStringToEnum(colorStrings);
+        colorStrings == null || colorStrings.Count == 0
+            ? Result<ManaType>.Success(ManaType.None)
+            : ParseStringToEnum(colorStrings);
 }

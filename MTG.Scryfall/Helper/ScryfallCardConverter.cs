@@ -57,7 +57,7 @@ public class ScryfallCardConverter : IScryfallCardConverter
     private Result<ICardFace> CreateCardFace(
         ICard card, string name, string typeline, string? oracleText, string? manaCost, float cmc,
         List<string> colorIdentity, List<string>? colorIndicator, List<string>? colors, string? power, string? toughness,
-        string? defense, string? loyalty, List<ScryfallColor>? producedMana, List<string> keywords)
+        string? defense, string? loyalty, List<string> keywords)
     {
 
         //TypeLine
@@ -86,13 +86,14 @@ public class ScryfallCardConverter : IScryfallCardConverter
             return Result<ICardFace>.Failure($"CMCs do not match for the card {name}!");
 
         //Color
-        var colorComponent = ColorComponent.Create(colorIdentity, colorIndicator, colors);
+        var colorComponent = ColorComponent.Create(colors, colorIdentity, colorIndicator);
         if (colorComponent.IsFailure)
             return colorComponent.ToFailure<ICardFace>();
         cardface.AddComponent(colorComponent.Value);
 
         //Components
-        //TODO können wir das auslagern?
+
+        //Creature
         if (cardface.IsCreature())
         {
             var creature = CreatureComponent.Create(power, toughness);
@@ -102,7 +103,7 @@ public class ScryfallCardConverter : IScryfallCardConverter
             cardface.AddComponent(creature.Value);
         }
 
-        //Defense
+        //Battle
         if (cardface.IsBattle())
         {
             var battle = BattleComponent.Create(defense);
@@ -112,7 +113,7 @@ public class ScryfallCardConverter : IScryfallCardConverter
             cardface.AddComponent(battle.Value);
         }
 
-        //Loyalty
+        //Planeswalker
         if (cardface.IsPlaneswalker())
         {
             var planeswalker = PlaneswalkerComponent.Create(loyalty);
@@ -120,22 +121,6 @@ public class ScryfallCardConverter : IScryfallCardConverter
                 return planeswalker.ToFailure<ICardFace>();
 
             cardface.AddComponent(planeswalker.Value);
-        }
-
-        //Keywords
-        foreach (var keyword in keywords.ToList())
-        {
-            if (Enum.TryParse<KeywordAbility>(Conversions.ToCamelCase(keyword), true, out var ability))
-                cardface.KeywordAbilities.Add(ability);
-
-            else if (Enum.TryParse<KeywordAction>(Conversions.ToCamelCase(keyword), true, out var action))
-                cardface.KeywordActions.Add(action);
-
-            else if (Enum.TryParse<AbilityWord>(Conversions.ToCamelCase(keyword), true, out var word))
-                cardface.AbilityWords.Add(word);
-
-            else
-                return Result<ICardFace>.Failure($"Could not parse {keyword} to Keyword enum!");
         }
 
         // Oracle Text Parser
@@ -148,10 +133,6 @@ public class ScryfallCardConverter : IScryfallCardConverter
 
             cardface.AddComponents(parseResult.Value);
         }
-
-        // TODO this card
-        // https://api.scryfall.com/cards/named?fuzzy=Brigid+Heart+Mind
-        // is kinda weird in the API, the produced mana is off and doesnt match the text
 
         return Result<ICardFace>.Success(cardface);
     }
@@ -171,18 +152,17 @@ public class ScryfallCardConverter : IScryfallCardConverter
         var amountFaces = dto.CardFaces == null ? 1 : dto.CardFaces.Count;
         for (var i = 0; i < amountFaces; i++)
         {
-            if (dto.CardFaces == null)
+            if (dto.CardFaces == null) //Single Faced
             {
                 var noFace = CreateCardFace(card, dto.Name, dto.TypeLine, dto.OracleText, dto.ManaCost,
                                             dto.CMC, dto.ColorIdentity, dto.ColorIndicator, dto.Colors,
-                                            dto.Power, dto.Toughness, dto.Defense, dto.Loyalty, dto.ProducedMana,
-                                            dto.Keywords);
+                                            dto.Power, dto.Toughness, dto.Defense, dto.Loyalty, dto.Keywords);
                 if (noFace.IsFailure)
                     return noFace.ToFailure<ICard>();
 
                 card.Faces.Add(noFace.Value);
             }
-            else
+            else //Multi Faces
             {
                 var cardFace = dto.CardFaces[i];
                 if (cardFace == null || cardFace.Object != "card_face")
@@ -191,7 +171,6 @@ public class ScryfallCardConverter : IScryfallCardConverter
                 var iFace = CreateCardFace(card, cardFace.Name, cardFace.TypeLine, cardFace.OracleText, cardFace.ManaCost,
                                            cardFace.CMC ?? -1, null!, cardFace.ColorIndicator, cardFace.Colors,
                                            cardFace.Power, cardFace.Toughness, cardFace.Defense, cardFace.Loyalty,
-                                           dto.ProducedMana,
                                            //TODO NO KEYWORDS??
                                            dto.Keywords);
                 if (iFace.IsFailure)

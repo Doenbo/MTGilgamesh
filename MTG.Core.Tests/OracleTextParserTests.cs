@@ -104,9 +104,13 @@ public class OracleTextParserTests
 
         result.IsSuccess.Should().BeTrue(result.Error);
         result.Value.Should().NotBeNull();
-        result.Value.Should().ContainSingle();
 
-        var produced = result.Value[0].Should().BeOfType<ProduceManaComponent>().Subject;
+        var produced = result.Value
+            .OfType<ProduceManaComponent>()
+            .Should()
+            .ContainSingle()
+            .Subject;
+
         produced.RequiresTap.Should().BeTrue();
 
         var manaUnit = produced.ManaUnits[0];

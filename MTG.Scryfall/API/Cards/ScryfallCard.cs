@@ -116,7 +116,7 @@ public class ScryfallCard
     public string? Power { get; init; }
 
     [JsonPropertyName("produced_mana")]
-    public List<ScryfallColor>? ProducedMana { get; init; }
+    public List<ScryfallColor>? ProducedMana { get; init; } //this is not reliable
 
     [JsonPropertyName("reserved")]
     public required bool Reserved { get; init; }

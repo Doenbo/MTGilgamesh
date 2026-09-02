@@ -20,7 +20,6 @@ public interface ICard
     public List<ICardFace> Faces { get; }
     ICardFace MainFace => Faces[0];
     public Dictionary<Format, Legality> Legalities { get; }
-    public List<ManaType> ProducedMana { get; }
 
     //Print
     public string CollectorNumber { get; }

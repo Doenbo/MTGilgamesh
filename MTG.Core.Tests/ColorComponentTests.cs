@@ -14,8 +14,8 @@ public class ColorComponentTests
         var colors = new List<string> { };
         var indicator = new List<string> { };
 
-        var result = ColorComponent.Create(identity, colors, indicator);
-        Assert.True(result.IsSuccess);
+        var result = ColorComponent.Create(colors, identity, indicator);
+        result.IsSuccess.Should().BeTrue();
 
         var act = result.Value;
         act.Should().NotBeNull();
@@ -36,7 +36,7 @@ public class ColorComponentTests
         var colors = new List<string> { s };
         var indicator = new List<string> { s };
 
-        var result = ColorComponent.Create(identity, colors, indicator);
+        var result = ColorComponent.Create(colors, identity, indicator);
         result.IsSuccess.Should().BeTrue();
 
         var act = result.Value;
@@ -60,7 +60,7 @@ public class ColorComponentTests
         var colors = new List<string> { s1, s2 };
         var indicator = new List<string> { s1, s2 };
 
-        var result = ColorComponent.Create(identity, colors, indicator);
+        var result = ColorComponent.Create(colors, identity, indicator);
         result.IsSuccess.Should().BeTrue();
 
         var act = result.Value;
@@ -72,5 +72,77 @@ public class ColorComponentTests
         act.Colors.HasFlag(c2).Should().BeTrue();
         act.ColorIndicator.HasFlag(c1).Should().BeTrue();
         act.ColorIndicator.HasFlag(c2).Should().BeTrue();
+    }
+
+    [Fact]
+    public void CreateValidNulls_ReturnsManaTypeNone()
+    {
+        var result = ColorComponent.Create(null, null, null);
+
+        result.IsSuccess.Should().BeTrue();
+        var act = result.Value;
+        act.Should().NotBeNull();
+        act.ColorIdentity.Should().Be(ManaType.None);
+        act.Colors.Should().Be(ManaType.None);
+        act.ColorIndicator.Should().Be(ManaType.None);
+    }
+
+    [Fact]
+    public void CreateValidExplicitColorless_ReturnsManaTypeColorless()
+    {
+        var colorlessList = new List<string> { "C" };
+
+        var result = ColorComponent.Create(colorlessList, colorlessList, colorlessList);
+
+        result.IsSuccess.Should().BeTrue();
+        var act = result.Value;
+        act.ColorIdentity.Should().Be(ManaType.Colorless);
+        act.Colors.Should().Be(ManaType.Colorless);
+        act.ColorIndicator.Should().Be(ManaType.Colorless);
+    }
+
+    [Fact]
+    public void CreateValidMixed_ParsesEachFieldIndependently()
+    {
+        var identity = new List<string> { "W", "U", "B" };
+        var colors = new List<string> { "W", "U" };
+        List<string>? indicator = null;
+
+        var result = ColorComponent.Create(colors, identity, indicator);
+
+        result.IsSuccess.Should().BeTrue();
+        var act = result.Value;
+
+        act.ColorIdentity.Should().Be(ManaType.White | ManaType.Blue | ManaType.Black);
+        act.Colors.Should().Be(ManaType.White | ManaType.Blue);
+        act.ColorIndicator.Should().Be(ManaType.None);
+    }
+
+    [Theory]
+    [InlineData("w", ManaType.White)]
+    [InlineData("g", ManaType.Green)]
+    public void CreateValidLowerCase_ParsesCorrectly(string input, ManaType expected)
+    {
+        var list = new List<string> { input };
+
+        var result = ColorComponent.Create(list, list, list);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Colors.Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData("X")]
+    [InlineData("1")]
+    [InlineData("")]
+    [InlineData("Green")]
+    public void CreateInvalidColor_ReturnsFailure(string invalidColor)
+    {
+        var invalidList = new List<string> { "W", invalidColor };
+
+        var result = ColorComponent.Create(invalidList, null, null);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Contain($"Color '{invalidColor}' is invalid!");
     }
 }

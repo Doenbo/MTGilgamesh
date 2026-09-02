@@ -42,10 +42,7 @@ public class AbilityCostParserTests
         result.IsSuccess.Should().BeTrue($"Failed to parse input: '{input}'. Error: {result.Error}");
         result.Value.Count.Should().Be(expectedCosts.Count);
 
-        for (int i = 0; i < expectedCosts.Count; i++)
-        {
-            Assert.Equal(expectedCosts[i], result.Value[i]);
-        }
+        result.Value.Should().Equal(expectedCosts);
     }
 
     [Theory]

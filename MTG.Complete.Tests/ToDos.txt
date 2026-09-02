@@ -1,3 +1,4 @@
 ﻿TODOS
 -----
--überall FluentAssertions verwenden
+-Big One: Keywords dont specify which face they are for. ergo we need to also get them from the oracle text
+-ScryfallCardConverter umstellen, sodass alles über constr und vernünftig readonly ist

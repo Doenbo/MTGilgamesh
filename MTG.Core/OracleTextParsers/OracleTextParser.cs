@@ -10,22 +10,25 @@ public class OracleTextParser : IOracleTextParser
 {
     private readonly IEnumerable<ICardTypeOracleParser> _specializedParsers;
     private readonly IEnumerable<ILineComponentParser> _lineParsers;
+    private readonly ThreeWordParser _threeWordParser;
     private static readonly ILogger<OracleTextParser> _logger = LogManager.GetLogger<OracleTextParser>();
 
     public OracleTextParser(
         IEnumerable<ICardTypeOracleParser> specializedParsers,
-        IEnumerable<ILineComponentParser> lineParsers)
+        IEnumerable<ILineComponentParser> lineParsers,
+        ThreeWordParser threeWordParser)
     {
         _specializedParsers = specializedParsers;
         _lineParsers = lineParsers;
+        _threeWordParser = threeWordParser;
     }
 
     public OracleTextParser(IEnumerable<ILineComponentParser> lineParsers)
-        : this([], lineParsers)
+        : this([], lineParsers, new ThreeWordParser())
     { }
 
     public OracleTextParser()
-        : this([], CreateDefaultParsers())
+        : this([], CreateDefaultParsers(), new ThreeWordParser())
     { }
 
     private static ILineComponentParser[] CreateDefaultParsers()
@@ -34,7 +37,6 @@ public class OracleTextParser : IOracleTextParser
 
         return [
             new ProduceManaParser(),
-            new KeywordAbilityParser(),
             new ActivatedAbilityParser(new AbilityCostParser(), effectParser),
             new TriggeredAbilityParser(new TriggerConditionParser(), effectParser)
         ];
@@ -52,6 +54,18 @@ public class OracleTextParser : IOracleTextParser
         }
 
         var components = new List<ICardComponent>();
+
+        var parsedKeywords = _threeWordParser.Parse(oracleText);
+
+        if (parsedKeywords.KeywordAbilities.Count > 0)
+            components.Add(new KeywordAbilitiesComponent(parsedKeywords.KeywordAbilities));
+
+        if (parsedKeywords.KeywordActions.Count > 0)
+            components.Add(new KeywordActionsComponent(parsedKeywords.KeywordActions));
+
+        if (parsedKeywords.AbilityWords.Count > 0)
+            components.Add(new AbilityWordsComponent(parsedKeywords.AbilityWords));
+
         var lines = oracleText.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
         foreach (var line in lines)

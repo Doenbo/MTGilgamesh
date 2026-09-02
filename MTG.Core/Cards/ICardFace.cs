@@ -1,5 +1,6 @@
 ﻿using MTG.Core.Components;
 using MTG.Core.Enums;
+using MTG.Core.OracleTextParsers;
 using MTG.Core.Properties;
 using MTG.Core.Types;
 using System.Diagnostics.CodeAnalysis;
@@ -15,9 +16,6 @@ public interface ICardFace
     public TypeLine TypeLine { get; }
 
     //Gameplay
-    public List<KeywordAbility> KeywordAbilities { get; } //https://api.scryfall.com/catalog/keyword-abilities
-    public List<KeywordAction> KeywordActions { get; } //https://api.scryfall.com/catalog/keyword-actions
-    public List<AbilityWord> AbilityWords { get; } //https://api.scryfall.com/catalog/ability-words
     public string OracleText { get; }
 
     //Simple Yes/No Checks

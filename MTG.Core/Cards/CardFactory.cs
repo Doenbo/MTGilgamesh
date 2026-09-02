@@ -12,7 +12,8 @@ public static class CardFactory
         if (name == null || set == null || collectionnumber == null)
             return Result<ICard>.Failure("Name, Set and CollectionNumber can't be null!");
 
-        return Result<ICard>.Success(new Card() { 
+        return Result<ICard>.Success(new Card()
+        {
             FullName = name,
             FullTypeLine = typeline,
             Set = set,
@@ -38,7 +39,6 @@ public static class CardFactory
         public List<ICardFace> Faces { get; set; } = [];
         ICardFace MainFace => Faces[0];
         public Dictionary<Format, Legality> Legalities { get; set; } = [];
-        public List<ManaType> ProducedMana { get; set; } = [];
 
         //Print
         public required string CollectorNumber { get; init; }
@@ -63,61 +63,6 @@ public static class CardFactory
         //ToStrings
         public override string ToString() => $"{FullName} - {Set.ToUpper()}({CollectorNumber})";
 
-        public string ToStringConsole()
-        {
-            var sb = new StringBuilder();
-            sb.AppendLine($"/------------------------------------\\");
-            if (MainFace.TryGetComponent<ManaCostComponent>(out var manaComp))
-            {
-                sb.AppendLine($"|{MainFace.Name} {manaComp.ManaCost.ToString()}");
-            }
-            else
-            {
-                sb.AppendLine($"|{MainFace.Name}");
-            }
-
-            sb.AppendLine($"|{MainFace.TypeLine}");
-
-            //TODO auslagern?
-            var threewords = string.Empty;
-            if (MainFace.KeywordAbilities.Count != 0)
-            {
-                var keywords = string.Concat(MainFace.KeywordAbilities.Select(item => $"{{{item}}}"));
-                threewords += keywords;
-            }
-
-            if (MainFace.KeywordActions.Count != 0)
-            {
-                var keywords = string.Concat(MainFace.KeywordActions.Select(item => $"{{{item}}}"));
-                threewords += keywords;
-            }
-
-            if (MainFace.AbilityWords.Count != 0)
-            {
-                var keywords = string.Concat(MainFace.AbilityWords.Select(item => $"{{{item}}}"));
-                threewords += keywords;
-            }
-            if (threewords != string.Empty)
-                sb.AppendLine($"|{threewords}");
-
-            if (!string.IsNullOrEmpty(MainFace.OracleText))
-            {
-                var oracletext = MainFace.OracleText.Replace("\n", $"{Environment.NewLine}|");
-                sb.AppendLine($"|{oracletext}");
-            }
-
-            if (MainFace.TryGetComponent<CreatureComponent>(out var creatureComp))
-            {
-                sb.AppendLine($"|{Set.ToUpper()}({CollectorNumber}) - ({creatureComp.Power}/{creatureComp.Toughness})");
-            }
-            else
-            {
-                sb.AppendLine($"|{Set.ToUpper()}({CollectorNumber})");
-            }
-
-            sb.AppendLine($"\\------------------------------------/");
-
-            return sb.ToString();
-        }
+        public string ToStringConsole() => MainFace.ToString();
     }
 }

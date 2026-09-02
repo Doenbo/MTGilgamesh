@@ -1,6 +1,7 @@
 ﻿using MTG.Core.Components;
 using MTG.Core.Enums;
 using MTG.Core.Helper;
+using MTG.Core.OracleTextParsers;
 using MTG.Core.Properties;
 using MTG.Core.Types;
 using System.Diagnostics.CodeAnalysis;
@@ -21,7 +22,7 @@ public class CardFaceFactory
     private class CardFace : ICardFace
     {
         private readonly Dictionary<Type, List<ICardComponent>> _components = [];
-        public ICardComponent[] DebugComponents => _components.Values.SelectMany(x => x).ToArray();
+        public ICardComponent[] DebugComponents => [.. _components.Values.SelectMany(x => x)];
 
         public CardFace() { }
 
@@ -29,11 +30,6 @@ public class CardFaceFactory
         public required string Name { get; init; }
         public required TypeLine TypeLine { get; init; }
         public required string OracleText { get; init; }
-
-        //Gameplay
-        public List<KeywordAbility> KeywordAbilities { get; init; } = []; //https://api.scryfall.com/catalog/keyword-abilities
-        public List<KeywordAction> KeywordActions { get; init; } = []; //https://api.scryfall.com/catalog/keyword-actions
-        public List<AbilityWord> AbilityWords { get; init; } = []; //https://api.scryfall.com/catalog/ability-words
 
         //Simple Yes/No Checks
         public bool IsArtifact() => TypeLine.IsArtifact();
@@ -124,23 +120,28 @@ public class CardFaceFactory
 
             //TODO auslagern?
             var threewords = string.Empty;
-            if (KeywordAbilities.Count != 0)
-            {
-                var keywords = string.Concat(KeywordAbilities.Select(item => $"{{{item}}}"));
-                threewords += keywords;
-            }
 
-            if (KeywordActions.Count != 0)
-            {
-                var keywords = string.Concat(KeywordActions.Select(item => $"{{{item}}}"));
-                threewords += keywords;
-            }
+            var allComponents = _components.SelectMany(kvp => kvp.Value);
 
-            if (AbilityWords.Count != 0)
-            {
-                var keywords = string.Concat(AbilityWords.Select(item => $"{{{item}}}"));
-                threewords += keywords;
-            }
+            var abilities = allComponents
+                .OfType<KeywordAbilitiesComponent>()
+                .SelectMany(c => c.Abilities)
+                .Select(item => $"{{{item}}}");
+
+            var actions = allComponents
+                .OfType<KeywordActionsComponent>()
+                .SelectMany(c => c.Actions)
+                .Select(item => $"{{{item}}}");
+
+            var words = allComponents
+                .OfType<AbilityWordsComponent>()
+                .SelectMany(c => c.Words)
+                .Select(item => $"{{{item}}}");
+
+            threewords = string.Concat(abilities.Concat(actions).Concat(words));
+
+            threewords = string.Concat(abilities.Concat(actions).Concat(words));
+
             if (threewords != string.Empty)
                 sb.AppendLine($"|{threewords}");
 

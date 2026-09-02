@@ -30,7 +30,7 @@ public class TestMyFavoriteCards
         c2.Should().NotBeNull();
         c2.Colors.Should().Be(ManaType.Green | ManaType.White);
         c2.ColorIdentity.Should().Be(ManaType.Green | ManaType.White);
-        c2.ColorIndicator.Should().Be(ManaType.Colorless); //TODO why?
+        c2.ColorIndicator.Should().Be(ManaType.None);
 
         card.MainFace.TryGetComponent<TriggeredAbilityComponent>(out var c3).Should().BeTrue();
         c3.Should().NotBeNull();

@@ -96,7 +96,7 @@ public class ManaSymbolTests
 
         var ac = act.Value.AcceptedColors;
         if (exp_ac != ManaType.Colorless)
-            Assert.Contains(exp_ac, ac);
+            ac.Should().Contain(exp_ac);
 
         var gc = act.Value.GenericCost;
         gc.Should().Be(exp_gc);
