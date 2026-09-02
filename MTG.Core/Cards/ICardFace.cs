@@ -9,14 +9,13 @@ namespace MTG.Core.Cards;
 
 public interface ICardFace
 {
-    public ICardComponent[] DebugComponents { get; }
 
     //100% Mandatory Properties
     public string Name { get; }
     public TypeLine TypeLine { get; }
-
-    //Gameplay
+    public IReadOnlyList<ICardComponent> Components { get; }
     public string OracleText { get; }
+
 
     //Simple Yes/No Checks
     public bool IsArtifact();
@@ -32,10 +31,6 @@ public interface ICardFace
     public bool IsCardType(CardType cardType);
 
     //Component Methods
-    void AddComponent(ICardComponent component);
-
-    void AddComponents(IEnumerable<ICardComponent> components);
-
     bool TryGetComponent<T>([NotNullWhen(true)] out T? component) where T : class, ICardComponent;
 
     bool TryGetComponents<T>(out IReadOnlyList<T> components) where T : class, ICardComponent;

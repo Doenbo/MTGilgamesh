@@ -145,7 +145,7 @@ public class ScryfallCard
     public required string BorderColor { get; init; }
 
     [JsonPropertyName("card_back_id")]
-    public required string CardBackId { get; init; }
+    public Guid? CardBackId { get; init; }
 
     [JsonPropertyName("collector_number")]
     public required string CollectorNumber { get; init; }

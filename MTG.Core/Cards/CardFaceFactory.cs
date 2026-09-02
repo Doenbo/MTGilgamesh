@@ -11,25 +11,43 @@ namespace MTG.Core.Cards;
 
 public class CardFaceFactory
 {
-    public static Result<ICardFace> Create(string name, TypeLine typeline, string? oracleText)
+    public static Result<ICardFace> Create(
+        string name,
+        TypeLine typeline,
+        string? oracleText,
+        IEnumerable<ICardComponent> components)
     {
-        if (name == null)
-            return Result<ICardFace>.Failure("Name can't be null!");
+        if (string.IsNullOrWhiteSpace(name))
+            return Result<ICardFace>.Failure("Name can't be null or empty!");
 
-        return Result<ICardFace>.Success(new CardFace() { Name = name, TypeLine = typeline, OracleText = oracleText ?? string.Empty });
+        if (components is null || !components.Any())
+            return Result<ICardFace>.Failure("Components can't be null or empty!");
+
+        var cardFace = new CardFace(components)
+        {
+            Name = name,
+            TypeLine = typeline,
+            OracleText = oracleText ?? string.Empty
+        };
+
+        return Result<ICardFace>.Success(cardFace);
     }
 
     private class CardFace : ICardFace
     {
-        private readonly Dictionary<Type, List<ICardComponent>> _components = [];
-        public ICardComponent[] DebugComponents => [.. _components.Values.SelectMany(x => x)];
-
-        public CardFace() { }
+        public CardFace(IEnumerable<ICardComponent> components)
+        {
+            _components.AddRange(components);
+        }
 
         //100% Mandatory Properties
         public required string Name { get; init; }
         public required TypeLine TypeLine { get; init; }
         public required string OracleText { get; init; }
+
+        private readonly List<ICardComponent> _components = [];
+        public IReadOnlyList<ICardComponent> Components => _components.AsReadOnly();
+
 
         //Simple Yes/No Checks
         public bool IsArtifact() => TypeLine.IsArtifact();
@@ -49,45 +67,27 @@ public class CardFaceFactory
         public void AddComponent(ICardComponent component)
         {
             ArgumentNullException.ThrowIfNull(component);
-
-            var type = component.GetType();
-
-            if (!_components.TryGetValue(type, out var list))
-            {
-                list = [];
-                _components[type] = list;
-            }
-
-            list.Add(component);
+            _components.Add(component);
         }
 
         public void AddComponents(IEnumerable<ICardComponent> components)
         {
             ArgumentNullException.ThrowIfNull(components);
-
-            foreach (var component in components)
-            {
-                AddComponent(component);
-            }
+            _components.AddRange(components);
         }
 
         public bool TryGetComponent<T>([NotNullWhen(true)] out T? component) where T : class, ICardComponent
         {
-            if (_components.TryGetValue(typeof(T), out var list) && list.Count > 0)
-            {
-                component = (T)list[0];
-                return true;
-            }
-
-            component = null;
-            return false;
+            component = _components.OfType<T>().FirstOrDefault();
+            return component != null;
         }
 
         public bool TryGetComponents<T>(out IReadOnlyList<T> components) where T : class, ICardComponent
         {
-            if (_components.TryGetValue(typeof(T), out var list) && list.Count > 0)
+            var result = _components.OfType<T>().ToList();
+            if (result.Count > 0)
             {
-                components = list.Cast<T>().ToList().AsReadOnly();
+                components = result.AsReadOnly();
                 return true;
             }
 
@@ -97,7 +97,7 @@ public class CardFaceFactory
 
         public bool HasComponent<T>() where T : class, ICardComponent
         {
-            return _components.TryGetValue(typeof(T), out var list) && list.Count > 0;
+            return _components.OfType<T>().Any();
         }
 
         //ToStrings
@@ -119,28 +119,22 @@ public class CardFaceFactory
             sb.AppendLine($"|{TypeLine}");
 
             //TODO auslagern?
-            var threewords = string.Empty;
-
-            var allComponents = _components.SelectMany(kvp => kvp.Value);
-
-            var abilities = allComponents
+            var abilities = Components
                 .OfType<KeywordAbilitiesComponent>()
                 .SelectMany(c => c.Abilities)
                 .Select(item => $"{{{item}}}");
 
-            var actions = allComponents
+            var actions = Components
                 .OfType<KeywordActionsComponent>()
                 .SelectMany(c => c.Actions)
                 .Select(item => $"{{{item}}}");
 
-            var words = allComponents
+            var words = Components
                 .OfType<AbilityWordsComponent>()
                 .SelectMany(c => c.Words)
                 .Select(item => $"{{{item}}}");
 
-            threewords = string.Concat(abilities.Concat(actions).Concat(words));
-
-            threewords = string.Concat(abilities.Concat(actions).Concat(words));
+            var threewords = string.Concat(abilities.Concat(actions).Concat(words));
 
             if (threewords != string.Empty)
                 sb.AppendLine($"|{threewords}");

@@ -55,28 +55,23 @@ public class ScryfallCardConverter : IScryfallCardConverter
     }
 
     private Result<ICardFace> CreateCardFace(
-        ICard card, string name, string typeline, string? oracleText, string? manaCost, float cmc,
-        List<string> colorIdentity, List<string>? colorIndicator, List<string>? colors, string? power, string? toughness,
-        string? defense, string? loyalty, List<string> keywords)
+        string name, string typeline, string? oracleText, string? manaCost, float cmc, List<string>? colors,
+        List<string> colorIdentity, List<string>? colorIndicator, string? power, string? toughness,
+        string? defense, string? loyalty)
     {
+        var components = new List<ICardComponent>();
 
         //TypeLine
         var typelineres = TypeLine.Create(typeline);
         if (typelineres.IsFailure)
             return typelineres.ToFailure<ICardFace>();
 
-        //Name + Face
-        var cardfaceres = CardFaceFactory.Create(name, typelineres.Value, oracleText);
-        if (cardfaceres.IsFailure)
-            return cardfaceres.ToFailure<ICardFace>();
-        var cardface = cardfaceres.Value;
-
         //ManaCost
         var manaCostComponent = ManaCostComponent.Create(manaCost);
         if (manaCostComponent.IsFailure)
             return manaCostComponent.ToFailure<ICardFace>();
 
-        cardface.AddComponent(manaCostComponent.Value);
+        components.AddRange(manaCostComponent.Value);
 
         //CMC
         var cmcres = manaCostComponent.Value.GetCMC();
@@ -89,38 +84,38 @@ public class ScryfallCardConverter : IScryfallCardConverter
         var colorComponent = ColorComponent.Create(colors, colorIdentity, colorIndicator);
         if (colorComponent.IsFailure)
             return colorComponent.ToFailure<ICardFace>();
-        cardface.AddComponent(colorComponent.Value);
+        components.AddRange(colorComponent.Value);
 
         //Components
 
         //Creature
-        if (cardface.IsCreature())
+        if (typelineres.Value.IsCreature())
         {
             var creature = CreatureComponent.Create(power, toughness);
             if (creature.IsFailure)
                 return creature.ToFailure<ICardFace>();
 
-            cardface.AddComponent(creature.Value);
+            components.AddRange(creature.Value);
         }
 
         //Battle
-        if (cardface.IsBattle())
+        if (typelineres.Value.IsBattle())
         {
             var battle = BattleComponent.Create(defense);
             if (battle.IsFailure)
                 return battle.ToFailure<ICardFace>();
 
-            cardface.AddComponent(battle.Value);
+            components.AddRange(battle.Value);
         }
 
         //Planeswalker
-        if (cardface.IsPlaneswalker())
+        if (typelineres.Value.IsPlaneswalker())
         {
             var planeswalker = PlaneswalkerComponent.Create(loyalty);
             if (planeswalker.IsFailure)
                 return planeswalker.ToFailure<ICardFace>();
 
-            cardface.AddComponent(planeswalker.Value);
+            components.AddRange(planeswalker.Value);
         }
 
         // Oracle Text Parser
@@ -131,10 +126,15 @@ public class ScryfallCardConverter : IScryfallCardConverter
             if (parseResult.IsFailure)
                 return parseResult.ToFailure<ICardFace>();
 
-            cardface.AddComponents(parseResult.Value);
+            components.AddRange(parseResult.Value);
         }
 
-        return Result<ICardFace>.Success(cardface);
+        // Finally Create the Face
+        var cardfaceres = CardFaceFactory.Create(name, typelineres.Value, oracleText, components);
+        if (cardfaceres.IsFailure)
+            return cardfaceres.ToFailure<ICardFace>();
+
+        return Result<ICardFace>.Success(cardfaceres.Value);
     }
 
     public Result<ICard> Convert(ScryfallCard dto)
@@ -154,9 +154,9 @@ public class ScryfallCardConverter : IScryfallCardConverter
         {
             if (dto.CardFaces == null) //Single Faced
             {
-                var noFace = CreateCardFace(card, dto.Name, dto.TypeLine, dto.OracleText, dto.ManaCost,
-                                            dto.CMC, dto.ColorIdentity, dto.ColorIndicator, dto.Colors,
-                                            dto.Power, dto.Toughness, dto.Defense, dto.Loyalty, dto.Keywords);
+                var noFace = CreateCardFace(dto.Name, dto.TypeLine, dto.OracleText, dto.ManaCost,
+                                            dto.CMC, dto.Colors, dto.ColorIdentity, dto.ColorIndicator,
+                                            dto.Power, dto.Toughness, dto.Defense, dto.Loyalty);
                 if (noFace.IsFailure)
                     return noFace.ToFailure<ICard>();
 
@@ -168,11 +168,10 @@ public class ScryfallCardConverter : IScryfallCardConverter
                 if (cardFace == null || cardFace.Object != "card_face")
                     return Result<ICard>.Failure("Object is not a card face!");
 
-                var iFace = CreateCardFace(card, cardFace.Name, cardFace.TypeLine, cardFace.OracleText, cardFace.ManaCost,
-                                           cardFace.CMC ?? -1, null!, cardFace.ColorIndicator, cardFace.Colors,
-                                           cardFace.Power, cardFace.Toughness, cardFace.Defense, cardFace.Loyalty,
-                                           //TODO NO KEYWORDS??
-                                           dto.Keywords);
+                //TODO null! ???
+                var iFace = CreateCardFace(cardFace.Name, cardFace.TypeLine, cardFace.OracleText, cardFace.ManaCost,
+                                           cardFace.CMC ?? -1, cardFace.Colors, null!, cardFace.ColorIndicator,
+                                           cardFace.Power, cardFace.Toughness, cardFace.Defense, cardFace.Loyalty);
                 if (iFace.IsFailure)
                     return iFace.ToFailure<ICard>();
 
