@@ -11,30 +11,18 @@ public interface IOracleTextParser
     Result<IReadOnlyList<ICardComponent>> Parse(string oracleText, CardContext cref);
 }
 
-public class OracleTextParser : IOracleTextParser
+public class OracleTextParser(
+    IEnumerable<ICardTypeOracleParser> specializedParsers,
+    IEnumerable<ILineComponentParser> lineParsers,
+    ThreeWordParser threeWordParser) : IOracleTextParser
 {
-    private readonly IEnumerable<ICardTypeOracleParser> _specializedParsers;
-    private readonly IEnumerable<ILineComponentParser> _lineParsers;
-    private readonly ThreeWordParser _threeWordParser;
     private static readonly ILogger<OracleTextParser> _logger = LogManager.GetLogger<OracleTextParser>();
 
-    public OracleTextParser(
-        IEnumerable<ICardTypeOracleParser> specializedParsers,
-        IEnumerable<ILineComponentParser> lineParsers,
-        ThreeWordParser threeWordParser)
-    {
-        _specializedParsers = specializedParsers;
-        _lineParsers = lineParsers;
-        _threeWordParser = threeWordParser;
-    }
-
     public OracleTextParser(IEnumerable<ILineComponentParser> lineParsers)
-        : this([], lineParsers, new ThreeWordParser())
-    { }
+        : this([], lineParsers, new ThreeWordParser()) { }
 
     public OracleTextParser()
-        : this([], CreateDefaultParsers(), new ThreeWordParser())
-    { }
+        : this([], CreateDefaultParsers(), new ThreeWordParser()) { }
 
     private static ILineComponentParser[] CreateDefaultParsers()
     {
@@ -52,7 +40,7 @@ public class OracleTextParser : IOracleTextParser
         if (string.IsNullOrWhiteSpace(oracleText))
             return Result<IReadOnlyList<ICardComponent>>.Success([]);
 
-        var specializedParser = _specializedParsers.FirstOrDefault(p => p.CanHandle(cref));
+        var specializedParser = specializedParsers.FirstOrDefault(p => p.CanHandle(cref));
         if (specializedParser != null)
         {
             return specializedParser.Parse(oracleText, cref);
@@ -60,7 +48,7 @@ public class OracleTextParser : IOracleTextParser
 
         var components = new List<ICardComponent>();
 
-        var parsedKeywords = _threeWordParser.Parse(oracleText);
+        var parsedKeywords = threeWordParser.Parse(oracleText);
 
         if (parsedKeywords.KeywordAbilities.Count > 0)
             components.Add(new KeywordAbilitiesComponent(parsedKeywords.KeywordAbilities));
@@ -75,7 +63,7 @@ public class OracleTextParser : IOracleTextParser
 
         foreach (var line in lines)
         {
-            var parser = _lineParsers.FirstOrDefault(p => p.CanParse(line));
+            var parser = lineParsers.FirstOrDefault(p => p.CanParse(line));
             if (parser != null)
             {
                 var result = parser.Parse(line, cref);

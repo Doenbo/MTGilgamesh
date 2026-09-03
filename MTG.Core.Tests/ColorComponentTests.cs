@@ -12,7 +12,6 @@ public class ColorComponentTests
     [Fact]
     public void CreateValidEmpty()
     {
-        var identity = new List<string> { };
         var colors = new List<string> { };
         var indicator = new List<string> { };
 
@@ -21,7 +20,6 @@ public class ColorComponentTests
 
         var act = result.Value;
         act.Should().NotBeNull();
-        //act.ColorIdentity.Should().Be(new ManaType());
         act.ColorIndicator.Should().Be(new ManaType());
         act.Colors.Should().Be(new ManaType());
     }
@@ -34,7 +32,6 @@ public class ColorComponentTests
     [InlineData("G", ManaType.Green)]
     public void CreateValidSingle(string s, ManaType c)
     {
-        var identity = new List<string> { s };
         var colors = new List<string> { s };
         var indicator = new List<string> { s };
 
@@ -43,9 +40,6 @@ public class ColorComponentTests
 
         var act = result.Value;
         act.Should().NotBeNull();
-
-        //act.ColorIdentity.Should().Be(c);
-        //act.ColorIdentity.HasFlag(c).Should().BeTrue();
 
         act.Colors.Should().Be(c);
         act.Colors.HasFlag(c).Should().BeTrue();
@@ -58,7 +52,6 @@ public class ColorComponentTests
     [InlineData("W", ManaType.White, "B", ManaType.Black)]
     public void CreateValidMultiple(string s1, ManaType c1, string s2, ManaType c2)
     {
-        var identity = new List<string> { s1, s2 };
         var colors = new List<string> { s1, s2 };
         var indicator = new List<string> { s1, s2 };
 
@@ -68,8 +61,6 @@ public class ColorComponentTests
         var act = result.Value;
         act.Should().NotBeNull();
 
-        //act.ColorIdentity.HasFlag(c1).Should().BeTrue();
-        //act.ColorIdentity.HasFlag(c2).Should().BeTrue();
         act.Colors.HasFlag(c1).Should().BeTrue();
         act.Colors.HasFlag(c2).Should().BeTrue();
         act.ColorIndicator.HasFlag(c1).Should().BeTrue();
@@ -84,7 +75,6 @@ public class ColorComponentTests
         result.IsSuccess.Should().BeTrue();
         var act = result.Value;
         act.Should().NotBeNull();
-        //act.ColorIdentity.Should().Be(ManaType.None);
         act.Colors.Should().Be(ManaType.None);
         act.ColorIndicator.Should().Be(ManaType.None);
     }
@@ -98,7 +88,6 @@ public class ColorComponentTests
 
         result.IsSuccess.Should().BeTrue();
         var act = result.Value;
-        //act.ColorIdentity.Should().Be(ManaType.Colorless);
         act.Colors.Should().Be(ManaType.Colorless);
         act.ColorIndicator.Should().Be(ManaType.Colorless);
     }
@@ -106,7 +95,6 @@ public class ColorComponentTests
     [Fact]
     public void CreateValidMixed_ParsesEachFieldIndependently()
     {
-        var identity = new List<string> { "W", "U", "B" };
         var colors = new List<string> { "W", "U" };
         List<string>? indicator = null;
 
@@ -115,7 +103,6 @@ public class ColorComponentTests
         result.IsSuccess.Should().BeTrue();
         var act = result.Value;
 
-        //act.ColorIdentity.Should().Be(ManaType.White | ManaType.Blue | ManaType.Black);
         act.Colors.Should().Be(ManaType.White | ManaType.Blue);
         act.ColorIndicator.Should().Be(ManaType.None);
     }

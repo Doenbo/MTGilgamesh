@@ -11,18 +11,10 @@ using System.Text.Json;
 
 namespace MTG.Scryfall.Helper;
 
-public class ScryfallCardConverter : IScryfallCardConverter
+public class ScryfallCardConverter(IOracleTextParser oracleTextParser, IManaSymbolParser manaParser)
+    : IScryfallCardConverter
 {
-    private readonly IOracleTextParser _oracleTextParser;
-    private readonly IManaSymbolParser _manaParser;
-
     public ScryfallCardConverter() : this(new OracleTextParser(), new ManaSymbolParser()) { }
-
-    public ScryfallCardConverter(IOracleTextParser oracleTextParser, IManaSymbolParser manaParser)
-    {
-        _oracleTextParser = oracleTextParser;
-        _manaParser = manaParser;
-    }
 
     public Result<ICard> DoubleConvert(JsonString json)
     {
@@ -58,8 +50,7 @@ public class ScryfallCardConverter : IScryfallCardConverter
 
     private Result<ICardFace> CreateCardFace(
         string name, string typeline, string? oracleText, string? manaCost, float cmc, List<string>? colors,
-        List<string> colorIdentity, List<string>? colorIndicator, string? power, string? toughness,
-        string? defense, string? loyalty)
+        List<string>? colorIndicator, string? power, string? toughness, string? defense, string? loyalty)
     {
         var components = new List<ICardComponent>();
 
@@ -83,7 +74,7 @@ public class ScryfallCardConverter : IScryfallCardConverter
             return Result<ICardFace>.Failure($"CMCs do not match for the card {name}!");
 
         //Color
-        var colorComponent = ColorComponent.Create(_manaParser, colors, colorIndicator);
+        var colorComponent = ColorComponent.Create(manaParser, colors, colorIndicator);
         if (colorComponent.IsFailure)
             return colorComponent.ToFailure<ICardFace>();
         components.AddRange(colorComponent.Value);
@@ -123,7 +114,7 @@ public class ScryfallCardConverter : IScryfallCardConverter
         // Oracle Text Parser
         if (!string.IsNullOrWhiteSpace(oracleText))
         {
-            var parseResult = _oracleTextParser.Parse(oracleText, new CardContext(name));
+            var parseResult = oracleTextParser.Parse(oracleText, new CardContext(name));
 
             if (parseResult.IsFailure)
                 return parseResult.ToFailure<ICardFace>();
@@ -152,8 +143,8 @@ public class ScryfallCardConverter : IScryfallCardConverter
             if (dto.CardFaces == null) //Single Faced
             {
                 var noFace = CreateCardFace(dto.Name, dto.TypeLine, dto.OracleText, dto.ManaCost,
-                                            dto.CMC, dto.Colors, dto.ColorIdentity, dto.ColorIndicator,
-                                            dto.Power, dto.Toughness, dto.Defense, dto.Loyalty);
+                                            dto.CMC, dto.Colors, dto.ColorIndicator, dto.Power, dto.Toughness,
+                                            dto.Defense, dto.Loyalty);
                 if (noFace.IsFailure)
                     return noFace.ToFailure<ICard>();
 
@@ -165,9 +156,8 @@ public class ScryfallCardConverter : IScryfallCardConverter
                 if (cardFace == null || cardFace.Object != "card_face")
                     return Result<ICard>.Failure("Object is not a card face!");
 
-                //TODO null! ok?
                 var iFace = CreateCardFace(cardFace.Name, cardFace.TypeLine, cardFace.OracleText, cardFace.ManaCost,
-                                           cardFace.CMC ?? -1, cardFace.Colors, null!, cardFace.ColorIndicator,
+                                           cardFace.CMC ?? -1, cardFace.Colors, cardFace.ColorIndicator,
                                            cardFace.Power, cardFace.Toughness, cardFace.Defense, cardFace.Loyalty);
                 if (iFace.IsFailure)
                     return iFace.ToFailure<ICard>();
@@ -177,7 +167,7 @@ public class ScryfallCardConverter : IScryfallCardConverter
         }
 
         //Color
-        var identityResult = _manaParser.ParseColorStrings(dto.ColorIdentity);
+        var identityResult = manaParser.ParseColorStrings(dto.ColorIdentity);
         if (identityResult.IsFailure)
             return identityResult.ToFailure<ICard>();
 

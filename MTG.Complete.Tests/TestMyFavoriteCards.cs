@@ -4,6 +4,7 @@ using MTG.Core.Cards;
 using MTG.Core.Components;
 using MTG.Core.Components.OracleText;
 using MTG.Core.Enums;
+using MTG.Core.Properties;
 using MTG.Core.Types;
 using MTG.Engine.Factories;
 
@@ -24,6 +25,8 @@ public class TestMyFavoriteCards
         card.ColorIdentity.Should().Be(ManaType.Green | ManaType.White);
 
         card.MainFace.Should().NotBeNull();
+        AssertCreatureTypes(card.MainFace.TypeLine, [CreatureType.Elf, CreatureType.Cleric]);
+
         card.MainFace.TryGetComponent<CreatureComponent>(out var c1).Should().BeTrue();
         c1.Should().NotBeNull();
         c1.Power.Value.Should().Be("2");
@@ -55,6 +58,8 @@ public class TestMyFavoriteCards
         card.ColorIdentity.Should().Be(ManaType.White | ManaType.Blue | ManaType.Black);
 
         card.MainFace.Should().NotBeNull();
+        AssertCreatureTypes(card.MainFace.TypeLine, [CreatureType.Cat, CreatureType.Warlock]);
+
         card.MainFace.TryGetComponent<CreatureComponent>(out var c1).Should().BeTrue();
         c1.Should().NotBeNull();
         c1.Power.Value.Should().Be("2");
@@ -87,6 +92,7 @@ public class TestMyFavoriteCards
 
         card.Faces.Should().NotBeNull();
         card.Faces[0].Should().NotBeNull();
+        AssertCreatureTypes(card.Faces[0].TypeLine, [CreatureType.Human, CreatureType.Scientist, CreatureType.Hero]);
 
         card.Faces[0].TryGetComponent<CreatureComponent>(out var c1).Should().BeTrue();
         c1.Should().NotBeNull();
@@ -99,6 +105,7 @@ public class TestMyFavoriteCards
         c2.ColorIndicator.Should().Be(ManaType.None);
 
         card.Faces[1].Should().NotBeNull();
+        AssertCreatureTypes(card.Faces[1].TypeLine, [CreatureType.Gamma, CreatureType.Berserker, CreatureType.Hero]);
 
         card.Faces[1].TryGetComponent<CreatureComponent>(out var c3).Should().BeTrue();
         c3.Should().NotBeNull();
@@ -127,5 +134,12 @@ public class TestMyFavoriteCards
         card.IsPermanent().Should().Be(isPermanent);
         card.IsPlaneswalker().Should().Be(isPlaneswalker);
         card.IsMultifaced().Should().Be(isMultifaced);
+    }
+
+    private static void AssertCreatureTypes(TypeLine act, HashSet<CreatureType> exp)
+    {
+        act.Should().NotBeNull();
+        act.CreatureTypes.Should().NotBeNull();
+        act.CreatureTypes.Should().Contain(exp);
     }
 }

@@ -20,6 +20,7 @@ public interface ICard
     IReadOnlyList<ICardFace> Faces { get; }
     ICardFace MainFace => Faces[0];
     ManaType ColorIdentity { get; }
+    bool IsToken { get; }
     Dictionary<Format, Legality> Legalities { get; }
 
     //Print
