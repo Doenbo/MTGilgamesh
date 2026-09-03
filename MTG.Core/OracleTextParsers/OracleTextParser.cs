@@ -6,6 +6,11 @@ using MTG.Core.Parser;
 
 namespace MTG.Core.OracleTextParsers;
 
+public interface IOracleTextParser
+{
+    Result<IReadOnlyList<ICardComponent>> Parse(string oracleText, CardContext cref);
+}
+
 public class OracleTextParser : IOracleTextParser
 {
     private readonly IEnumerable<ICardTypeOracleParser> _specializedParsers;

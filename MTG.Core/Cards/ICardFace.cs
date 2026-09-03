@@ -10,25 +10,25 @@ namespace MTG.Core.Cards;
 public interface ICardFace
 {
 
-    //100% Mandatory Properties
-    public string Name { get; }
-    public TypeLine TypeLine { get; }
-    public IReadOnlyList<ICardComponent> Components { get; }
-    public string OracleText { get; }
+    //Core
+    string Name { get; }
+    TypeLine TypeLine { get; }
+    IReadOnlyList<ICardComponent> Components { get; }
+    string OracleText { get; }
 
 
     //Simple Yes/No Checks
-    public bool IsArtifact();
-    public bool IsBasic();
-    public bool IsBattle();
-    public bool IsCreature();
-    public bool IsHistoric();
-    public bool IsInstant();
-    public bool IsLand();
-    public bool IsLegendary();
-    public bool IsPermanent();
-    public bool IsPlaneswalker();
-    public bool IsCardType(CardType cardType);
+    bool IsArtifact();
+    bool IsBasic();
+    bool IsBattle();
+    bool IsCreature();
+    bool IsHistoric();
+    bool IsInstant();
+    bool IsLand();
+    bool IsLegendary();
+    bool IsPermanent();
+    bool IsPlaneswalker();
+    bool IsCardType(CardType cardType);
 
     //Component Methods
     bool TryGetComponent<T>([NotNullWhen(true)] out T? component) where T : class, ICardComponent;
@@ -38,6 +38,6 @@ public interface ICardFace
     bool HasComponent<T>() where T : class, ICardComponent;
 
     //ToStrings
-    public string ToString();
-    public string ToStringConsole();
+    string ToString();
+    string ToStringConsole();
 }

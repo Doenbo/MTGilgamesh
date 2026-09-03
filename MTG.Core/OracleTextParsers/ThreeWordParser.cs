@@ -5,7 +5,12 @@ using System.Text;
 
 namespace MTG.Core.OracleTextParsers;
 
-public class ThreeWordParser
+public interface IThreeWordParser
+{
+    ParsedThreewordsResult Parse(string oracleText);
+}
+
+public class ThreeWordParser : IThreeWordParser
 {
     public ParsedThreewordsResult Parse(string oracleText)
     {

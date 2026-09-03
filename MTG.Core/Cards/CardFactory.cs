@@ -7,7 +7,9 @@ namespace MTG.Core.Cards;
 
 public static class CardFactory
 {
-    public static Result<ICard> Create(string name, string set, string collectionnumber, string typeline)
+    public static Result<ICard> Create(string name, string set, string collectionnumber, string typeline,
+        List<ICardFace> cardfaces, ManaType colorIdentity, Guid id, string lang, string layout, string setName,
+        Dictionary<Format, Legality> legalities, Dictionary<ImageSize, Uri> imageUris)
     {
         if (name == null || set == null || collectionnumber == null)
             return Result<ICard>.Failure("Name, Set and CollectionNumber can't be null!");
@@ -17,7 +19,15 @@ public static class CardFactory
             FullName = name,
             FullTypeLine = typeline,
             Set = set,
-            CollectorNumber = collectionnumber
+            CollectorNumber = collectionnumber,
+            Faces = cardfaces,
+            ColorIdentity = colorIdentity,
+            Id = id,
+            Lang = lang,
+            Layout = layout,
+            SetName = setName,
+            Legalities = legalities,
+            ImageUris = imageUris,
         });
     }
 
@@ -30,35 +40,23 @@ public static class CardFactory
         public required string FullName { get; init; }
         public required string FullTypeLine { get; init; }
 
-        //Core
-        public Guid Id { get; set; }
-        public string Lang { get; set; }
-        public string Layout { get; set; }
-
         //Gameplay
-        public List<ICardFace> Faces { get; set; } = [];
+        public IReadOnlyList<ICardFace> Faces { get; init; } = [];
         ICardFace MainFace => Faces[0];
-        public Dictionary<Format, Legality> Legalities { get; set; } = [];
+        public required ManaType ColorIdentity { get; init; }
+
+        //Other
+        public required Guid Id { get; init; }
+        public required string Lang { get; init; }
+        public required string Layout { get; init; }
+        public Dictionary<Format, Legality> Legalities { get; init; } = [];
 
         //Print
         public required string CollectorNumber { get; init; }
-        public string SetName { get; set; }
+        public required string SetName { get; init; }
         public required string Set { get; init; }
-        public Dictionary<ImageSize, Uri> ImageUris { get; set; } = [];
-        public Rarity Rarity { get; set; }
-
-        //Simple Getter
-        public Result<ManaType> GetCardColorIdentity()
-        {
-            ManaType result = 0;
-            foreach (var face in Faces.ToList())
-            {
-                if (!face.TryGetComponent<ColorComponent>(out var ident))
-                    return Result<ManaType>.Failure("No Color Component?");
-                result |= ident.ColorIdentity; // Bitwise Operation | means OR
-            }
-            return Result<ManaType>.Success(result);
-        }
+        public required Dictionary<ImageSize, Uri> ImageUris { get; init; } = [];
+        public Rarity Rarity { get; init; }
 
         //ToStrings
         public override string ToString() => $"{FullName} - {Set.ToUpper()}({CollectorNumber})";

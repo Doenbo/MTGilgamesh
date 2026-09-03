@@ -14,8 +14,8 @@ public static class CardCreator
         //Get JSON from DB
         var sqlCard = AppDbContext.GetExact(cref);
 
-        //TODO ???
-        var conv = new ScryfallCardConverter(new OracleTextParser());
+        //TODO which constructor???
+        var conv = new ScryfallCardConverter();
 
         if (sqlCard.IsSuccess)
         {

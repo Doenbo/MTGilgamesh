@@ -60,21 +60,12 @@ public class CommanderDeck : Deck
         if (FirstCommander == null)
             return Result<ManaType>.Failure("Cannot calculate color identity without a Commander.");
 
-        ManaType result = 0;
-        var fc = FirstCommander.GetCardColorIdentity();
-        if (fc.IsFailure)
-            return fc.ToFailure<ManaType>();
-
-        result |= fc.Value;
+        ManaType result = FirstCommander.ColorIdentity;
 
         if (SecondCommander == null)
             return Result<ManaType>.Success(result);
 
-        var sc = SecondCommander.GetCardColorIdentity();
-        if (sc.IsFailure)
-            return sc.ToFailure<ManaType>();
-
-        result |= sc.Value;
+        result |= SecondCommander.ColorIdentity;
 
         return Result<ManaType>.Success(result);
     }
@@ -97,15 +88,9 @@ public class CommanderDeck : Deck
             if (card.Legalities.TryGetValue(Format.Commander, out var legality) && legality != Legality.Legal)
                 return Result<bool>.Failure($"Card '{card}' is not legal in Commander!");
 
-            foreach (var face in card.Faces)
-            {
-                if (!face.TryGetComponent<ColorComponent>(out var ident))
-                    return Result<bool>.Failure($"Missing Color Component on card face: {card}");
-
-                var isLegal = (ident.ColorIdentity & ~deckColor.Value) == ManaType.Colorless;
-                if (!isLegal)
-                    return Result<bool>.Failure($"Illegal Card for color identity: {card}");
-            }
+            var isLegal = (card.ColorIdentity & ~deckColor.Value) == ManaType.None;
+            if (!isLegal)
+                return Result<bool>.Failure($"Illegal Card for color identity: {card}");
         }
 
         return Result<bool>.Success(true);

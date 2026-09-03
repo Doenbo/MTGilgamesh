@@ -5,6 +5,11 @@ using MTG.Core.Helper;
 
 namespace MTG.Core.OracleTextParsers;
 
+public interface ITriggerConditionParser
+{
+    Result<ITriggerCondition> Parse(string rawConditionText);
+}
+
 public class TriggerConditionParser : ITriggerConditionParser
 {
     private readonly List<ITriggerPatternRule> _rules;

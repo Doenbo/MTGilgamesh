@@ -14,12 +14,14 @@ namespace MTG.Scryfall.Helper;
 public class ScryfallCardConverter : IScryfallCardConverter
 {
     private readonly IOracleTextParser _oracleTextParser;
+    private readonly IManaSymbolParser _manaParser;
 
-    public ScryfallCardConverter() : this(new OracleTextParser()) { }
+    public ScryfallCardConverter() : this(new OracleTextParser(), new ManaSymbolParser()) { }
 
-    public ScryfallCardConverter(IOracleTextParser oracleTextParser)
+    public ScryfallCardConverter(IOracleTextParser oracleTextParser, IManaSymbolParser manaParser)
     {
         _oracleTextParser = oracleTextParser;
+        _manaParser = manaParser;
     }
 
     public Result<ICard> DoubleConvert(JsonString json)
@@ -81,7 +83,7 @@ public class ScryfallCardConverter : IScryfallCardConverter
             return Result<ICardFace>.Failure($"CMCs do not match for the card {name}!");
 
         //Color
-        var colorComponent = ColorComponent.Create(colors, colorIdentity, colorIndicator);
+        var colorComponent = ColorComponent.Create(_manaParser, colors, colorIndicator);
         if (colorComponent.IsFailure)
             return colorComponent.ToFailure<ICardFace>();
         components.AddRange(colorComponent.Value);
@@ -142,13 +144,8 @@ public class ScryfallCardConverter : IScryfallCardConverter
         if (dto.Object != "card")
             return Result<ICard>.Failure("Object is not a card!");
 
-        //Create Card
-        var cardres = CardFactory.Create(dto.Name, dto.Set, dto.CollectorNumber, dto.TypeLine);
-        if (cardres.IsFailure)
-            return cardres.ToFailure<ICard>();
-        var card = cardres.Value;
-
         //Create Faces
+        var faces = new List<ICardFace>();
         var amountFaces = dto.CardFaces == null ? 1 : dto.CardFaces.Count;
         for (var i = 0; i < amountFaces; i++)
         {
@@ -160,7 +157,7 @@ public class ScryfallCardConverter : IScryfallCardConverter
                 if (noFace.IsFailure)
                     return noFace.ToFailure<ICard>();
 
-                card.Faces.Add(noFace.Value);
+                faces.Add(noFace.Value);
             }
             else //Multi Faces
             {
@@ -168,23 +165,24 @@ public class ScryfallCardConverter : IScryfallCardConverter
                 if (cardFace == null || cardFace.Object != "card_face")
                     return Result<ICard>.Failure("Object is not a card face!");
 
-                //TODO null! ???
+                //TODO null! ok?
                 var iFace = CreateCardFace(cardFace.Name, cardFace.TypeLine, cardFace.OracleText, cardFace.ManaCost,
                                            cardFace.CMC ?? -1, cardFace.Colors, null!, cardFace.ColorIndicator,
                                            cardFace.Power, cardFace.Toughness, cardFace.Defense, cardFace.Loyalty);
                 if (iFace.IsFailure)
                     return iFace.ToFailure<ICard>();
 
-                card.Faces.Add(iFace.Value);
+                faces.Add(iFace.Value);
             }
         }
 
-        //Card Properties (not on Face)
-        card.Id = new Guid(dto.Id);
-        card.Lang = dto.Lang;
-        card.SetName = dto.SetName;
+        //Color
+        var identityResult = _manaParser.ParseColorStrings(dto.ColorIdentity);
+        if (identityResult.IsFailure)
+            return identityResult.ToFailure<ICard>();
 
         //Legalities
+        var legalities = new Dictionary<Format, Legality>();
         foreach (var sLegality in dto.Legalities.ToList())
         {
             if (!Enum.TryParse(Conversions.ToCamelCase(sLegality.Key), out Format eFormat))
@@ -193,19 +191,27 @@ public class ScryfallCardConverter : IScryfallCardConverter
             if (!Enum.TryParse(Conversions.ToCamelCase(sLegality.Value), out Legality eLegality))
                 return Result<ICard>.Failure($"Could not parse {sLegality.Value} to Legality enum!");
 
-            card.Legalities.Add(eFormat, eLegality);
+            legalities.Add(eFormat, eLegality);
         }
 
         //Image Uris
+        var imageUris = new Dictionary<ImageSize, Uri>();
         if (dto.ImageUris != null)
         {
             foreach (var sImageUri in dto.ImageUris.ToList())
             {
                 if (!Enum.TryParse(Conversions.ToCamelCase(sImageUri.Key), out ImageSize eImageUri))
                     return Result<ICard>.Failure($"Could not parse {sImageUri.Key} to enum!");
-                card.ImageUris.Add(eImageUri, new Uri(sImageUri.Value));
+                imageUris.Add(eImageUri, new Uri(sImageUri.Value));
             }
         }
+
+        //Finally Create the Card
+        var cardres = CardFactory.Create(dto.Name, dto.Set, dto.CollectorNumber, dto.TypeLine, faces,
+            identityResult.Value, new Guid(dto.Id), dto.Lang, dto.Layout, dto.SetName, legalities, imageUris);
+        if (cardres.IsFailure)
+            return cardres.ToFailure<ICard>();
+        var card = cardres.Value;
 
         return Result<ICard>.Success(card);
     }

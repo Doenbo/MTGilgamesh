@@ -21,6 +21,8 @@ public class TestMyFavoriteCards
         var card = res.Value;
         AssertCardTypes(card, false, false, false, true, true, false, false, true, true, false, false);
 
+        card.ColorIdentity.Should().Be(ManaType.Green | ManaType.White);
+
         card.MainFace.Should().NotBeNull();
         card.MainFace.TryGetComponent<CreatureComponent>(out var c1).Should().BeTrue();
         c1.Should().NotBeNull();
@@ -30,7 +32,6 @@ public class TestMyFavoriteCards
         card.MainFace.TryGetComponent<ColorComponent>(out var c2).Should().BeTrue();
         c2.Should().NotBeNull();
         c2.Colors.Should().Be(ManaType.Green | ManaType.White);
-        c2.ColorIdentity.Should().Be(ManaType.Green | ManaType.White);
         c2.ColorIndicator.Should().Be(ManaType.None);
 
         card.MainFace.TryGetComponent<TriggeredAbilityComponent>(out var c3).Should().BeTrue();
@@ -51,6 +52,8 @@ public class TestMyFavoriteCards
         var card = res.Value;
         AssertCardTypes(card, false, false, false, true, true, false, false, true, true, false, false);
 
+        card.ColorIdentity.Should().Be(ManaType.White | ManaType.Blue | ManaType.Black);
+
         card.MainFace.Should().NotBeNull();
         card.MainFace.TryGetComponent<CreatureComponent>(out var c1).Should().BeTrue();
         c1.Should().NotBeNull();
@@ -60,7 +63,6 @@ public class TestMyFavoriteCards
         card.MainFace.TryGetComponent<ColorComponent>(out var c2).Should().BeTrue();
         c2.Should().NotBeNull();
         c2.Colors.Should().Be(ManaType.White | ManaType.Blue | ManaType.Black);
-        c2.ColorIdentity.Should().Be(ManaType.White | ManaType.Blue | ManaType.Black);
         c2.ColorIndicator.Should().Be(ManaType.None);
 
         //card.MainFace.TryGetComponent<TriggeredAbilityComponent>(out var c3).Should().BeTrue();
@@ -81,6 +83,8 @@ public class TestMyFavoriteCards
         var card = res.Value;
         AssertCardTypes(card, false, false, false, true, true, false, false, true, true, false, true);
 
+        card.ColorIdentity.Should().Be(ManaType.Blue | ManaType.Red | ManaType.Green);
+
         card.Faces.Should().NotBeNull();
         card.Faces[0].Should().NotBeNull();
 
@@ -92,7 +96,6 @@ public class TestMyFavoriteCards
         card.Faces[0].TryGetComponent<ColorComponent>(out var c2).Should().BeTrue();
         c2.Should().NotBeNull();
         c2.Colors.Should().Be(ManaType.Blue);
-        c2.ColorIdentity.Should().Be(ManaType.None); //TODO why?
         c2.ColorIndicator.Should().Be(ManaType.None);
 
         card.Faces[1].Should().NotBeNull();
@@ -105,7 +108,6 @@ public class TestMyFavoriteCards
         card.Faces[1].TryGetComponent<ColorComponent>(out var c4).Should().BeTrue();
         c4.Should().NotBeNull();
         c4.Colors.Should().Be(ManaType.Red | ManaType.Green);
-        c4.ColorIdentity.Should().Be(ManaType.None); //TODO why?
         c4.ColorIndicator.Should().Be(ManaType.None);
     }
 

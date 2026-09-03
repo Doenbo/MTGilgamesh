@@ -5,6 +5,11 @@ using MTG.Core.Helper;
 
 namespace MTG.Core.OracleTextParsers;
 
+public interface IAbilityCostParser
+{
+    public Result<IReadOnlyList<IAbilityCost>> Parse(string rawCosts);
+}
+
 public class AbilityCostParser : IAbilityCostParser
 {
     private readonly List<ICostPatternRule> _rules;

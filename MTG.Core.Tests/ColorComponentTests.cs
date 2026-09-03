@@ -1,11 +1,13 @@
 ﻿using FluentAssertions;
 using MTG.Core.Components;
 using MTG.Core.Enums;
+using MTG.Core.OracleTextParsers;
 
 namespace MTG.Core.Tests;
 
 public class ColorComponentTests
 {
+    private readonly IManaSymbolParser _manaParser = new ManaSymbolParser();
 
     [Fact]
     public void CreateValidEmpty()
@@ -14,12 +16,12 @@ public class ColorComponentTests
         var colors = new List<string> { };
         var indicator = new List<string> { };
 
-        var result = ColorComponent.Create(colors, identity, indicator);
+        var result = ColorComponent.Create(_manaParser, colors, indicator);
         result.IsSuccess.Should().BeTrue();
 
         var act = result.Value;
         act.Should().NotBeNull();
-        act.ColorIdentity.Should().Be(new ManaType());
+        //act.ColorIdentity.Should().Be(new ManaType());
         act.ColorIndicator.Should().Be(new ManaType());
         act.Colors.Should().Be(new ManaType());
     }
@@ -36,14 +38,14 @@ public class ColorComponentTests
         var colors = new List<string> { s };
         var indicator = new List<string> { s };
 
-        var result = ColorComponent.Create(colors, identity, indicator);
+        var result = ColorComponent.Create(_manaParser, colors, indicator);
         result.IsSuccess.Should().BeTrue();
 
         var act = result.Value;
         act.Should().NotBeNull();
 
-        act.ColorIdentity.Should().Be(c);
-        act.ColorIdentity.HasFlag(c).Should().BeTrue();
+        //act.ColorIdentity.Should().Be(c);
+        //act.ColorIdentity.HasFlag(c).Should().BeTrue();
 
         act.Colors.Should().Be(c);
         act.Colors.HasFlag(c).Should().BeTrue();
@@ -60,14 +62,14 @@ public class ColorComponentTests
         var colors = new List<string> { s1, s2 };
         var indicator = new List<string> { s1, s2 };
 
-        var result = ColorComponent.Create(colors, identity, indicator);
+        var result = ColorComponent.Create(_manaParser, colors, indicator);
         result.IsSuccess.Should().BeTrue();
 
         var act = result.Value;
         act.Should().NotBeNull();
 
-        act.ColorIdentity.HasFlag(c1).Should().BeTrue();
-        act.ColorIdentity.HasFlag(c2).Should().BeTrue();
+        //act.ColorIdentity.HasFlag(c1).Should().BeTrue();
+        //act.ColorIdentity.HasFlag(c2).Should().BeTrue();
         act.Colors.HasFlag(c1).Should().BeTrue();
         act.Colors.HasFlag(c2).Should().BeTrue();
         act.ColorIndicator.HasFlag(c1).Should().BeTrue();
@@ -77,12 +79,12 @@ public class ColorComponentTests
     [Fact]
     public void CreateValidNulls_ReturnsManaTypeNone()
     {
-        var result = ColorComponent.Create(null, null, null);
+        var result = ColorComponent.Create(_manaParser, null, null);
 
         result.IsSuccess.Should().BeTrue();
         var act = result.Value;
         act.Should().NotBeNull();
-        act.ColorIdentity.Should().Be(ManaType.None);
+        //act.ColorIdentity.Should().Be(ManaType.None);
         act.Colors.Should().Be(ManaType.None);
         act.ColorIndicator.Should().Be(ManaType.None);
     }
@@ -92,11 +94,11 @@ public class ColorComponentTests
     {
         var colorlessList = new List<string> { "C" };
 
-        var result = ColorComponent.Create(colorlessList, colorlessList, colorlessList);
+        var result = ColorComponent.Create(_manaParser, colorlessList, colorlessList);
 
         result.IsSuccess.Should().BeTrue();
         var act = result.Value;
-        act.ColorIdentity.Should().Be(ManaType.Colorless);
+        //act.ColorIdentity.Should().Be(ManaType.Colorless);
         act.Colors.Should().Be(ManaType.Colorless);
         act.ColorIndicator.Should().Be(ManaType.Colorless);
     }
@@ -108,12 +110,12 @@ public class ColorComponentTests
         var colors = new List<string> { "W", "U" };
         List<string>? indicator = null;
 
-        var result = ColorComponent.Create(colors, identity, indicator);
+        var result = ColorComponent.Create(_manaParser, colors, indicator);
 
         result.IsSuccess.Should().BeTrue();
         var act = result.Value;
 
-        act.ColorIdentity.Should().Be(ManaType.White | ManaType.Blue | ManaType.Black);
+        //act.ColorIdentity.Should().Be(ManaType.White | ManaType.Blue | ManaType.Black);
         act.Colors.Should().Be(ManaType.White | ManaType.Blue);
         act.ColorIndicator.Should().Be(ManaType.None);
     }
@@ -125,7 +127,7 @@ public class ColorComponentTests
     {
         var list = new List<string> { input };
 
-        var result = ColorComponent.Create(list, list, list);
+        var result = ColorComponent.Create(_manaParser, list, list);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Colors.Should().Be(expected);
@@ -140,7 +142,7 @@ public class ColorComponentTests
     {
         var invalidList = new List<string> { "W", invalidColor };
 
-        var result = ColorComponent.Create(invalidList, null, null);
+        var result = ColorComponent.Create(_manaParser, invalidList, null);
 
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Contain($"Color '{invalidColor}' is invalid!");

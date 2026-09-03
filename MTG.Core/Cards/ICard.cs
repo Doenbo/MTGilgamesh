@@ -7,45 +7,43 @@ namespace MTG.Core.Cards;
 public interface ICard
 {
     //Merged Face Properties
-    public string FullName { get; }
-    public string FullTypeLine { get; }
+    string FullName { get; }
+    string FullTypeLine { get; }
 
     //Core
-    public Guid Id { get; set; }
-    public string Lang { get; set; }
-    public string Layout { get; set; }
+    Guid Id { get; }
+    string Lang { get; }
+    string Layout { get; }
 
 
     //Gameplay
-    public List<ICardFace> Faces { get; }
+    IReadOnlyList<ICardFace> Faces { get; }
     ICardFace MainFace => Faces[0];
-    public Dictionary<Format, Legality> Legalities { get; }
+    ManaType ColorIdentity { get; }
+    Dictionary<Format, Legality> Legalities { get; }
 
     //Print
-    public string CollectorNumber { get; }
-    public string SetName { get; set; }
-    public string Set { get; }
-    public Dictionary<ImageSize, Uri> ImageUris { get; }
-    public Rarity Rarity { get; }
-
-    //Simple Getter
-    public Result<ManaType> GetCardColorIdentity();
+    string CollectorNumber { get; }
+    string SetName { get; }
+    string Set { get; }
+    Dictionary<ImageSize, Uri> ImageUris { get; }
+    Rarity Rarity { get; }
 
     //Simple Yes/No Checks
-    public bool IsArtifact() => MainFace.IsArtifact();
-    public bool IsBasic() => MainFace.IsBasic();
-    public bool IsBattle() => MainFace.IsBattle();
-    public bool IsCreature() => MainFace.IsCreature();
-    public bool IsHistoric() => MainFace.IsHistoric();
-    public bool IsInstant() => MainFace.IsInstant();
-    public bool IsLand() => MainFace.IsLand();
-    public bool IsLegendary() => MainFace.IsLegendary();
-    public bool IsPermanent() => MainFace.IsPermanent();
-    public bool IsPlaneswalker() => MainFace.IsPlaneswalker();
-    public bool IsMultifaced() => Faces.Count > 1;
+    bool IsArtifact() => MainFace.IsArtifact();
+    bool IsBasic() => MainFace.IsBasic();
+    bool IsBattle() => MainFace.IsBattle();
+    bool IsCreature() => MainFace.IsCreature();
+    bool IsHistoric() => MainFace.IsHistoric();
+    bool IsInstant() => MainFace.IsInstant();
+    bool IsLand() => MainFace.IsLand();
+    bool IsLegendary() => MainFace.IsLegendary();
+    bool IsPermanent() => MainFace.IsPermanent();
+    bool IsPlaneswalker() => MainFace.IsPlaneswalker();
+    bool IsMultifaced() => Faces.Count > 1;
 
     //ToStrings
-    public string ToString();
-    public string ToStringConsole();
+    string ToString();
+    string ToStringConsole();
 
 }

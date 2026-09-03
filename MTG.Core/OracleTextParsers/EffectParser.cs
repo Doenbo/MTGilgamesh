@@ -8,6 +8,11 @@ using MTG.Core.Wrapper;
 
 namespace MTG.Core.OracleTextParsers;
 
+public interface IEffectParser
+{
+    public Result<IEffect> Parse(string rawEffect);
+}
+
 public class EffectParser : IEffectParser
 {
     private readonly List<IEffectPatternRule> _rules;
