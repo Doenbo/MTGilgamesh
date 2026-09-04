@@ -93,7 +93,7 @@ public class GodotInputProvider : IPlayerInputProvider
             var topStackCard = context.PeekStack();
             string casterName = topStackCard.Owner.Name;
 
-            LogUi($"\n[color=magenta]⚡ [{casterName}] casted {topStackCard.CardData.FullName}[/color]\n" +
+            LogUi($"\n[color=magenta]⚡ [{casterName}] casted {topStackCard.CardData.Name}[/color]\n" +
                   $"[color=yellow][{player.Name}] How do you react?[/color]\n" +
                   $"[color=gray]1: Play a Card from Hand | 2: Show Stack | 3: Pass Priority[/color]\n");
 
@@ -170,7 +170,7 @@ public class GodotInputProvider : IPlayerInputProvider
             for (int i = 0; i < player.Hand.Count; i++)
             {
                 var card = player.Hand.Cards[i];
-                LogUi($"[color=green]{i + 1}:[/color] {card.CardData.FullName} | ");
+                LogUi($"[color=green]{i + 1}:[/color] {card.CardData.Name} | ");
             }
             LogUi($"[color=red]{player.Hand.Count + 1}: Return[/color]\n");
 

@@ -1,33 +1,36 @@
 ﻿using MTG.Core.Enums;
 using MTG.Core.Helper;
 using MTG.Core.Properties;
+using System.Text.Json.Serialization;
 
 namespace MTG.Core.Cards;
 
 public interface ICard
 {
     //Merged Face Properties
-    string FullName { get; }
-    string FullTypeLine { get; }
+    string Name { get; }
+    string TypeLine { get; }
 
     //Core
     Guid Id { get; }
     string Lang { get; }
     string Layout { get; }
 
+    //Related Card Objects
+    IReadOnlyList<ICard> AllParts { get; }
 
     //Gameplay
     IReadOnlyList<ICardFace> Faces { get; }
     ICardFace MainFace => Faces[0];
     ManaType ColorIdentity { get; }
     bool IsToken { get; }
-    Dictionary<Format, Legality> Legalities { get; }
+    IReadOnlyDictionary<Format, Legality> Legalities { get; }
 
     //Print
     string CollectorNumber { get; }
     string SetName { get; }
     string Set { get; }
-    Dictionary<ImageSize, Uri> ImageUris { get; }
+    IReadOnlyDictionary<ImageSize, Uri> ImageUris { get; }
     Rarity Rarity { get; }
 
     //Simple Yes/No Checks

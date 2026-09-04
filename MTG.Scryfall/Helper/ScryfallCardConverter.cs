@@ -122,8 +122,16 @@ public class ScryfallCardConverter(IOracleTextParser oracleTextParser, IManaSymb
             components.AddRange(parseResult.Value);
         }
 
+        var args = new CardFaceCreationArgs
+        {
+            Name = name,
+            TypeLine = typelineres.Value,
+            OracleText = oracleText ?? string.Empty, // TODO ?
+            Components = components,
+        };
+
         // Finally Create the Face
-        var cardfaceres = CardFaceFactory.Create(name, typelineres.Value, oracleText, components);
+        var cardfaceres = CardFaceFactory.Create(args);
         if (cardfaceres.IsFailure)
             return cardfaceres.ToFailure<ICardFace>();
 
@@ -136,7 +144,7 @@ public class ScryfallCardConverter(IOracleTextParser oracleTextParser, IManaSymb
             return Result<ICard>.Failure("Object is not a card!");
 
         //Create Faces
-        var faces = new List<ICardFace>();
+        var cardFaces = new List<ICardFace>();
         var amountFaces = dto.CardFaces == null ? 1 : dto.CardFaces.Count;
         for (var i = 0; i < amountFaces; i++)
         {
@@ -148,7 +156,7 @@ public class ScryfallCardConverter(IOracleTextParser oracleTextParser, IManaSymb
                 if (noFace.IsFailure)
                     return noFace.ToFailure<ICard>();
 
-                faces.Add(noFace.Value);
+                cardFaces.Add(noFace.Value);
             }
             else //Multi Faces
             {
@@ -162,7 +170,7 @@ public class ScryfallCardConverter(IOracleTextParser oracleTextParser, IManaSymb
                 if (iFace.IsFailure)
                     return iFace.ToFailure<ICard>();
 
-                faces.Add(iFace.Value);
+                cardFaces.Add(iFace.Value);
             }
         }
 
@@ -196,9 +204,27 @@ public class ScryfallCardConverter(IOracleTextParser oracleTextParser, IManaSymb
             }
         }
 
+        IReadOnlyList<ICard> allParts = []; //TODO
+
+        var args = new CardCreationArgs
+        {
+            Name = dto.Name,
+            TypeLine = dto.TypeLine,
+            ColorIdentity = identityResult.Value,
+            CardFaces = cardFaces,
+            AllParts = allParts,
+            Set = dto.Set,
+            CollectorNumber = dto.CollectorNumber,
+            Id = new Guid(dto.Id),
+            Lang = dto.Lang,
+            Layout = dto.Layout,
+            SetName = dto.SetName,
+            Legalities = legalities,
+            ImageUris = imageUris,
+        };
+
         //Finally Create the Card
-        var cardres = CardFactory.Create(dto.Name, dto.Set, dto.CollectorNumber, dto.TypeLine, faces,
-            identityResult.Value, new Guid(dto.Id), dto.Lang, dto.Layout, dto.SetName, legalities, imageUris);
+        var cardres = CardFactory.Create(args);
         if (cardres.IsFailure)
             return cardres.ToFailure<ICard>();
         var card = cardres.Value;

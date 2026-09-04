@@ -151,8 +151,8 @@ public partial class CardNode : PanelContainer
         if (CardInstance?.CardData == null) return;
 
         var card = CardInstance.CardData;
-        _nameLabel.Text = card.FullName;
-        _typeLabel.Text = card.FullTypeLine;
+        _nameLabel.Text = card.Name;
+        _typeLabel.Text = card.TypeLine;
 
         // Oracle text
         _oracleLabel.Clear();
@@ -224,7 +224,7 @@ public partial class CardNode : PanelContainer
         previewNode.AddThemeStyleboxOverride("panel", style);
 
         var label = new Label();
-        label.Text = CardInstance.CardData?.FullName ?? "Card";
+        label.Text = CardInstance.CardData?.Name ?? "Card";
         label.HorizontalAlignment = HorizontalAlignment.Center;
         label.VerticalAlignment = VerticalAlignment.Center;
         previewNode.AddChild(label);

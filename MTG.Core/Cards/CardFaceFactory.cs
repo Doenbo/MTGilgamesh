@@ -9,28 +9,30 @@ using System.Text;
 
 namespace MTG.Core.Cards;
 
+public record CardFaceCreationArgs
+{
+    public required string Name { get; init; }
+    public required TypeLine TypeLine { get; init; }
+    public required string OracleText { get; init; }
+    public required IEnumerable<ICardComponent> Components { get; init; }
+}
+
 public class CardFaceFactory
 {
-    public static Result<ICardFace> Create(
-        string name,
-        TypeLine typeline,
-        string? oracleText,
-        IEnumerable<ICardComponent> components)
+    public static Result<ICardFace> Create(CardFaceCreationArgs args)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            return Result<ICardFace>.Failure("Name can't be null or empty!");
+        if (NullGuard.HasNullProperty(args, out var nullProperty))
+            return Result<ICardFace>.Failure($"CardFace creation failed: '{nullProperty}' cannot be null!");
 
-        if (components is null || !components.Any())
-            return Result<ICardFace>.Failure("Components can't be null or empty!");
+        if (!args.Components.Any())
+            return Result<ICardFace>.Failure("A card must have at least one Component!");
 
-        var cardFace = new CardFace(components)
+        return Result<ICardFace>.Success(new CardFace(args.Components)
         {
-            Name = name,
-            TypeLine = typeline,
-            OracleText = oracleText ?? string.Empty
-        };
-
-        return Result<ICardFace>.Success(cardFace);
+            Name = args.Name,
+            TypeLine = args.TypeLine,
+            OracleText = args.OracleText,
+        });
     }
 
     private class CardFace : ICardFace

@@ -600,8 +600,8 @@ public partial class Main : Node2D
 		var card = cardInstance.CardData;
 
 		_previewPanel.Visible = true;
-		_previewTitleLabel.Text = card.FullName;
-		_previewTypeLabel.Text = card.FullTypeLine;
+		_previewTitleLabel.Text = card.Name;
+		_previewTypeLabel.Text = card.TypeLine;
 
 		_previewOracleLabel.Clear();
 		_previewOracleLabel.AppendText($"[color=gainsboro]{card.ToString()}[/color]");
@@ -683,7 +683,7 @@ public partial class Main : Node2D
 			{
 				var lbl = new Label
 				{
-					Text = $"• {card.CardData.FullName} ({card.Owner.Name})"
+					Text = $"• {card.CardData.Name} ({card.Owner.Name})"
 				};
 				lbl.AddThemeFontSizeOverride("font_size", 10);
 				_stackListVBox.AddChild(lbl);

@@ -29,20 +29,27 @@ public static class DeckCreator
 
     private static async Task<Result<ICommanderDeck>> Create(List<CardRef> cardrefs)
     {
-        var cards = new List<ICard>();
         ICard FirstCommander = null!, SecondCommander = null!;
+        List<ICard> cards = [], tokens = [];
+
         foreach (var cardref in cardrefs)
         {
             var cardResult = await CardCreator.GetExact(cardref);
             if (cardResult.IsFailure)
                 return cardResult.ToFailure<ICommanderDeck>();
 
+            foreach (var token in cardResult.Value.AllParts)
+            {
+                var tokenResult = await CardCreator.GetExact(cardref); //TODO new method GetToken?
+            }
+
             for (int i = 0; i < cardref.Quantity; i++)
             {
+
                 // TODO Contains??
                 if (cardref.Type.Contains("Commander", StringComparison.OrdinalIgnoreCase))
                 {
-                    if(FirstCommander is null)
+                    if (FirstCommander is null)
                         FirstCommander = cardResult.Value;
                     else if (SecondCommander is null)
                         SecondCommander = cardResult.Value;

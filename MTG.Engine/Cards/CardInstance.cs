@@ -76,6 +76,6 @@ public class CardInstance
 
     public override string ToString()
     {
-        return CardData.FullName;
+        return CardData.Name;
     }
 }
