@@ -7,19 +7,19 @@ namespace MTG.Core.Cards;
 
 public static class CardFactory
 {
-    public static Result<ICard> Create(string name, string set, string collectionnumber, string typeline,
+    public static Result<ICard> Create(string name, string set, string collectionNumber, string typeLine,
         List<ICardFace> cardfaces, ManaType colorIdentity, Guid id, string lang, string layout, string setName,
         Dictionary<Format, Legality> legalities, Dictionary<ImageSize, Uri> imageUris)
     {
-        if (name == null || set == null || collectionnumber == null)
+        if (name == null || set == null || collectionNumber == null)
             return Result<ICard>.Failure("Name, Set and CollectionNumber can't be null!");
 
         return Result<ICard>.Success(new Card()
         {
             FullName = name,
-            FullTypeLine = typeline,
+            FullTypeLine = typeLine,
             Set = set,
-            CollectorNumber = collectionnumber,
+            CollectorNumber = collectionNumber,
             Faces = cardfaces,
             ColorIdentity = colorIdentity,
             Id = id,
@@ -44,6 +44,7 @@ public static class CardFactory
         public IReadOnlyList<ICardFace> Faces { get; init; } = [];
         ICardFace MainFace => Faces[0];
         public required ManaType ColorIdentity { get; init; }
+        public bool IsToken { get; init; } = false;
 
         //Other
         public required Guid Id { get; init; }

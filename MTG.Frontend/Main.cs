@@ -2,6 +2,7 @@ using Godot;
 using Microsoft.Extensions.Logging;
 using MTG.Core.Enums;
 using MTG.Core.Helper;
+using MTG.Engine.Cards;
 using MTG.Engine.Gameplay;
 using MTG.Opponent;
 using System;
@@ -717,7 +718,7 @@ public partial class Main : Node2D
 
 		bool isHumanTurn = _context.PriorityPlayer == human;
 
-		foreach (var cardInstance in human.Hand.ToList())
+		foreach (var cardInstance in human.Hand.Cards.ToList())
 		{
 			var cardNode = new CardNode();
 			cardNode.Setup(cardInstance, isPlayable: isHumanTurn);

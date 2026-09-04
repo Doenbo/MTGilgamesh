@@ -11,7 +11,7 @@ public class OpponentInputProvider : IPlayerInputProvider
         Cheats.DisableAll();
         context.Display.IsLoggingErrors = false;
 
-        foreach (var card in player.Hand.ToList())
+        foreach (var card in player.Hand.Cards.ToList())
         {
             context.HandleIncomingAction(new PlayerAction(player, ActionType.PlayCard, card));
         }

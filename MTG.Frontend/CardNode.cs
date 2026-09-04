@@ -1,5 +1,5 @@
 using Godot;
-using MTG.Engine.Gameplay;
+using MTG.Engine.Cards;
 using System;
 using System.Threading.Tasks;
 

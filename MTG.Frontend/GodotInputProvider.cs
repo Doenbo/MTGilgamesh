@@ -1,5 +1,6 @@
 using Godot;
 using MTG.Core.Enums;
+using MTG.Engine.Cards;
 using MTG.Engine.Enums;
 using MTG.Engine.Gameplay;
 using System;
@@ -155,7 +156,7 @@ public class GodotInputProvider : IPlayerInputProvider
         }
     }
 
-    private async Task<CardInstance?> ChooseHandCardAsync(GameContext context, CommanderPlayer player)
+    private async Task<CardInstance> ChooseHandCardAsync(GameContext context, CommanderPlayer player)
     {
         if (player.Hand.Count == 0)
         {
@@ -168,7 +169,7 @@ public class GodotInputProvider : IPlayerInputProvider
             LogUi($"\n[color=white]{player.Name}, select a card to play:[/color]\n");
             for (int i = 0; i < player.Hand.Count; i++)
             {
-                var card = player.Hand[i];
+                var card = player.Hand.Cards[i];
                 LogUi($"[color=green]{i + 1}:[/color] {card.CardData.FullName} | ");
             }
             LogUi($"[color=red]{player.Hand.Count + 1}: Return[/color]\n");
@@ -181,7 +182,7 @@ public class GodotInputProvider : IPlayerInputProvider
                 {
                     return null;
                 }
-                return player.Hand[choice - 1];
+                return player.Hand.Cards[choice - 1];
             }
 
             LogUi("[color=orange]Invalid card index. Try again.[/color]\n");

@@ -6,7 +6,8 @@ using MTG.Core.Components.OracleText;
 using MTG.Core.Enums;
 using MTG.Core.Properties;
 using MTG.Core.Types;
-using MTG.Engine.Factories;
+using MTG.Engine.Cards;
+using Newtonsoft.Json.Linq;
 
 namespace MTG.Complete.Tests;
 
@@ -43,6 +44,14 @@ public class TestMyFavoriteCards
             new BecomesTappedCondition(new CardFilter()));
         c3.Effect.Should().BeEquivalentTo(
             new CreateTokenEffect(1, 1, 1, ManaType.White, [CreatureType.Soldier], [KeywordAbility.Lifelink]));
+    }
+
+    [Fact]
+    public async Task CreateEmmaraTokenValid()
+    {
+        var cref = new CardRef() { Name = "Token Creature — Goblin // Token Creature — Soldier" };
+        var res = await CardCreator.GetExact(cref);
+        res.IsSuccess.Should().BeTrue(res.Error);
     }
 
     [Fact]

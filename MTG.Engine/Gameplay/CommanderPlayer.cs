@@ -2,7 +2,9 @@
 using MTG.Core.Decks;
 using MTG.Core.Enums;
 using MTG.Core.Helper;
-using MTG.Engine.Factories;
+using MTG.Engine.Cards;
+using MTG.Engine.Decks;
+using MTG.Engine.Zones;
 using MTG.Resources.Enums;
 
 namespace MTG.Engine.Gameplay;
@@ -17,29 +19,21 @@ public class CommanderPlayer
     public ManaPool ManaPool { get; private set; }
     public bool IsEliminated { get; set; }
 
-    private CommanderDeck Deck { get; init; } //just to hold the data
+    private ICommanderDeck Deck { get; init; } //just to hold the data
 
-    //Library
-    private readonly Stack<CardInstance> _library = [];
-    public IEnumerable<CardInstance> Library => _library;
+    //Zones
+    public LibraryZone Library { get; } = new();
 
-    //Hand
-    private readonly List<CardInstance> _hand = [];
-    public IReadOnlyList<CardInstance> Hand => _hand.AsReadOnly();
+    public HandZone Hand { get; } = new();
 
-    //Graveyard
-    private readonly List<CardInstance> _graveyard = [];
-    public IReadOnlyList<CardInstance> Graveyard => _graveyard.AsReadOnly();
+    public GraveyardZone Graveyard { get; } = new();
 
-    //Exile
-    private readonly List<CardInstance> _exile = [];
-    public IReadOnlyList<CardInstance> Exile => _exile.AsReadOnly();
+    public ExileZone Exile { get; } = new();
 
-    //CommandZone
     public CommandZone CommandZone { get; init; } = new();
 
 
-    private CommanderPlayer(string name, int life, CommanderDeck cd, IPlayerInputProvider pip)
+    private CommanderPlayer(string name, int life, ICommanderDeck cd, IPlayerInputProvider pip)
     {
         Name = name;
         LifeTotal = life;
@@ -56,8 +50,6 @@ public class CommanderPlayer
         if (deck.IsFailure)
             return deck.ToFailure<CommanderPlayer>();
 
-        deck.Value.Shuffle();
-
         var player = new CommanderPlayer(name, life, deck.Value, pip);
 
         player.InitializePlayer(deck.Value);
@@ -68,12 +60,14 @@ public class CommanderPlayer
         return Result<CommanderPlayer>.Success(player);
     }
 
-    private void InitializePlayer(CommanderDeck deck)
+    private void InitializePlayer(ICommanderDeck deck)
     {
         foreach (var card in deck.Cards)
         {
-            _library.Push(new CardInstance(card, this));
+            Library.Add(new CardInstance(card, this));
         }
+
+        Library.Shuffle();
 
         for (int i = 0; i < 7; i++)
         {
@@ -81,7 +75,7 @@ public class CommanderPlayer
         }
     }
 
-    private void InitializeCommandZone(CommanderDeck cd)
+    private void InitializeCommandZone(ICommanderDeck cd)
     {
         var first = cd.GetFirstCommander();
         if (first.IsSuccess)
@@ -106,57 +100,45 @@ public class CommanderPlayer
     {
         for (int i = 0; i < amount; i++)
         {
-            if (!Library.Any())
-                return Result.Failure("Library is empty!");
+            var drawnCard = Library.Draw();
 
-            _hand.Add(_library.Pop());
+            if (drawnCard == null)
+                return Result.Failure("Cannot draw a card: Library is empty!");
+
+            Hand.Add(drawnCard);
         }
+
         return Result.Success();
     }
 
     public void AddToHand(CardInstance card)
     {
-        _hand.Add(card);
+        Hand.Add(card);
     }
 
     public void RemoveFromHand(CardInstance card)
     {
-        _hand.Remove(card);
+        Hand.Remove(card);
     }
 
     public void AddToGraveyard(CardInstance card)
     {
-        _graveyard.Add(card);
+        Graveyard.Add(card);
     }
 
     public void RemoveFromGraveyard(CardInstance card)
     {
-        _graveyard.Remove(card);
+        Graveyard.Remove(card);
     }
 
     public void AddToExile(CardInstance card)
     {
-        _exile.Add(card);
+        Exile.Add(card);
     }
 
     public void RemoveFromExile(CardInstance card)
     {
-        _exile.Remove(card);
-    }
-
-    public void PushToLibrary(CardInstance card)
-    {
-        _library.Push(card);
-    }
-
-    public CardInstance PopFromLibrary()
-    {
-        return _library.Pop();
-    }
-
-    public CardInstance PeekLibrary()
-    {
-        return _library.Peek();
+        Exile.Remove(card);
     }
 
     public Result<List<ManaType>> GetDeckColors()

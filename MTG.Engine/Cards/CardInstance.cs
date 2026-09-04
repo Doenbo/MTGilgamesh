@@ -1,10 +1,11 @@
 ﻿using MTG.Core.Cards;
 using MTG.Core.Components;
 using MTG.Core.Enums;
+using MTG.Engine.Gameplay;
 using MTG.Engine.States;
 using System.Numerics;
 
-namespace MTG.Engine.Gameplay;
+namespace MTG.Engine.Cards;
 
 public class CardInstance
 {
@@ -18,7 +19,7 @@ public class CardInstance
         Controller = owner;
     }
 
-    public ICard CardData { get; set; }
+    public ICard CardData { get; init; }
 
     public CommanderPlayer Owner { get; set; }
     public CommanderPlayer Controller { get; set; }
@@ -27,7 +28,7 @@ public class CardInstance
     public bool HasSummoningSickness { get; set; } = true;
 
     public int DamageMarked { get; set; }
-    public Dictionary<MarkerType, int> Counters { get; } = [];
+    public Dictionary<MarkerType, int> Counters { get; set; } = [];
 
 
     public void AddCounter(MarkerType type, int amount = 1)

@@ -1,6 +1,7 @@
 using Godot;
 using MTG.Core;
 using MTG.Core.Enums;
+using MTG.Engine.Cards;
 using MTG.Engine.Enums;
 using MTG.Engine.Gameplay;
 using System;

@@ -5,7 +5,7 @@ using MTG.DB;
 using MTG.Scryfall._Getter;
 using MTG.Scryfall.Helper;
 
-namespace MTG.Engine.Factories;
+namespace MTG.Engine.Cards;
 
 public static class CardCreator
 {

@@ -2,7 +2,7 @@
 using MTG.Core;
 using MTG.Core.Cards;
 using MTG.Core.Helper;
-using MTG.Engine.Factories;
+using MTG.Engine.Cards;
 using MTG.Engine.Gameplay;
 using MTG.Opponent;
 

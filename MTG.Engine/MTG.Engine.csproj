@@ -13,4 +13,8 @@
     <ProjectReference Include="..\MTG.Scryfall\MTG.Scryfall.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Factories\" />
+  </ItemGroup>
+
 </Project>

@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using MTG.Core.Enums;
 using MTG.Core.Helper;
 using MTG.Core.Types;
+using MTG.Engine.Cards;
 using MTG.Engine.TurnSteps;
 using MTG.Resources.Enums;
 using System.Text;
@@ -340,7 +341,7 @@ public class GameContext
         {
             if (p == ActivePlayer) continue;
             sb.AppendLine($"[{p.Name}]");
-            foreach (var card in p.Hand.ToList())
+            foreach (var card in p.Hand.Cards.ToList())
             {
                 sb.Append($"{card.CardData.FullName}");
                 if (card.IsTapped) sb.Append("[Tapped]");
@@ -360,7 +361,7 @@ public class GameContext
         {
             if (p == ActivePlayer) continue;
             sb.AppendLine($"[{p.Name}]");
-            foreach (var card in p.Library.ToList())
+            foreach (var card in p.Library.Cards.ToList())
             {
                 sb.Append($"{card.CardData.FullName}");
                 if (card.IsTapped) sb.Append("[Tapped]");

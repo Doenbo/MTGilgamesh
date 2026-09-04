@@ -5,30 +5,12 @@ namespace MTG.Core.Decks;
 
 public abstract class Deck
 {
-    public List<ICard> Cards { get; init; }
+    public IReadOnlyList<ICard> Cards { get; init; }
+    public IReadOnlyList<ICard> Tokens { get; init; }
 
-    protected Deck()
+    protected Deck(IReadOnlyList<ICard> cards, IReadOnlyList<ICard> tokens)
     {
-        Cards = [];
-    }
-
-    public Result AddCard(ICard card)
-    {
-        Cards.Add(card);
-        return Result.Success();
-    }
-
-    public Result AddCards(List<ICard> cards)
-    {
-        foreach (var card in cards.ToList())
-        {
-            Cards.Add(card);
-        }
-        return Result.Success();
-    }
-
-    public void Shuffle()
-    {
-        Cards.Shuffle();
+        Cards = cards;
+        Tokens = tokens;
     }
 }

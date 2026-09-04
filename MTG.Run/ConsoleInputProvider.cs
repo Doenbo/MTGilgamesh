@@ -8,6 +8,7 @@ using MTG.Engine.Gameplay;
 
 using ENV = System.Environment;
 using CIS = MTG.Run.ConsoleInputStrings;
+using MTG.Engine.Cards;
 
 namespace MTG.Run;
 
@@ -220,7 +221,7 @@ public class ConsoleInputProvider : IPlayerInputProvider
         var text = $"\n{context.PriorityPlayer.Name}, which card would you like to play from your hand?\n";
         for (int i = 0; i < player.Hand.Count; i++)
         {
-            var c = player.Hand[i];
+            var c = player.Hand.Cards[i];
             text += $"{i + 1}: {c.CardData.FullName} | ";
         }
         text += CIS.f_retur;
@@ -249,7 +250,7 @@ public class ConsoleInputProvider : IPlayerInputProvider
                 continue;
             }
 
-            return Result<CardInstance>.Success(player.Hand[j - 1]);
+            return Result<CardInstance>.Success(player.Hand.Cards[j - 1]);
         }
     }
 
