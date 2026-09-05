@@ -2,55 +2,43 @@
 using MTG.Core.Components;
 using MTG.Core.Enums;
 using MTG.Core.Helper;
+using MTG.Core.Properties;
+using System.ComponentModel.Design;
 
 namespace MTG.Core.Decks;
 
+public record CommanderDeckCreationArgs
+{
+    public required List<ICard> Cards { get; init; }
+    public required List<ICard> Tokens { get; init; }
+    public required List<ICard> Commander { get; init; }
+}
+
 public static class CommanderDeckFactory
 {
-    public static Result<ICommanderDeck> Create() { return null!; }
+    public static Result<ICommanderDeck> Create(CommanderDeckCreationArgs args)
+    {
+        if (NullGuard.HasNullProperty(args, out var nullProperty))
+            return Result<ICommanderDeck>.Failure($"CommanderDeck creation failed: '{nullProperty}' cannot be null!");
+
+        if (args.Commander.Count != 1 && args.Commander.Count != 2)
+            return Result<ICommanderDeck>.Failure($"Cannot have more than two Commanders! {args.Commander.ToString}");
+
+        if (args.Commander.Count + args.Cards.Count != 100)
+            return Result<ICommanderDeck>.Failure($"A Commander Deck needs exactly 100 Cards! " +
+                $"Commanders: {args.Commander.Count} / Cards: {args.Cards.Count}");
+
+        return Result<ICommanderDeck>.Success(new CommanderDeck(args.Cards, args.Tokens, args.Commander));
+    }
 
     private class CommanderDeck : Deck, ICommanderDeck
     {
-        public CommanderDeck(IReadOnlyList<ICard> cards, IReadOnlyList<ICard> tokens) : base(cards, tokens)
+        public CommanderDeck(IReadOnlyList<ICard> cards, IReadOnlyList<ICard> tokens, IReadOnlyList<ICard> commander) : base(cards, tokens)
         {
-            //Cards = cards;
-            //Tokens = tokens;
+            Commander = commander;
         }
 
-        // TODO nullable?
-        private ICard? FirstCommander { get; set; }
-        private ICard? SecondCommander { get; set; }
-
-        public Result AddCommander(ICard card)
-        {
-            if (FirstCommander == null)
-            {
-                FirstCommander = card;
-                return Result.Success();
-            }
-
-            if (SecondCommander == null)
-            {
-                SecondCommander = card;
-                return Result.Success();
-            }
-
-            return Result.Failure("There can't be more than 2 Commanders!");
-        }
-
-        public Result<ICard> GetFirstCommander()
-        {
-            return FirstCommander == null
-                ? Result<ICard>.Failure("No primary Commander set.")
-                : Result<ICard>.Success(FirstCommander);
-        }
-
-        public Result<ICard> GetSecondCommander()
-        {
-            return SecondCommander == null
-                ? Result<ICard>.Failure("There is no second Commander.")
-                : Result<ICard>.Success(SecondCommander);
-        }
+        public IReadOnlyList<ICard> Commander { get; init; }
 
         public Result<ICard> GetRandomCard()
         {
@@ -62,33 +50,29 @@ public static class CommanderDeckFactory
 
         public Result<ManaType> GetDeckColorIdentity()
         {
-            if (FirstCommander == null)
-                return Result<ManaType>.Failure("Cannot calculate color identity without a Commander.");
+            ManaType result = ManaType.None;
 
-            ManaType result = FirstCommander.ColorIdentity;
-
-            if (SecondCommander == null)
-                return Result<ManaType>.Success(result);
-
-            result |= SecondCommander.ColorIdentity;
+            foreach (ICard comm in Commander)
+            {
+                result |= comm.ColorIdentity;
+            }
 
             return Result<ManaType>.Success(result);
         }
 
         public Result<bool> IsValidCommanderDeck()
         {
-            if (FirstCommander == null)
-                return Result<bool>.Failure("No Commander found in the deck!");
-
-            int expectedCards = SecondCommander == null ? 99 : 98;
-            if (Cards.Count != expectedCards)
-                return Result<bool>.Failure($"Not the right amount of Cards in the Deck! {Cards.Count}/{expectedCards}");
-
             var deckColor = GetDeckColorIdentity();
             if (deckColor.IsFailure)
                 return deckColor.ToFailure<bool>();
 
-            foreach (var card in Cards)
+            foreach (var card in Commander)
+            {
+                if (card.Legalities.TryGetValue(Format.Commander, out var legality) && legality != Legality.Legal)
+                    return Result<bool>.Failure($"Card '{card}' is not legal in Commander!");
+            }
+
+                foreach (var card in Cards)
             {
                 if (card.Legalities.TryGetValue(Format.Commander, out var legality) && legality != Legality.Legal)
                     return Result<bool>.Failure($"Card '{card}' is not legal in Commander!");

@@ -29,8 +29,7 @@ public static class DeckCreator
 
     private static async Task<Result<ICommanderDeck>> Create(List<CardRef> cardrefs)
     {
-        ICard FirstCommander = null!, SecondCommander = null!;
-        List<ICard> cards = [], tokens = [];
+        List<ICard> cards = [], tokens = [], commander = [];
 
         foreach (var cardref in cardrefs)
         {
@@ -45,29 +44,27 @@ public static class DeckCreator
 
             for (int i = 0; i < cardref.Quantity; i++)
             {
-
                 // TODO Contains??
                 if (cardref.Type.Contains("Commander", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (FirstCommander is null)
-                        FirstCommander = cardResult.Value;
-                    else if (SecondCommander is null)
-                        SecondCommander = cardResult.Value;
-                    else
-                        return Result<ICommanderDeck>.Failure("Cannot have more than two Commanders!");
-                }
+                    commander.Add(cardResult.Value);
                 else
-                {
                     cards.Add(cardResult.Value);
-                }
             }
         }
 
+        var args = new CommanderDeckCreationArgs
+        {
+            Cards = cards,
+            Tokens = tokens,
+            Commander = commander,
+        };
+
         //Finally Create the Commander Deck
-        var deck = CommanderDeckFactory.Create();
+        var deck = CommanderDeckFactory.Create(args);
         if (deck.IsFailure)
             return deck.ToFailure<ICommanderDeck>();
 
+        //TODO maybe do this in the create?
         var validResult = deck.Value.IsValidCommanderDeck();
         if (validResult.IsFailure)
             return validResult.ToFailure<ICommanderDeck>();

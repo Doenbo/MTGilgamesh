@@ -13,9 +13,7 @@ public interface ICommanderDeck
 
     IReadOnlyList<ICard> Tokens { get; }
 
-    Result<ICard> GetFirstCommander();
-
-    Result<ICard> GetSecondCommander();
+    IReadOnlyList<ICard> Commander { get; }
 
     Result<ICard> GetRandomCard();
 

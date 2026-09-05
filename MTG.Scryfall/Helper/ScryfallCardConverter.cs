@@ -130,7 +130,7 @@ public class ScryfallCardConverter(IOracleTextParser oracleTextParser, IManaSymb
             Components = components,
         };
 
-        // Finally Create the Face
+        // Finally Create the CardFace
         var cardfaceres = CardFaceFactory.Create(args);
         if (cardfaceres.IsFailure)
             return cardfaceres.ToFailure<ICardFace>();
@@ -142,6 +142,17 @@ public class ScryfallCardConverter(IOracleTextParser oracleTextParser, IManaSymb
     {
         if (dto.Object != "card")
             return Result<ICard>.Failure("Object is not a card!");
+
+        //All Parts
+        IReadOnlyList<ICard> allParts = [];
+        if (dto.AllParts is not null)
+        {
+            foreach (var part in dto.AllParts ?? [])
+            {
+                //TODO
+                var a = new CardRef() { Id = new Guid(dto.Id) };
+            }
+        }
 
         //Create Faces
         var cardFaces = new List<ICardFace>();
@@ -203,8 +214,6 @@ public class ScryfallCardConverter(IOracleTextParser oracleTextParser, IManaSymb
                 imageUris.Add(eImageUri, new Uri(sImageUri.Value));
             }
         }
-
-        IReadOnlyList<ICard> allParts = []; //TODO
 
         var args = new CardCreationArgs
         {

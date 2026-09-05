@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using MTG.Core.Cards;
 using MTG.Core.Decks;
 using MTG.Core.Enums;
 using MTG.Core.Helper;
@@ -40,8 +41,6 @@ public class CommanderPlayer
         Deck = cd;
         _inputProvider = pip;
         ManaPool = new ManaPool();
-
-        InitializeCommandZone(cd);
     }
 
     public static async Task<Result<CommanderPlayer>> Create(string name, int life, CommanderPrecon cp, IPlayerInputProvider pip)
@@ -52,7 +51,7 @@ public class CommanderPlayer
 
         var player = new CommanderPlayer(name, life, deck.Value, pip);
 
-        player.InitializePlayer(deck.Value);
+        player.InitializeCardInstances(deck.Value);
 
         if (_logger.IsEnabled(LogLevel.Information))
             _logger.LogInformation("Player {player} created", player);
@@ -60,8 +59,13 @@ public class CommanderPlayer
         return Result<CommanderPlayer>.Success(player);
     }
 
-    private void InitializePlayer(ICommanderDeck deck)
+    private void InitializeCardInstances(ICommanderDeck deck)
     {
+        foreach (var comm in deck.Commander)
+        {
+            CommandZone.AddCommander(new CardInstance(comm, this));
+        }
+
         foreach (var card in deck.Cards)
         {
             Library.Add(new CardInstance(card, this));
@@ -72,21 +76,6 @@ public class CommanderPlayer
         for (int i = 0; i < 7; i++)
         {
             _ = DrawCard();
-        }
-    }
-
-    private void InitializeCommandZone(ICommanderDeck cd)
-    {
-        var first = cd.GetFirstCommander();
-        if (first.IsSuccess)
-        {
-            CommandZone.AddCommander(new CardInstance(first.Value, this));
-        }
-
-        var second = cd.GetSecondCommander();
-        if (second.IsSuccess)
-        {
-            CommandZone.AddCommander(new CardInstance(second.Value, this));
         }
     }
 

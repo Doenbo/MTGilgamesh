@@ -42,7 +42,7 @@ public class CardFaceFactory
             _components.AddRange(components);
         }
 
-        //100% Mandatory Properties
+        //Core
         public required string Name { get; init; }
         public required TypeLine TypeLine { get; init; }
         public required string OracleText { get; init; }
