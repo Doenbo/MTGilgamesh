@@ -40,6 +40,9 @@ public partial class TypeLine
 
         var result = new TypeLine(typeline);
 
+        if (typeline == "Token") //Copy
+            return Result<TypeLine>.Success(result);
+
         //Split for Two-Faced Cards
         var faces = typeline.Split(["//"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 

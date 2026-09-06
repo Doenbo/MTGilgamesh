@@ -149,7 +149,8 @@ public class ScryfallCardConverter(IOracleTextParser oracleTextParser, IManaSymb
         if (!_inRecursion && dto.AllParts is not null)
         {
             _inRecursion = true;
-            foreach (var part in dto.AllParts.Where(p => p.Id != dto.Id) ?? [])
+            //TODO enum -> maybe even better?
+            foreach (var part in dto.AllParts.Where(p => p.Id != dto.Id && p.Component == "token") ?? []) 
             {
                 var tokenref = new CardRef() { Quantity = 1, Id = new Guid(part.Id) };
                 var tokencard = await CardCreator.GetById(tokenref);
