@@ -15,8 +15,9 @@ public class ScryfallGetCardsNamedTests
         var sf = new ScryfallGetCardsNamed();
         var json = await sf.GetExact(cref);
         json.IsSuccess.Should().BeTrue();
-        var act = new ScryfallCardConverter().Convert(json.Value);
-        act.IsSuccess.Should().BeTrue();
-        act.Value.Name.Should().Be(name);
+        //TODO MOVE
+        //var act = new ScryfallCardConverter().Convert(json.Value);
+        //act.IsSuccess.Should().BeTrue();
+        //act.Value.Name.Should().Be(name);
     }
 }

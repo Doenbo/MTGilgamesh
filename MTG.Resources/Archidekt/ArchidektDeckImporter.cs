@@ -39,7 +39,7 @@ public static class ArchidektDeckImporter
             string type = match.Groups["type"].Value;
 
             if (!int.TryParse(quantity, out int iQuantity))
-                return Result<List<CardRef>>.Failure($"Could not parse int: {quantity}");
+                return Result<List<CardRef>>.Failure($"Quantity: Could not parse int: {quantity}");
 
             cardrefs.Add(new CardRef() { Quantity = iQuantity, Name = name, Set = set, CollectorNumber = number, Type = type });
         }

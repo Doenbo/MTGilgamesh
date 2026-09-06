@@ -6,7 +6,7 @@ using MTG.Core.Components.OracleText;
 using MTG.Core.Enums;
 using MTG.Core.Properties;
 using MTG.Core.Types;
-using MTG.Engine.Cards;
+using MTG.Creator;
 using Newtonsoft.Json.Linq;
 
 namespace MTG.Complete.Tests;
@@ -17,7 +17,7 @@ public class TestMyFavoriteCards
     public async Task CreateEmmaraValid()
     {
         var cref = new CardRef() { Name = "Emmara, Soul of the Accord" };
-        var res = await CardCreator.GetExact(cref);
+        var res = await CardCreator.GetByExactName(cref);
         res.IsSuccess.Should().BeTrue(res.Error);
 
         var card = res.Value;
@@ -49,16 +49,34 @@ public class TestMyFavoriteCards
     [Fact]
     public async Task CreateEmmaraTokenValid()
     {
-        var cref = new CardRef() { Name = "Token Creature — Goblin // Token Creature — Soldier" };
-        var res = await CardCreator.GetExact(cref);
+        var cref = new CardRef() { Name = "Emmara, Soul of the Accord" };
+        var res = await CardCreator.GetByExactName(cref);
         res.IsSuccess.Should().BeTrue(res.Error);
+
+        var card = res.Value;
+
+        card.AllParts.Should().NotBeNull();
+        card.AllParts.Count.Should().Be(1);
+        card.AllParts.ShouldContainSingle(c => c.Id == new Guid("45907b16-af17-4237-ab38-9d7537fd30e8"), out var token);
+
+        token.MainFace.GetKeywordAbilities().Should().Contain(KeywordAbility.Lifelink);
+
+        token.MainFace.TryGetComponent<CreatureComponent>(out var c1).Should().BeTrue();
+        c1.Should().NotBeNull();
+        c1.Power.Value.Should().Be("1");
+        c1.Toughness.Value.Should().Be("1");
+
+        token.MainFace.TryGetComponent<ColorComponent>(out var c2).Should().BeTrue();
+        c2.Should().NotBeNull();
+        c2.Colors.Should().Be(ManaType.White);
+        c2.ColorIndicator.Should().Be(ManaType.None);
     }
 
     [Fact]
     public async Task CreateYshtolaValid()
     {
         var cref = new CardRef() { Name = "Y'shtola, Night's Blessed" };
-        var res = await CardCreator.GetExact(cref);
+        var res = await CardCreator.GetByExactName(cref);
         res.IsSuccess.Should().BeTrue(res.Error);
 
         var card = res.Value;
@@ -91,7 +109,7 @@ public class TestMyFavoriteCards
     public async Task CreateHulkValid()
     {
         var cref = new CardRef() { Name = "Bruce Banner // The Incredible Hulk" };
-        var res = await CardCreator.GetExact(cref);
+        var res = await CardCreator.GetByExactName(cref);
         res.IsSuccess.Should().BeTrue(res.Error);
 
         var card = res.Value;

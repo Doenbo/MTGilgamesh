@@ -44,7 +44,7 @@ public class AppDbContext : DbContext
         optionsBuilder.UseSqlServer(connectionString);
     }
 
-    public static Result<JsonString> GetExact(CardRef cref)
+    public static Result<JsonString> GetByExactName(CardRef cref)
     {
         try
         {
@@ -52,6 +52,28 @@ public class AppDbContext : DbContext
 
             var cacheEntry = dbContext.CardsAsJson
             .FirstOrDefault(c => c.Name.ToLower().Contains(cref.Name.ToLower()));
+
+            if (cacheEntry == null)
+            {
+                return Result<JsonString>.Failure($"Card with the name {cref.Name} was not found in DB!");
+            }
+            return Result<JsonString>.Success(new JsonString(cacheEntry.RawJson));
+        }
+        catch (Exception ex)
+        {
+            return Result<JsonString>.Failure($"Error reading DB: {ex.Message}");
+        }
+    }
+
+    public static Result<JsonString> GetById(CardRef cref)
+    {
+        return Result<JsonString>.Failure($"Card with the name TEST");
+        try
+        {
+            using var dbContext = new AppDbContext();
+
+            var cacheEntry = dbContext.CardsAsJson
+            .FirstOrDefault(c => c.Id == cref.Id);
 
             if (cacheEntry == null)
             {

@@ -4,33 +4,34 @@ using MTG.Core.Components;
 using MTG.Core.Enums;
 using MTG.Core.Helper;
 using MTG.Core.OracleTextParsers;
-using MTG.Core.Parser;
 using MTG.Core.Properties;
 using MTG.Scryfall.API.Cards;
+using MTG.Scryfall.Helper;
 using System.Text.Json;
 
-namespace MTG.Scryfall.Helper;
+namespace MTG.Creator;
 
 public class ScryfallCardConverter(IOracleTextParser oracleTextParser, IManaSymbolParser manaParser)
     : IScryfallCardConverter
 {
+    private static bool _inRecursion = false; //TODO we need to do this better ...
     public ScryfallCardConverter() : this(new OracleTextParser(), new ManaSymbolParser()) { }
 
-    public Result<ICard> DoubleConvert(JsonString json)
+    public async Task<Result<ICard>> DoubleConvert(JsonString json)
     {
 
         if (json == null || string.IsNullOrEmpty(json.Value))
             return Result<ICard>.Failure("JSon can't be null or empty!");
 
-        var sfCard = Convert(json);
+        var sfCard = await Convert(json);
         if (sfCard.IsFailure)
             return sfCard.ToFailure<ICard>();
 
-        var card = Convert(sfCard.Value);
+        var card = await Convert(sfCard.Value);
         return card.IsSuccess ? card : card.ToFailure<ICard>();
     }
 
-    public Result<ScryfallCard> Convert(JsonString json)
+    public async Task<Result<ScryfallCard>> Convert(JsonString json)
     {
         if (json == null || string.IsNullOrEmpty(json.Value))
             return Result<ScryfallCard>.Failure("JSon can't be null or empty!");
@@ -138,20 +139,25 @@ public class ScryfallCardConverter(IOracleTextParser oracleTextParser, IManaSymb
         return Result<ICardFace>.Success(cardfaceres.Value);
     }
 
-    public Result<ICard> Convert(ScryfallCard dto)
+    public async Task<Result<ICard>> Convert(ScryfallCard dto)
     {
         if (dto.Object != "card")
             return Result<ICard>.Failure("Object is not a card!");
 
         //All Parts
-        IReadOnlyList<ICard> allParts = [];
-        if (dto.AllParts is not null)
+        List<ICard> allParts = [];
+        if (!_inRecursion && dto.AllParts is not null)
         {
-            foreach (var part in dto.AllParts ?? [])
+            _inRecursion = true;
+            foreach (var part in dto.AllParts.Where(p => p.Id != dto.Id) ?? [])
             {
-                //TODO
-                var a = new CardRef() { Id = new Guid(dto.Id) };
+                var tokenref = new CardRef() { Quantity = 1, Id = new Guid(part.Id) };
+                var tokencard = await CardCreator.GetById(tokenref);
+                if(tokencard.IsFailure)
+                    return tokencard.ToFailure<ICard>();
+                allParts.Add(tokencard.Value);
             }
+            _inRecursion = false;
         }
 
         //Create Faces
@@ -195,10 +201,10 @@ public class ScryfallCardConverter(IOracleTextParser oracleTextParser, IManaSymb
         foreach (var sLegality in dto.Legalities.ToList())
         {
             if (!Enum.TryParse(Conversions.ToCamelCase(sLegality.Key), out Format eFormat))
-                return Result<ICard>.Failure($"Could not parse {sLegality.Key} to Format enum!");
+                return Result<ICard>.Failure($"Format: Could not parse {sLegality.Key} to Format enum!");
 
             if (!Enum.TryParse(Conversions.ToCamelCase(sLegality.Value), out Legality eLegality))
-                return Result<ICard>.Failure($"Could not parse {sLegality.Value} to Legality enum!");
+                return Result<ICard>.Failure($"Legality: Could not parse {sLegality.Value} to Legality enum!");
 
             legalities.Add(eFormat, eLegality);
         }
@@ -210,7 +216,7 @@ public class ScryfallCardConverter(IOracleTextParser oracleTextParser, IManaSymb
             foreach (var sImageUri in dto.ImageUris.ToList())
             {
                 if (!Enum.TryParse(Conversions.ToCamelCase(sImageUri.Key), out ImageSize eImageUri))
-                    return Result<ICard>.Failure($"Could not parse {sImageUri.Key} to enum!");
+                    return Result<ICard>.Failure($"Uri: Could not parse {sImageUri.Key} to Uri enum!");
                 imageUris.Add(eImageUri, new Uri(sImageUri.Value));
             }
         }

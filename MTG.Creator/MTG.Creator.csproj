@@ -1,14 +1,18 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>MTG.Creator</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.11" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\MTG.Core\MTG.Core.csproj" />
-    <ProjectReference Include="..\MTG.Creator\MTG.Creator.csproj" />
     <ProjectReference Include="..\MTG.DB\MTG.DB.csproj" />
     <ProjectReference Include="..\MTG.Resources\MTG.Resources.csproj" />
     <ProjectReference Include="..\MTG.Scryfall\MTG.Scryfall.csproj" />

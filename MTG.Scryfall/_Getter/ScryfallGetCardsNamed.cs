@@ -7,43 +7,35 @@ namespace MTG.Scryfall._Getter;
 public class ScryfallGetCardsNamed
 {
     private readonly string apifull;
-    private readonly HttpClient client;
 
     public ScryfallGetCardsNamed()
     {
-        client = ScryfallConnect.GetClient();
         apifull = $"{ScryfallConnect.apibase}/cards/named";
     }
 
-
     //The exact card name to search for, case insenstive.
-    public Task<Result<JsonString>> GetExact(CardRef cref) => GetJson(cref, "exact");
-
-    //A fuzzy card name to search for.
-    public Task<Result<JsonString>> GetFuzzy(CardRef cref) => GetJson(cref, "fuzzy");
-
-    private async Task<Result<JsonString>> GetJson(CardRef cref, string mode)
+    public async Task<Result<JsonString>> GetExact(CardRef cref)
     {
         if (cref == null || string.IsNullOrEmpty(cref.Name))
             return Result<JsonString>.Failure("Search string null or empty!");
 
-        string api = $"{apifull}?{mode}={cref.Name}";
+        string api = $"{apifull}?exact={cref.Name}";
         if (!string.IsNullOrEmpty(cref.Set))
             api += $"&set={cref.Set}";
 
-        try
-        {
-            var json = new JsonString(await client.GetStringAsync(api));
-            await Task.Delay(500); //So the API doesn't suspend us
-            if (json == null)
-                return Result<JsonString>.Failure("JSON is null!");
+        return await new Scryfall().GetJson(api);
+    }
 
-            return Result<JsonString>.Success(json);
-        }
-        catch (Exception ex)
-        {
-            return Result<JsonString>.Failure($"Error getting JSON data: {ex}");
-        }
+    //A fuzzy card name to search for.
+    public async Task<Result<JsonString>> GetFuzzy(CardRef cref)
+    {
+        if (cref == null || string.IsNullOrEmpty(cref.Name))
+            return Result<JsonString>.Failure("Search string null or empty!");
 
+        string api = $"{apifull}?fuzzy={cref.Name}";
+        if (!string.IsNullOrEmpty(cref.Set))
+            api += $"&set={cref.Set}";
+
+        return await new Scryfall().GetJson(api);
     }
 }

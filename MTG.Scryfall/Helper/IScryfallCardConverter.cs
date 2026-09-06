@@ -6,6 +6,6 @@ namespace MTG.Scryfall.Helper;
 
 public interface IScryfallCardConverter
 {
-    public Result<ICard> DoubleConvert(JsonString json);
-    public Result<ScryfallCard> Convert(JsonString json);
+    public Task<Result<ICard>> DoubleConvert(JsonString json);
+    public Task<Result<ScryfallCard>> Convert(JsonString json);
 }

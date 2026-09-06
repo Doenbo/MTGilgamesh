@@ -2,6 +2,7 @@
   <Project Path="MTG.Complete.Tests/MTG.Complete.Tests.csproj" Id="7494ef4b-fd4f-4e11-a623-b478b48e12f8" />
   <Project Path="MTG.Core.Tests/MTG.Core.Tests.csproj" />
   <Project Path="MTG.Core/MTG.Core.csproj" />
+  <Project Path="MTG.Creator/MTG.Creator.csproj" Id="3ae6fad6-1caf-4114-a35b-b8fc00c4c459" />
   <Project Path="MTG.DB/MTG.DB.csproj" />
   <Project Path="MTG.Engine.Tests/MTG.Engine.Tests.csproj" />
   <Project Path="MTG.Engine/MTG.Engine.csproj" />

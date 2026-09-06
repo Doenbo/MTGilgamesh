@@ -1,11 +1,10 @@
 ﻿using MTG.Core.Cards;
 using MTG.Core.Decks;
 using MTG.Core.Helper;
-using MTG.Engine.Cards;
 using MTG.Resources.Archidekt;
 using MTG.Resources.Enums;
 
-namespace MTG.Engine.Decks;
+namespace MTG.Creator;
 
 public static class DeckCreator
 {
@@ -33,13 +32,13 @@ public static class DeckCreator
 
         foreach (var cardref in cardrefs)
         {
-            var cardResult = await CardCreator.GetExact(cardref);
+            var cardResult = await CardCreator.GetByExactName(cardref);
             if (cardResult.IsFailure)
                 return cardResult.ToFailure<ICommanderDeck>();
 
             foreach (var token in cardResult.Value.AllParts)
             {
-                var tokenResult = await CardCreator.GetExact(cardref); //TODO new method GetToken?
+                var tokenResult = await CardCreator.GetById(cardref);
             }
 
             for (int i = 0; i < cardref.Quantity; i++)

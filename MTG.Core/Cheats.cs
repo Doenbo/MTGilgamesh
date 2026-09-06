@@ -2,6 +2,10 @@
 
 public class Cheats
 {
+    //TODO More:
+    //-Play Card From Graveyard / Exile
+    //-Select Card From Library to Draw
+
     // Skips
     public static bool SkipUpkeepAndDraw { get; set; } = false;
     public static bool SkipCompleteCombatPhase { get; set; } = false;

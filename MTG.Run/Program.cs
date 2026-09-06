@@ -2,7 +2,7 @@
 using MTG.Core;
 using MTG.Core.Cards;
 using MTG.Core.Helper;
-using MTG.Engine.Cards;
+using MTG.Creator;
 using MTG.Engine.Gameplay;
 using MTG.Opponent;
 
@@ -35,10 +35,10 @@ public class Program
 
     private static async Task SomeTests()
     {
-        var card1 = await CardCreator.GetExact("The Destined Warrior");
+        var card1 = await CardCreator.GetByExactName("The Destined Warrior");
         WriteAndExitIfFailure(card1);
 
-        var card2 = await CardCreator.GetExact(new CardRef()
+        var card2 = await CardCreator.GetByExactName(new CardRef()
         {
             Name = "Hildibrand Manderville // Gentleman's Rise",
             Set = "fic",

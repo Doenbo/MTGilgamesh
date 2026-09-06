@@ -8,4 +8,9 @@ public enum ImageSize
     Png, //Best
     ArtCrop,
     BorderCrop,
+    Thumb,
+    Grid,
+    Display,
+    Art,
+    Crop,
 }
