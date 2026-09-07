@@ -7,11 +7,20 @@ using MTG.Scryfall.Helper;
 
 namespace MTG.Creator;
 
-public static class CardCreator
+public class CardCreator
 {
-    public static async Task<Result<ICard>> GetByExactName(string name) => await GetByExactName(new CardRef() { Name = name });
+    private readonly ScryfallCardConverter _converter;
 
-    public static Task<Result<ICard>> GetByExactName(CardRef cref)
+    public CardCreator() : this(new ScryfallCardConverter()) { }
+
+    public CardCreator(ScryfallCardConverter converter)
+    {
+        _converter = converter;
+    }
+
+    public async Task<Result<ICard>> GetByExactName(string name) => await GetByExactName(new CardRef() { Name = name });
+
+    public Task<Result<ICard>> GetByExactName(CardRef cref)
     {
         return GetCard(
             dbQuery: () => AppDbContext.GetByExactName(cref),
@@ -20,7 +29,7 @@ public static class CardCreator
         );
     }
 
-    public static Task<Result<ICard>> GetById(CardRef cref)
+    public Task<Result<ICard>> GetById(CardRef cref)
     {
         return GetCard(
             dbQuery: () => AppDbContext.GetById(cref),
@@ -29,19 +38,18 @@ public static class CardCreator
         );
     }
 
-    private static async Task<Result<ICard>> GetCard(
+    private async Task<Result<ICard>> GetCard(
         Func<Result<JsonString>> dbQuery,
         Func<Task<Result<JsonString>>> sfQuery,
         CardRef cref)
     {
         //Get JSON from DB
         var sqlCard = dbQuery();
-        var conv = new ScryfallCardConverter();
 
         if (sqlCard.IsSuccess)
         {
             //Convert into Card
-            var card1 = await conv.DoubleConvert(sqlCard.Value);
+            var card1 = await _converter.DoubleConvert(sqlCard.Value);
             if (card1.IsFailure)
                 return card1.ToFailure<ICard>();
 
@@ -56,7 +64,7 @@ public static class CardCreator
                 return json2.ToFailure<ICard>();
 
             //Convert into Card
-            var card2 = await conv.DoubleConvert(json2.Value);
+            var card2 = await _converter.DoubleConvert(json2.Value);
             if (card2.IsFailure)
                 return card2.ToFailure<ICard>();
 
@@ -77,7 +85,7 @@ public static class CardCreator
         return sqlCard.ToFailure<ICard>();
     }
 
-    public static async Task<Result<ICard>> GetFuzzy(CardRef cred)
+    public async Task<Result<ICard>> GetFuzzy(CardRef cred)
     {
         throw new NotImplementedException();
     }

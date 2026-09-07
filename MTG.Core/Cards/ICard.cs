@@ -17,7 +17,7 @@ public interface ICard
     string Layout { get; }
 
     //Related Card Objects
-    IReadOnlyList<ICard> AllParts { get; }
+    IReadOnlyList<CardRef> AllParts { get; }
 
     //Gameplay
     IReadOnlyList<ICardFace> Faces { get; }

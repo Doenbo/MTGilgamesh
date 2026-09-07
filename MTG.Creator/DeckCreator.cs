@@ -30,15 +30,20 @@ public static class DeckCreator
     {
         List<ICard> cards = [], tokens = [], commander = [];
 
+        var cardCreator = new CardCreator();
+
         foreach (var cardref in cardrefs)
         {
-            var cardResult = await CardCreator.GetByExactName(cardref);
+            var cardResult = await cardCreator.GetByExactName(cardref);
             if (cardResult.IsFailure)
                 return cardResult.ToFailure<ICommanderDeck>();
 
             foreach (var token in cardResult.Value.AllParts)
             {
-                var tokenResult = await CardCreator.GetById(cardref);
+                var tokenResult = await cardCreator.GetById(token);
+                if (tokenResult.IsFailure)
+                    return tokenResult.ToFailure<ICommanderDeck>();
+                tokens.Add(tokenResult.Value);
             }
 
             for (int i = 0; i < cardref.Quantity; i++)

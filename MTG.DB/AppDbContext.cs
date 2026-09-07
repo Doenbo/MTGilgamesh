@@ -67,7 +67,6 @@ public class AppDbContext : DbContext
 
     public static Result<JsonString> GetById(CardRef cref)
     {
-        return Result<JsonString>.Failure($"Card with the name TEST");
         try
         {
             using var dbContext = new AppDbContext();

@@ -11,7 +11,7 @@ public record CardCreationArgs
     public required string TypeLine { get; init; }
     public required ManaType ColorIdentity { get; init; }
     public required IReadOnlyList<ICardFace> CardFaces { get; init; }
-    public required IReadOnlyList<ICard> AllParts { get; init; } = [];
+    public required IReadOnlyList<CardRef> AllParts { get; init; } = [];
     public required string Set { get; init; }
     public required string CollectorNumber { get; init; }
     public required Guid Id { get; init; }
@@ -63,7 +63,7 @@ public static class CardFactory
         public required IReadOnlyList<ICardFace> Faces { get; init; } = [];
         public ICardFace MainFace => Faces[0];
         public required ManaType ColorIdentity { get; init; }
-        public required IReadOnlyList<ICard> AllParts { get; init; }
+        public required IReadOnlyList<CardRef> AllParts { get; init; }
         public bool IsToken { get; init; } = false;
 
         //Other

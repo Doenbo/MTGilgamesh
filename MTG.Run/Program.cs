@@ -35,10 +35,11 @@ public class Program
 
     private static async Task SomeTests()
     {
-        var card1 = await CardCreator.GetByExactName("The Destined Warrior");
+        var cc = new CardCreator();
+        var card1 = await cc.GetByExactName("The Destined Warrior");
         WriteAndExitIfFailure(card1);
 
-        var card2 = await CardCreator.GetByExactName(new CardRef()
+        var card2 = await cc.GetByExactName(new CardRef()
         {
             Name = "Hildibrand Manderville // Gentleman's Rise",
             Set = "fic",
