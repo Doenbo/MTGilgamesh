@@ -116,7 +116,7 @@ public class ScryfallCard
     public string? Power { get; init; }
 
     [JsonPropertyName("produced_mana")]
-    public List<ScryfallColor>? ProducedMana { get; init; } //this is not reliable
+    public List<string>? ProducedMana { get; init; } //this is not reliable
 
     [JsonPropertyName("reserved")]
     public required bool Reserved { get; init; }
@@ -214,7 +214,7 @@ public class ScryfallCard
     public Dictionary<string, string>? PurchaseUris { get; init; }
 
     [JsonPropertyName("rarity")]
-    public required string Rarity { get; init; } //enum
+    public required string Rarity { get; init; }
 
     [JsonPropertyName("related_uris")]
     public required Dictionary<string, string> RelatedUris { get; init; }

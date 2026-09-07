@@ -5,5 +5,7 @@ public enum Rarity
     Common,
     Uncommon,
     Rare,
-    MythicRare,
+    Special,
+    Mythic,
+    Bonus,
 }

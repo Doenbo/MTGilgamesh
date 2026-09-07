@@ -148,9 +148,16 @@ public class ScryfallCardConverter(IOracleTextParser oracleTextParser, IManaSymb
         List<CardRef> allParts = [];
         if (dto.AllParts is not null)
         {
-            //TODO enum for components? -> maybe even better
-            foreach (var part in dto.AllParts.Where(p => p.Id != dto.Id && p.Component == "token") ?? [])
+            foreach (var part in dto.AllParts.Where(p => p.Id != dto.Id) ?? [])
             {
+                //Components
+                if (!Enum.TryParse(Conversions.ToCamelCase(part.Component), out ComponentRole eComponent))
+                    return Result<ICard>.Failure($"Component: Could not parse {eComponent} to Component enum!");
+
+                //for now, we only accept Tokens
+                if (eComponent != ComponentRole.Token)
+                    continue;
+
                 allParts.Add(new CardRef() { Quantity = 1, Id = new Guid(part.Id) });
             }
         }
@@ -216,6 +223,14 @@ public class ScryfallCardConverter(IOracleTextParser oracleTextParser, IManaSymb
             }
         }
 
+        //Layout
+        if (!Enum.TryParse(Conversions.ToCamelCase(dto.Layout), out Layout eLayout))
+            return Result<ICard>.Failure($"Layout: Could not parse {eLayout} to Layout enum!");
+
+        //Rarity
+        if (!Enum.TryParse(Conversions.ToCamelCase(dto.Rarity), out Rarity eRarity))
+            return Result<ICard>.Failure($"Rarity: Could not parse {eRarity} to Rarity enum!");
+
         var args = new CardCreationArgs
         {
             Name = dto.Name,
@@ -225,16 +240,18 @@ public class ScryfallCardConverter(IOracleTextParser oracleTextParser, IManaSymb
             AllParts = allParts,
             Set = dto.Set,
             CollectorNumber = dto.CollectorNumber,
-            Id = new Guid(dto.Id),
             Lang = dto.Lang,
-            Layout = dto.Layout,
             SetName = dto.SetName,
+            Id = new Guid(dto.Id),
+            //Component = eComponent, //not needed anymore?
+            Layout = eLayout,
+            Rarity = eRarity,
             Legalities = legalities,
             ImageUris = imageUris,
         };
 
-        //Finally Create the Card
-        var cardres = CardFactory.Create(args);
+    //Finally Create the Card
+    var cardres = CardFactory.Create(args);
         if (cardres.IsFailure)
             return cardres.ToFailure<ICard>();
         var card = cardres.Value;

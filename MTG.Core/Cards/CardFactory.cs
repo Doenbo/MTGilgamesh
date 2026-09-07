@@ -14,10 +14,11 @@ public record CardCreationArgs
     public required IReadOnlyList<CardRef> AllParts { get; init; } = [];
     public required string Set { get; init; }
     public required string CollectorNumber { get; init; }
-    public required Guid Id { get; init; }
     public required string Lang { get; init; }
-    public required string Layout { get; init; }
     public required string SetName { get; init; }
+    public required Guid Id { get; init; }
+    public required Layout Layout { get; init; }
+    public required Rarity Rarity { get; init; }
     public required IReadOnlyDictionary<Format, Legality> Legalities { get; init; } = new Dictionary<Format, Legality>();
     public required IReadOnlyDictionary<ImageSize, Uri> ImageUris { get; init; } = new Dictionary<ImageSize, Uri>();
 }
@@ -69,7 +70,7 @@ public static class CardFactory
         //Other
         public required Guid Id { get; init; }
         public required string Lang { get; init; }
-        public required string Layout { get; init; }
+        public required Layout Layout { get; init; }
         public IReadOnlyDictionary<Format, Legality> Legalities { get; init; }
 
         //Print

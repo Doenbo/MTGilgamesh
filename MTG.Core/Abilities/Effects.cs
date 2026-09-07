@@ -1,4 +1,5 @@
-﻿using MTG.Core.Enums;
+﻿using MTG.Core.Cards;
+using MTG.Core.Enums;
 using MTG.Core.Wrapper;
 using System.Collections.Immutable;
 using System.Data;
@@ -24,11 +25,7 @@ public record MultipleEffects(IReadOnlyList<IEffect> Effects) : IEffect;
 
 public record CreateTokenEffect(
     int Amount,
-    int Power,
-    int Toughness,
-    ManaType Color,
-    ImmutableArray<SubtypeWrapper> Subtypes,
-    ImmutableArray<KeywordWrapper> Keywords
+    TokenDefinition Token
 ) : IEffect;
 
 public record GainLifeEffect(int Amount) : IEffect;

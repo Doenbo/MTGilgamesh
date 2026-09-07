@@ -1,10 +1,11 @@
-﻿using System.Collections.Immutable;
-using System.Text.RegularExpressions;
-using MTG.Core.Abilities;
+﻿using MTG.Core.Abilities;
+using MTG.Core.Cards;
 using MTG.Core.Enums;
 using MTG.Core.Helper;
 using MTG.Core.Types;
 using MTG.Core.Wrapper;
+using System.Collections.Immutable;
+using System.Text.RegularExpressions;
 
 namespace MTG.Core.OracleTextParsers;
 
@@ -81,14 +82,9 @@ public class EffectParser : IEffectParser
                         }
                     }
 
-                    return Result<IEffect>.Success(new CreateTokenEffect(
-                        amount,
-                        power,
-                        toughness,
-                        manaType,
-                        [subtype],
-                        [..keywords]
-                    ));
+                    var tokenDef = new TokenDefinition(power, toughness, manaType, [subtype], [..keywords]);
+
+                    return Result<IEffect>.Success(new CreateTokenEffect(amount, tokenDef));
                 }),
 
             // 6. Deal Damage: Optional 's' at deal(s) and optional target (to ...)

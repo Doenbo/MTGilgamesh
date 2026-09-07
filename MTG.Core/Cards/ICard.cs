@@ -1,7 +1,4 @@
 ﻿using MTG.Core.Enums;
-using MTG.Core.Helper;
-using MTG.Core.Properties;
-using System.Text.Json.Serialization;
 
 namespace MTG.Core.Cards;
 
@@ -14,7 +11,7 @@ public interface ICard
     //Core
     Guid Id { get; }
     string Lang { get; }
-    string Layout { get; }
+    Layout Layout { get; }
 
     //Related Card Objects
     IReadOnlyList<CardRef> AllParts { get; }

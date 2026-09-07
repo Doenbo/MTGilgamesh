@@ -1,6 +1,2 @@
 ﻿TODOS
 -----
--layout enum?
--Tokens
--DB GetById 
--ScryfallRelatedCard Component ENUM!!

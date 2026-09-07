@@ -38,12 +38,14 @@ public class TestMyFavoriteCards
         c2.Colors.Should().Be(ManaType.Green | ManaType.White);
         c2.ColorIndicator.Should().Be(ManaType.None);
 
+        card.AllParts.ShouldContainSingle(c => c.Id == new Guid("45907b16-af17-4237-ab38-9d7537fd30e8"), out var tref);
+
+        var tres = await new CardCreator().GetById(tref);
+        tres.IsSuccess.Should().BeTrue(tres.Error);
+        var token = tres.Value;
+
         card.MainFace.TryGetComponent<TriggeredAbilityComponent>(out var c3).Should().BeTrue();
         c3.Should().NotBeNull();
-        c3.Condition.Should().BeEquivalentTo(
-            new BecomesTappedCondition(new CardFilter()));
-        c3.Effect.Should().BeEquivalentTo(
-            new CreateTokenEffect(1, 1, 1, ManaType.White, [CreatureType.Soldier], [KeywordAbility.Lifelink]));
     }
 
     [Fact]
@@ -74,6 +76,12 @@ public class TestMyFavoriteCards
         c2.Should().NotBeNull();
         c2.Colors.Should().Be(ManaType.White);
         c2.ColorIndicator.Should().Be(ManaType.None);
+
+        card.MainFace.TryGetComponent<TriggeredAbilityComponent>(out var c3).Should().BeTrue();
+        c3.Should().NotBeNull();
+        c3.Condition.Should().BeEquivalentTo(new BecomesTappedCondition(new CardFilter()));
+        c3.Effect.Should().BeEquivalentTo(new CreateTokenEffect(1,
+            new TokenDefinition(1, 1, ManaType.White, [CreatureType.Soldier], [KeywordAbility.Lifelink])));
     }
 
     [Fact]
