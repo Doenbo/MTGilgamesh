@@ -1,11 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
-using MTG.Core.Abilities;
+﻿using MTG.Core.Abilities;
 using MTG.Core.Components;
 using MTG.Core.Helper;
 using MTG.Core.Types;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace MTG.Core.OracleTextParsers;

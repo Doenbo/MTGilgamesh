@@ -1,9 +1,6 @@
 ﻿using MTG.Core.Cards;
 using MTG.Core.Helper;
 using MTG.Scryfall.Helper;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace MTG.Scryfall._Getter;
 

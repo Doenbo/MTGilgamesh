@@ -1,7 +1,4 @@
 ﻿using MTG.Core.Helper;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace MTG.Core.Components.OracleText;
 

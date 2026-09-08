@@ -1,7 +1,5 @@
 ﻿using MTG.Core.Components;
-using MTG.Core.Enums;
 using MTG.Core.Helper;
-using MTG.Core.OracleTextParsers;
 using MTG.Core.Properties;
 using MTG.Core.Types;
 using System.Diagnostics.CodeAnalysis;

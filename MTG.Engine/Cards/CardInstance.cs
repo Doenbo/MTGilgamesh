@@ -1,9 +1,7 @@
 ﻿using MTG.Core.Cards;
-using MTG.Core.Components;
 using MTG.Core.Enums;
 using MTG.Engine.Gameplay;
 using MTG.Engine.States;
-using System.Numerics;
 
 namespace MTG.Engine.Cards;
 

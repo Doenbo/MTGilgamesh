@@ -1,6 +1,5 @@
 ﻿using MTG.Core.Abilities;
 using MTG.Core.Helper;
-using System.Diagnostics;
 
 namespace MTG.Core.Components.OracleText;
 

@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using MTG.Core.Cards;
 using MTG.Core.Decks;
 using MTG.Core.Enums;
 using MTG.Core.Helper;

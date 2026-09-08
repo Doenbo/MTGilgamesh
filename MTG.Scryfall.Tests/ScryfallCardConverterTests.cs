@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using MTG.Scryfall.Helper;
+﻿using MTG.Scryfall.Helper;
 
 namespace MTG.Scryfall.Tests;
 

@@ -1,7 +1,5 @@
-﻿using MTG.Core.Components;
-using MTG.Core.Enums;
+﻿using MTG.Core.Enums;
 using MTG.Core.Helper;
-using System.Text;
 
 namespace MTG.Core.Cards;
 

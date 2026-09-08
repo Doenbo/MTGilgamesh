@@ -2,9 +2,7 @@
 using MTG.Core.Cards;
 using MTG.Core.Enums;
 using MTG.Core.Helper;
-using MTG.Core.Types;
 using MTG.Core.Wrapper;
-using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 
 namespace MTG.Core.OracleTextParsers;

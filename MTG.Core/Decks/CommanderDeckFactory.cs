@@ -1,9 +1,6 @@
 ﻿using MTG.Core.Cards;
-using MTG.Core.Components;
 using MTG.Core.Enums;
 using MTG.Core.Helper;
-using MTG.Core.Properties;
-using System.ComponentModel.Design;
 
 namespace MTG.Core.Decks;
 

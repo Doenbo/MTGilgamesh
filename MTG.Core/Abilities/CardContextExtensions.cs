@@ -1,7 +1,4 @@
 ﻿using MTG.Core.Types;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace MTG.Core.Abilities;
 

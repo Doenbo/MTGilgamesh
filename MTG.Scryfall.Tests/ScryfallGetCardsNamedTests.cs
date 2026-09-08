@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using MTG.Core.Cards;
 using MTG.Scryfall._Getter;
-using MTG.Scryfall.Helper;
 
 namespace MTG.Scryfall.Tests;
 

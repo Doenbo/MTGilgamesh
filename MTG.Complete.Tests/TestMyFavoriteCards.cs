@@ -7,7 +7,6 @@ using MTG.Core.Enums;
 using MTG.Core.Properties;
 using MTG.Core.Types;
 using MTG.Creator;
-using Newtonsoft.Json.Linq;
 
 namespace MTG.Complete.Tests;
 

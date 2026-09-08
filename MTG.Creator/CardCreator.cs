@@ -1,6 +1,5 @@
 ﻿using MTG.Core.Cards;
 using MTG.Core.Helper;
-using MTG.Core.OracleTextParsers;
 using MTG.DB;
 using MTG.Scryfall._Getter;
 using MTG.Scryfall.Helper;

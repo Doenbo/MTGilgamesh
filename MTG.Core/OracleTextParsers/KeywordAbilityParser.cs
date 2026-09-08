@@ -2,9 +2,6 @@
 using MTG.Core.Components;
 using MTG.Core.Components.OracleText;
 using MTG.Core.Helper;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace MTG.Core.OracleTextParsers;

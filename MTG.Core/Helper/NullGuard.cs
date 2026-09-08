@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MTG.Core.Helper;
+﻿namespace MTG.Core.Helper;
 
 public static class NullGuard
 {
