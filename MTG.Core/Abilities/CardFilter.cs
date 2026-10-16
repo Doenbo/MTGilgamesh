@@ -7,15 +7,14 @@ namespace MTG.Core.Abilities;
 
 public record CardFilter : IEquatable<CardFilter>
 {
-    public ImmutableArray<CardType> RequiredTypes { get; init; } = ImmutableArray<CardType>.Empty;
-    public ImmutableArray<SubtypeWrapper> RequiredSubtypes { get; init; } = ImmutableArray<SubtypeWrapper>.Empty;
-    public ImmutableArray<CardType> ExcludedTypes { get; init; } = ImmutableArray<CardType>.Empty;
-    public ImmutableArray<SubtypeWrapper> ExcludedSubtypes { get; init; } = ImmutableArray<SubtypeWrapper>.Empty;
+    public ImmutableArray<CardType> RequiredTypes { get; init; } = [];
+    public ImmutableArray<SubtypeWrapper> RequiredSubtypes { get; init; } = [];
+    public ImmutableArray<CardType> ExcludedTypes { get; init; } = [];
+    public ImmutableArray<SubtypeWrapper> ExcludedSubtypes { get; init; } = [];
     public bool OnlyControlledByYou { get; init; }
     public bool OnlyControlledByOpponent { get; init; }
     public bool ExcludeTokens { get; init; }
-
-    public CardFilter() { }
+    public bool IsSelf { get; init; }
 
     public CardFilter(
         ImmutableArray<CardType> RequiredTypes = default,
@@ -24,18 +23,21 @@ public record CardFilter : IEquatable<CardFilter>
         ImmutableArray<SubtypeWrapper> ExcludedSubtypes = default,
         bool OnlyControlledByYou = false,
         bool OnlyControlledByOpponent = false,
-        bool ExcludeTokens = false)
+        bool ExcludeTokens = false,
+        bool IsSelf = false)
     {
-        this.RequiredTypes = RequiredTypes.IsDefault ? ImmutableArray<CardType>.Empty : RequiredTypes;
-        this.RequiredSubtypes = RequiredSubtypes.IsDefault ? ImmutableArray<SubtypeWrapper>.Empty : RequiredSubtypes;
-        this.ExcludedTypes = ExcludedTypes.IsDefault ? ImmutableArray<CardType>.Empty : ExcludedTypes;
-        this.ExcludedSubtypes = ExcludedSubtypes.IsDefault ? ImmutableArray<SubtypeWrapper>.Empty : ExcludedSubtypes;
+        this.RequiredTypes = RequiredTypes.IsDefault ? [] : RequiredTypes;
+        this.RequiredSubtypes = RequiredSubtypes.IsDefault ? [] : RequiredSubtypes;
+        this.ExcludedTypes = ExcludedTypes.IsDefault ? [] : ExcludedTypes;
+        this.ExcludedSubtypes = ExcludedSubtypes.IsDefault ? [] : ExcludedSubtypes;
         this.OnlyControlledByYou = OnlyControlledByYou;
         this.OnlyControlledByOpponent = OnlyControlledByOpponent;
         this.ExcludeTokens = ExcludeTokens;
+        this.IsSelf = IsSelf;
     }
 
     public static CardFilter Any => new();
+    public static CardFilter Self => new(IsSelf: true);
 
     public static Result<CardFilter> Parse(string rawText)
     {
@@ -43,6 +45,12 @@ public record CardFilter : IEquatable<CardFilter>
             return Result<CardFilter>.Success(Any);
 
         string normalized = rawText.Trim().ToLowerInvariant();
+
+        if (normalized.StartsWith("this ") || normalized.Contains("it"))
+        {
+            return Result<CardFilter>.Success(Self);
+        }
+
         var requiredTypes = new List<CardType>();
         var excludedTypes = new List<CardType>();
 
@@ -79,7 +87,8 @@ public record CardFilter : IEquatable<CardFilter>
                ExcludedSubtypes.SequenceEqual(other.ExcludedSubtypes) &&
                OnlyControlledByYou == other.OnlyControlledByYou &&
                OnlyControlledByOpponent == other.OnlyControlledByOpponent &&
-               ExcludeTokens == other.ExcludeTokens;
+               ExcludeTokens == other.ExcludeTokens &&
+               IsSelf == other.IsSelf;
     }
 
     public override int GetHashCode()
@@ -92,6 +101,7 @@ public record CardFilter : IEquatable<CardFilter>
         hash.Add(OnlyControlledByYou);
         hash.Add(OnlyControlledByOpponent);
         hash.Add(ExcludeTokens);
+        hash.Add(IsSelf);
         return hash.ToHashCode();
     }
 }

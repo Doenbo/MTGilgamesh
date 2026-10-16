@@ -41,11 +41,12 @@ public class ConsoleInputProvider : IPlayerInputProvider
             context.Display.LogInfo(
                 $"{ENV.NewLine}[{context.TurnStep}] {context.PriorityPlayer.Name}, it's your main phase. What do you do?" +
                 $"{ENV.NewLine}1: Play a Card from your Hand | 2: Tap Land for Mana | 3: Activate Ability | " +
-                $"{(Cheats.CanSeeOtherPlayersStuff ? CIS.f_ocheat + " | " : "")}" +
+                $"{(Cheats.CanSeeOtherPlayersStuff ? CIS.s_cheat + " | " : "")}" +
                 $"{CIS.f_endph}");
 
             var input = Console.ReadLine(); //TODO? via other class?
 
+            ExecMiscCommand(context, input);
             switch (input)
             {
                 case "1":
@@ -72,33 +73,15 @@ public class ConsoleInputProvider : IPlayerInputProvider
 
                     return new PlayerAction(player, ActionType.PlayCard, chosenCard.Value);
 
-                case "B":
-                    context.Display.RenderBattlefield(context);
-                    continue;
-
-                case "M":
-                    context.Display.RenderManaPool(context);
-                    continue;
-
-                case "S":
-                    context.Display.RenderStack(context);
-                    continue;
-
-                case "OH":
-                    if (Cheats.CanSeeOtherPlayersStuff)
-                    { context.Display.RenderOpponentsHands(context); }
-                    continue;
-
-                case "OL":
-                    if (Cheats.CanSeeOtherPlayersStuff)
-                    { context.Display.RenderOpponentsLibraries(context); }
+                case "C":
+                    ChooseCheat(context);
                     continue;
 
                 case "0":
                     return new PlayerAction(player, ActionType.PassPriority);
 
                 default:
-                    context.Display.LogError("Could not process input. Try again!");
+                    context.Display.LogError(CIS.s_error);
                     continue;
             }
         }
@@ -122,6 +105,7 @@ public class ConsoleInputProvider : IPlayerInputProvider
 
             string? input = Console.ReadLine();
 
+            ExecMiscCommand(context, input);
             switch (input)
             {
                 case "1":
@@ -140,23 +124,11 @@ public class ConsoleInputProvider : IPlayerInputProvider
 
                     return new PlayerAction(player, ActionType.PlayCard, chosenCard.Value);
 
-                case "B":
-                    context.Display.RenderBattlefield(context);
-                    continue;
-
-                case "M":
-                    context.Display.RenderManaPool(context);
-                    continue;
-
-                case "S":
-                    context.Display.RenderStack(context);
-                    continue;
-
                 case "0":
                     return new PlayerAction(player, ActionType.PassPriority);
 
                 default:
-                    context.Display.LogError("Could not process input. Try again!");
+                    context.Display.LogError(CIS.s_error);
                     continue;
             }
         }
@@ -176,6 +148,7 @@ public class ConsoleInputProvider : IPlayerInputProvider
 
             var input = Console.ReadLine();
 
+            ExecMiscCommand(context, input);
             switch (input)
             {
                 case "1":
@@ -194,23 +167,11 @@ public class ConsoleInputProvider : IPlayerInputProvider
 
                     return new PlayerAction(player, ActionType.PlayCard, chosenCard.Value);
 
-                case "B":
-                    context.Display.RenderBattlefield(context);
-                    continue;
-
-                case "M":
-                    context.Display.RenderManaPool(context);
-                    continue;
-
-                case "S":
-                    context.Display.RenderStack(context);
-                    continue;
-
                 case "0":
                     return new PlayerAction(player, ActionType.PassPriority);
 
                 default:
-                    context.Display.LogError("Could not process input. Try again!");
+                    context.Display.LogError(CIS.s_error);
                     continue;
             }
         }
@@ -246,7 +207,7 @@ public class ConsoleInputProvider : IPlayerInputProvider
 
             if (!int.TryParse(input, out int j) || j < 1 || j > player.Hand.Count + 1)
             {
-                context.Display.LogError("Could not process input. Try again!");
+                context.Display.LogError(CIS.s_error);
                 continue;
             }
 
@@ -292,7 +253,7 @@ public class ConsoleInputProvider : IPlayerInputProvider
 
             if (!int.TryParse(input, out int j) || j < 1 || j > playerBoard.Count() + 1)
             {
-                context.Display.LogError("Could not process input. Try again!");
+                context.Display.LogError(CIS.s_error);
                 continue;
             }
 
@@ -300,7 +261,36 @@ public class ConsoleInputProvider : IPlayerInputProvider
         }
     }
 
-    private static void ExecMiscCommand(GameContext context, string input)
+    private static void ChooseCheat(GameContext context)
+    {
+        while (true)
+        {
+            context.Display.LogInfo(
+                $"{ENV.NewLine}[{context.TurnStep}] {context.PriorityPlayer.Name}, it's your cheat phase. What do you do?" +
+                $"{ENV.NewLine}{(Cheats.CanSeeOtherPlayersStuff ? CIS.f_ocheat + " | " : "")}" +
+                $"{CIS.o_endph}");
+
+            string? input = Console.ReadLine();
+
+            switch (input)
+            {
+                case "OH":
+                    context.Display.RenderOpponentsHands(context);
+                    return;
+
+                case "OL":
+                    context.Display.RenderOpponentsLibraries(context);
+                    return;
+
+                default:
+                    context.Display.LogError(CIS.s_error);
+                    continue;
+            }
+        }
+
+    }
+
+    private static void ExecMiscCommand(GameContext context, string? input)
     {
         switch (input)
         {
@@ -314,6 +304,10 @@ public class ConsoleInputProvider : IPlayerInputProvider
 
             case "S":
                 context.Display.RenderStack(context);
+                return;
+
+            default:
+                //no error here
                 return;
         }
     }

@@ -5,6 +5,9 @@
     <EnableDynamicLoading>true</EnableDynamicLoading>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\MTG.Core\MTG.Core.csproj" />
     <ProjectReference Include="..\MTG.DB\MTG.DB.csproj" />
     <ProjectReference Include="..\MTG.Engine\MTG.Engine.csproj" />

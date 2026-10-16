@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 
-namespace MTG.Complete.Tests;
+namespace MTG.Complete.Tests.Extensions;
 
 public static class CollectionTestExtensions
 {

@@ -33,21 +33,6 @@ public class Program
         engine.StartGameLoop();
     }
 
-    private static async Task SomeTests()
-    {
-        var cc = new CardCreator();
-        var card1 = await cc.GetByExactName("The Destined Warrior");
-        WriteAndExitIfFailure(card1);
-
-        var card2 = await cc.GetByExactName(new CardRef()
-        {
-            Name = "Hildibrand Manderville // Gentleman's Rise",
-            Set = "fic",
-            CollectorNumber = "83"
-        });
-        WriteAndExitIfFailure(card2);
-    }
-
     private static void WriteAndExitIfFailure<T>(Result<T> t)
     {
         if (t.IsFailure || t.Value == null)

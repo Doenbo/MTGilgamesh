@@ -13,8 +13,6 @@ public class ScryfallGetCardsId
         apifull = $"{ScryfallConnect.apibase}/cards/";
     }
 
-    //TODO clean up string building in all classes?
-
     //Returns a single card with the given Scryfall ID.
     public async Task<Result<JsonString>> GetId(CardRef cref)
     {

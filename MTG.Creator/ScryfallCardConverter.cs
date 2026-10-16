@@ -225,11 +225,11 @@ public class ScryfallCardConverter(IOracleTextParser oracleTextParser, IManaSymb
 
         //Layout
         if (!Enum.TryParse(Conversions.ToCamelCase(dto.Layout), out Layout eLayout))
-            return Result<ICard>.Failure($"Layout: Could not parse {eLayout} to Layout enum!");
+            return Result<ICard>.Failure($"Layout: Could not parse {dto.Layout} to Layout enum!");
 
         //Rarity
         if (!Enum.TryParse(Conversions.ToCamelCase(dto.Rarity), out Rarity eRarity))
-            return Result<ICard>.Failure($"Rarity: Could not parse {eRarity} to Rarity enum!");
+            return Result<ICard>.Failure($"Rarity: Could not parse {dto.Rarity} to Rarity enum!");
 
         var args = new CardCreationArgs
         {

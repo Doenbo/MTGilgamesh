@@ -7,6 +7,8 @@ using MTG.Engine.TurnSteps;
 using MTG.Resources.Enums;
 using System.Text;
 
+using ENV = System.Environment;
+
 namespace MTG.Engine.Gameplay;
 
 public class GameContext
@@ -303,6 +305,7 @@ public class GameContext
     {
         var groupedItems = _battlefield.GroupBy(item => item.Owner);
         var sb = new StringBuilder();
+        sb.AppendLine($"{ENV.NewLine}");
         sb.AppendLine($"/------------------------------------\\");
         foreach (var group in groupedItems.ToList())
         {
@@ -324,6 +327,7 @@ public class GameContext
     public string ToConsoleStack()
     {
         var sb = new StringBuilder();
+        sb.AppendLine($"{ENV.NewLine}");
         sb.AppendLine($"/------------------------------------\\");
         foreach (var c in _stack.ToList())
         {
@@ -336,6 +340,7 @@ public class GameContext
     public string ToConsoleOpponentsHands()
     {
         var sb = new StringBuilder();
+        sb.AppendLine($"{ENV.NewLine}");
         sb.AppendLine($"/------------------------------------\\");
         foreach (var p in _players)
         {
@@ -356,6 +361,7 @@ public class GameContext
     public string ToConsoleOpponentsLibraries()
     {
         var sb = new StringBuilder();
+        sb.AppendLine($"{ENV.NewLine}");
         sb.AppendLine($"/------------------------------------\\");
         foreach (var p in _players)
         {

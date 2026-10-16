@@ -2,7 +2,7 @@
 
 public class ConsoleInputStrings
 {
-    // Standards
+    // Miscs
     public static readonly string[] stdCommands = ["B", "M", "S"];
 
     public const string s_board = "B: Show Board";
@@ -17,7 +17,11 @@ public class ConsoleInputStrings
     public const string f_endph = $"{s_board} | {s_manap} | {s_stack} | {o_endph}";
     public const string f_retur = $"{s_board} | {s_manap} | {s_stack} | {o_retur}";
 
+    //Errors
+    public const string s_error = "Could not process input. Try again!";
+
     // Cheats
+    public const string s_cheat = "C: Show Cheats";
     public static readonly string[] cheatCommands = { "OH", "OL" };
     public const string s_ohand = "OH: Show Opponents Hands";
     public const string s_olibr = "OL: Show Opponents Libraries";

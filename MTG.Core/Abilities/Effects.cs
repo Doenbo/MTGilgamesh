@@ -4,6 +4,7 @@ using MTG.Core.Enums;
 namespace MTG.Core.Abilities;
 
 public interface IEffect { }
+
 public record DrawCardsEffect(int Amount) : IEffect;
 
 public record DealDamageEffect(int Damage, TargetType Target) : IEffect;

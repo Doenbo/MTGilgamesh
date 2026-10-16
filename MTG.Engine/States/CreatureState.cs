@@ -10,6 +10,8 @@ public class CreatureState : ICardState
     public int PowerBuff { get; set; }
     public int ToughnessBuff { get; set; }
 
+    public int? BasePowerOverride { get; set; }
+
     public CreatureState(CreatureComponent template)
     {
         _template = template;

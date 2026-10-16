@@ -54,7 +54,7 @@ public class OracleTextParserTests
         produced.ManaUnits[1].ManaFixed.Should().Be(exp1);
     }
 
-    // Dual / Triple Lands
+    // Duals / Triomes
     [Theory]
     [InlineData("Badlands", "({T}: Add {B} or {R}.)", ManaType.Black, ManaType.Red)]
     [InlineData("Bayou", "({T}: Add {B} or {G}.)", ManaType.Black, ManaType.Green)]

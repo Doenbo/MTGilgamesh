@@ -9,8 +9,6 @@ public interface IResult
 
 public class Result
 {
-    private static readonly ILogger<Result> _logger = LogManager.GetLogger<Result>();
-
     public bool IsSuccess { get; }
     public bool IsFailure => !IsSuccess;
     public string Error { get; }
@@ -29,7 +27,6 @@ public class Result
 public class Result<T> : Result, IResult
 {
     private readonly T? _value;
-    private static readonly ILogger<Result> _logger = LogManager.GetLogger<Result>();
 
     private Result(T? value, bool isSuccess, string error) : base(isSuccess, error)
     {

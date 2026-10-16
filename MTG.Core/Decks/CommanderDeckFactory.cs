@@ -25,7 +25,13 @@ public static class CommanderDeckFactory
             return Result<ICommanderDeck>.Failure($"A Commander Deck needs exactly 100 Cards! " +
                 $"Commanders: {args.Commander.Count} / Cards: {args.Cards.Count}");
 
-        return Result<ICommanderDeck>.Success(new CommanderDeck(args.Cards, args.Tokens, args.Commander));
+        var deck = new CommanderDeck(args.Cards, args.Tokens, args.Commander);
+
+        var validResult = deck.IsValidCommanderDeck();
+        if (validResult.IsFailure)
+            return validResult.ToFailure<ICommanderDeck>();
+
+        return Result<ICommanderDeck>.Success(deck);
     }
 
     private class CommanderDeck : Deck, ICommanderDeck

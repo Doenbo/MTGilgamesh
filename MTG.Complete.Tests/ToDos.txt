@@ -1,2 +1,4 @@
 ﻿TODOS
 -----
+
+-Parser-Warnings in Console

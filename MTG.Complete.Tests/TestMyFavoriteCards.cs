@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using MTG.Complete.Tests.Extensions;
 using MTG.Core.Abilities;
 using MTG.Core.Cards;
 using MTG.Core.Components;

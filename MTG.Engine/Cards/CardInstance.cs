@@ -7,8 +7,7 @@ namespace MTG.Engine.Cards;
 
 public class CardInstance
 {
-    private readonly Dictionary<Type, List<ICardState>> _states = [];
-    public ICardState[] DebugStates => _states.Values.SelectMany(x => x).ToArray();
+    private readonly List<ICardState> _states = [];
 
     public CardInstance(ICard card, CommanderPlayer owner)
     {
@@ -37,41 +36,35 @@ public class CardInstance
 
     public void AddState<TState>(TState state) where TState : class, ICardState
     {
-        var type = typeof(TState);
-        if (!_states.TryGetValue(type, out var list))
-        {
-            list = [];
-            _states[type] = list;
-        }
-        list.Add(state);
+        _states.Add(state);
     }
 
     public TState? GetState<TState>() where TState : class, ICardState
     {
-        if (_states.TryGetValue(typeof(TState), out var list) && list.FirstOrDefault() is TState typedState)
-        {
-            return typedState;
-        }
+        return _states.OfType<TState>().FirstOrDefault();
+    }
 
-        return _states.Values
-            .SelectMany(x => x)
-            .OfType<TState>()
-            .FirstOrDefault();
+    public IEnumerable<TState> GetStates<TState>() where TState : class, ICardState
+    {
+        return _states.OfType<TState>();
     }
 
     public bool HasState<TState>() where TState : class, ICardState
     {
-        if (_states.TryGetValue(typeof(TState), out var list) && list.Count > 0)
-        {
-            return true;
-        }
-
-        return _states.Values
-            .SelectMany(x => x)
-            .OfType<TState>()
-            .Any();
+        return _states.OfType<TState>().Any();
     }
 
+    public bool RemoveState<TState>(TState state) where TState : class, ICardState
+    {
+        return _states.Remove(state);
+    }
+
+    public int RemoveAllStates<TState>() where TState : class, ICardState
+    {
+        return _states.RemoveAll(x => x is TState);
+    }
+
+    //ToStrings
     public override string ToString()
     {
         return CardData.Name;

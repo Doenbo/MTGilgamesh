@@ -68,11 +68,6 @@ public static class DeckCreator
         if (deck.IsFailure)
             return deck.ToFailure<ICommanderDeck>();
 
-        //TODO maybe do this in the create?
-        var validResult = deck.Value.IsValidCommanderDeck();
-        if (validResult.IsFailure)
-            return validResult.ToFailure<ICommanderDeck>();
-
         return Result<ICommanderDeck>.Success(deck.Value);
     }
 }
