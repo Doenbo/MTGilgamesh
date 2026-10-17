@@ -19,7 +19,7 @@ public static class CommanderDeckFactory
             return Result<ICommanderDeck>.Failure($"CommanderDeck creation failed: '{nullProperty}' cannot be null!");
 
         if (args.Commander.Count != 1 && args.Commander.Count != 2)
-            return Result<ICommanderDeck>.Failure($"Cannot have more than two Commanders! {args.Commander.ToString}");
+            return Result<ICommanderDeck>.Failure($"A CommanderDeck must have one or two Commanders! {args.Commander.ToString}");
 
         if (args.Commander.Count + args.Cards.Count != 100)
             return Result<ICommanderDeck>.Failure($"A Commander Deck needs exactly 100 Cards! " +
@@ -71,11 +71,14 @@ public static class CommanderDeckFactory
 
             foreach (var card in Commander)
             {
+                if (!card.IsLegendary())
+                    return Result<bool>.Failure($"The Commander '{card}' is not a Legendary Card!");
+
                 if (card.Legalities.TryGetValue(Format.Commander, out var legality) && legality != Legality.Legal)
                     return Result<bool>.Failure($"Card '{card}' is not legal in Commander!");
             }
 
-                foreach (var card in Cards)
+            foreach (var card in Cards)
             {
                 if (card.Legalities.TryGetValue(Format.Commander, out var legality) && legality != Legality.Legal)
                     return Result<bool>.Failure($"Card '{card}' is not legal in Commander!");

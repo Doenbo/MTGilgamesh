@@ -13,4 +13,5 @@ public enum ImageSize
     Display,
     Art,
     Crop,
+    Jpeg,
 }

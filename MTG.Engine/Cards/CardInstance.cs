@@ -1,5 +1,8 @@
-﻿using MTG.Core.Cards;
+﻿using MTG.Core;
+using MTG.Core.Cards;
+using MTG.Core.Components;
 using MTG.Core.Enums;
+using MTG.Core.Helper;
 using MTG.Engine.Gameplay;
 using MTG.Engine.States;
 
@@ -9,15 +12,9 @@ public class CardInstance
 {
     private readonly List<ICardState> _states = [];
 
-    public CardInstance(ICard card, CommanderPlayer owner)
-    {
-        CardData = card;
-        Owner = owner;
-        Controller = owner;
-    }
-
     public ICard CardData { get; init; }
 
+    public ICardFace CurrentFace { get; set; }
     public CommanderPlayer Owner { get; set; }
     public CommanderPlayer Controller { get; set; }
 
@@ -27,6 +24,38 @@ public class CardInstance
     public int DamageMarked { get; set; }
     public Dictionary<MarkerType, int> Counters { get; set; } = [];
 
+    //Factory Pattern
+    private CardInstance(ICard card, CommanderPlayer owner)
+    {
+        CardData = card;
+        Owner = owner;
+        Controller = owner;
+    }
+
+    public static Result<CardInstance> Create(ICard card, CommanderPlayer owner)
+    {
+        var ci = new CardInstance(card, owner);
+        ci.InitializeStatesFromTemplate(card.MainFace);
+        return Result<CardInstance>.Success(ci);
+    }
+
+    public static Result<CardInstance> CreateToken(ICard card, CommanderPlayer owner)
+    {
+        throw new NotImplementedException();
+    }
+
+    public static Result<CardInstance> CreateCopy(ICard card, CommanderPlayer owner)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void InitializeStatesFromTemplate(ICardFace face)
+    {
+        if (face.TryGetComponent<CreatureComponent>(out var creatureComp))
+        {
+            _states.Add(new CreatureState(creatureComp));
+        }
+    }
 
     public void AddCounter(MarkerType type, int amount = 1)
     {

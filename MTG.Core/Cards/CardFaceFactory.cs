@@ -22,7 +22,7 @@ public class CardFaceFactory
         if (NullGuard.HasNullProperty(args, out var nullProperty))
             return Result<ICardFace>.Failure($"CardFace creation failed: '{nullProperty}' cannot be null!");
 
-        if (!args.Components.Any())
+        if (!args.Components.Any()) //TODO more checks?
             return Result<ICardFace>.Failure("A card must have at least one Component!");
 
         return Result<ICardFace>.Success(new CardFace(args.Components)

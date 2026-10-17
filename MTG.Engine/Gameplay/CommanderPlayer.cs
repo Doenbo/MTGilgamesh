@@ -42,15 +42,19 @@ public class CommanderPlayer
         ManaPool = new ManaPool();
     }
 
-    public static async Task<Result<CommanderPlayer>> Create(string name, int life, CommanderPrecon cp, IPlayerInputProvider pip)
+    //TODO ICOMMANDERDECK
+    public static Result<CommanderPlayer> Create(string name, int life, ICommanderDeck deck, IPlayerInputProvider pip)
     {
-        var deck = await DeckCreator.CreateCommanderPrecon(cp);
-        if (deck.IsFailure)
-            return deck.ToFailure<CommanderPlayer>();
+        //TODO pip null??
 
-        var player = new CommanderPlayer(name, life, deck.Value, pip);
+        //var deck = await DeckCreator.CreateCommanderDeckFromText(path);
+        //if (deck.IsFailure)
+        //    return deck.ToFailure<CommanderPlayer>();
 
-        player.InitializeCardInstances(deck.Value);
+        var player = new CommanderPlayer(name, life, deck, pip);
+
+        var res = player.InitializeCardInstances(deck);
+        if (res.IsFailure) return res.ToFailure<CommanderPlayer>();
 
         if (_logger.IsEnabled(LogLevel.Information))
             _logger.LogInformation("Player {player} created", player);
@@ -58,16 +62,31 @@ public class CommanderPlayer
         return Result<CommanderPlayer>.Success(player);
     }
 
-    private void InitializeCardInstances(ICommanderDeck deck)
+    public static async Task<Result<CommanderPlayer>> Create(string name, int life, CommanderPrecon cp, IPlayerInputProvider pip)
+    {
+        //TODO pip null??
+
+        var deck = await DeckCreator.CreateCommanderPrecon(cp);
+        if (deck.IsFailure)
+            return deck.ToFailure<CommanderPlayer>();
+
+        return Create(name, life, deck.Value, pip);
+    }
+
+    private Result InitializeCardInstances(ICommanderDeck deck)
     {
         foreach (var comm in deck.Commander)
         {
-            CommandZone.AddCommander(new CardInstance(comm, this));
+            var ci = CardInstance.Create(comm, this);
+            if (ci.IsFailure) return ci;
+            CommandZone.AddCommander(ci.Value);
         }
 
         foreach (var card in deck.Cards)
         {
-            Library.Add(new CardInstance(card, this));
+            var ci = CardInstance.Create(card, this);
+            if (ci.IsFailure) return ci;
+            Library.Add(ci.Value);
         }
 
         Library.Shuffle();
@@ -76,6 +95,8 @@ public class CommanderPlayer
         {
             _ = DrawCard();
         }
+
+        return Result.Success();
     }
 
     public void UpdateManaPool(ManaPool mp)

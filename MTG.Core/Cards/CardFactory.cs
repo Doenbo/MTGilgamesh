@@ -28,10 +28,13 @@ public static class CardFactory
         if (NullGuard.HasNullProperty(args, out var nullProperty))
             return Result<ICard>.Failure($"Card creation failed: '{nullProperty}' cannot be null!");
 
-        if (args.CardFaces.Count == 0)        
+        if (args.CardFaces.Count == 0)
             return Result<ICard>.Failure("A card must have at least one CardFace!");
 
-            return Result<ICard>.Success(new Card()
+        if(args.ColorIdentity == ManaType.None)
+            return Result<ICard>.Failure("A card's Color Identity cannot be None!");
+
+        return Result<ICard>.Success(new Card()
         {
             Name = args.Name,
             TypeLine = args.TypeLine,
