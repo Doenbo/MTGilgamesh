@@ -1,17 +1,15 @@
 ﻿using MTG.Core.Cards;
 using MTG.Core.Components;
 using MTG.Core.Enums;
+using MTG.Core.Helper;
 using MTG.Core.Properties;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace MTG.Engine.Tests.Dummy;
 
 public static class PresetCardData
 {
     //Filler
-    public static CardCreationArgs CreateFillerCardArgs(string cardName, ManaType mt)
+    public static Result<ICard> CreateFillerCard(string cardName, ManaType mt)
     {
         var faceArgs = new CardFaceCreationArgs
         {
@@ -21,9 +19,9 @@ public static class PresetCardData
             Components = [CreatureComponent.Create("2", "2").Value]
         };
 
-        ICardFace face = CardFaceFactory.Create(faceArgs).Value; //is this cool?
+        ICardFace face = CardFaceFactory.Create(faceArgs).Value; //TODO is this cool?
 
-        return new CardCreationArgs
+        var cardArgs = new CardCreationArgs
         {
             Name = cardName,
             TypeLine = "Creature — Bear",
@@ -40,19 +38,21 @@ public static class PresetCardData
             Legalities = new Dictionary<Format, Legality>(),
             ImageUris = new Dictionary<ImageSize, Uri>()
         };
+
+        return CardFactory.Create(cardArgs);
     }
 
     //Enum
-    public static readonly IReadOnlyDictionary<PresetCard, IReadOnlyList<CardFaceCreationArgs>> Faces =
-        new Dictionary<PresetCard, IReadOnlyList<CardFaceCreationArgs>>
+    public static readonly IReadOnlyDictionary<PresetCard, Func<Result<IReadOnlyList<CardFaceCreationArgs>>>> Faces =
+        new Dictionary<PresetCard, Func<Result<IReadOnlyList<CardFaceCreationArgs>>>>
         {
-            [PresetCard.Six] = [new CardFaceCreationArgs
-            {
-                Name = "Six",
-                TypeLine = TypeLine.Create("Legendary Creature — Treefolk").Value,
-                OracleText = "Reach\nWhenever Six attacks, mill three cards. You may put a land card from among them into your hand.\nDuring your turn, nonland permanent cards in your graveyard have retrace. (You may cast permanent cards from your graveyard by discarding a land card in addition to paying their other costs.)",
-                Components = [CreatureComponent.Create("2", "4").Value]
-            }]
+            [PresetCard.Six] = () => BuildFace(
+                name: "Six",
+                typeLineStr: "Legendary Creature — Treefolk",
+                oracleText: "Reach\nWhenever Six attacks, mill three cards. You may put a land card from among them into your hand.\nDuring your turn, nonland permanent cards in your graveyard have retrace. (You may cast permanent cards from your graveyard by discarding a land card in addition to paying their other costs.)",
+                power: "2",
+                toughness: "4"
+            ),
         };
 
     public static readonly IReadOnlyDictionary<PresetCard, Func<IReadOnlyList<ICardFace>, CardCreationArgs>> Cards =
@@ -76,4 +76,26 @@ public static class PresetCardData
                 ImageUris = new Dictionary<ImageSize, Uri>()
             }
         };
+
+    private static Result<IReadOnlyList<CardFaceCreationArgs>> BuildFace(
+        string name, string typeLineStr, string oracleText, string power, string toughness)
+    {
+        var typeLineResult = TypeLine.Create(typeLineStr);
+        var creatureResult = CreatureComponent.Create(power, toughness);
+
+        if (typeLineResult.IsFailure)
+            return typeLineResult.ToFailure<IReadOnlyList<CardFaceCreationArgs>>();
+
+        if (creatureResult.IsFailure)
+            return creatureResult.ToFailure<IReadOnlyList<CardFaceCreationArgs>>();
+
+        IReadOnlyList<CardFaceCreationArgs> faces = [new CardFaceCreationArgs{
+            Name = name,
+            TypeLine = typeLineResult.Value,
+            OracleText = oracleText,
+            Components = [creatureResult.Value]
+        }];
+
+        return Result<IReadOnlyList<CardFaceCreationArgs>>.Success(faces);
+    }
 }

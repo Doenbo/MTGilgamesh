@@ -11,8 +11,17 @@ public class DummyFactory
 {
     public static Result<ICard> CreatePresetCard(PresetCard pc)
     {
-        var faceArgsList = PresetCardData.Faces[pc];
-        var cardFaces = faceArgsList.Select(args => CardFaceFactory.Create(args).Value).ToList();
+        var faceArgsResult = PresetCardData.Faces[pc]();
+        if (faceArgsResult.IsFailure) return faceArgsResult.ToFailure<ICard>();
+
+        var cardFaces = new List<ICardFace>();
+        foreach (var args in faceArgsResult.Value)
+        {
+            var faceResult = CardFaceFactory.Create(args);
+            if (faceResult.IsFailure) return faceResult.ToFailure<ICard>();
+
+            cardFaces.Add(faceResult.Value);
+        }
 
         var cardArgs = PresetCardData.Cards[pc](cardFaces);
         return CardFactory.Create(cardArgs);
@@ -47,9 +56,9 @@ public class DummyFactory
         var cards = new List<ICard>();
         for (int i = 0; i < 99; i++)
         {
-            var cardArgs = PresetCardData.CreateFillerCardArgs($"Name{i}", mt);
-            var carda = CardFactory.Create(cardArgs);
-            cards.AddRange(carda.Value);
+            var icard = PresetCardData.CreateFillerCard($"Name{i}", mt);
+            if (icard.IsFailure) return icard.ToFailure<List<ICard>>();
+            cards.AddRange(icard.Value);
         }
 
         return Result<List<ICard>>.Success(cards);
