@@ -68,7 +68,7 @@ public class CardCreator
                 return card2.ToFailure<ICard>();
 
             //Fill CardRef for DB
-            cref.Name = card2.Value.Name;
+            cref.Name = card2.Value.MainFaceName;
             cref.Id = card2.Value.Id;
             cref.Set = card2.Value.Set;
             cref.CollectorNumber = card2.Value.CollectorNumber;

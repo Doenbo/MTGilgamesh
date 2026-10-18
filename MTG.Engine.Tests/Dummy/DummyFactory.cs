@@ -1,49 +1,58 @@
 ﻿using MTG.Core.Cards;
-using MTG.Core.Components;
 using MTG.Core.Decks;
 using MTG.Core.Enums;
 using MTG.Core.Helper;
-using MTG.Core.Properties;
-using MTG.Creator;
 using MTG.Engine.Gameplay;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Xml.Linq;
 
 namespace MTG.Engine.Tests.Dummy;
 
 public class DummyFactory
 {
-    public static Result<ICommanderDeck> CreateCommanderDeck()
+    public static Result<ICard> CreatePresetCard(PresetCard pc)
     {
-        var commf = CreateCardFace(PresetCards.SixF());
-        if (commf.IsFailure) return commf.ToFailure<ICommanderDeck>();
+        var faceArgsList = PresetCardData.Faces[pc];
+        var cardFaces = faceArgsList.Select(args => CardFaceFactory.Create(args).Value).ToList();
 
-        var comm = CreateCard(PresetCards.Six(commf.Value));
-        if (comm.IsFailure) return comm.ToFailure<ICommanderDeck>();
+        var cardArgs = PresetCardData.Cards[pc](cardFaces);
+        return CardFactory.Create(cardArgs);
+    }
 
-        var cards = new List<ICard>();
-        for (int i = 0; i < 99; i++)
-        {
-            var cardf = CreateCardFace(PresetCards.NameF($"Name{i}"));
-            if (cardf.IsFailure) return cardf.ToFailure<ICommanderDeck>();
+    public static Result<CommanderPlayer> CreateCommanderPlayer(List<ICard> comms, string name = "TestPlayer", int life = 40)
+    {
+        var d1 = CreateCommanderDeck(comms);
+        if (d1.IsFailure) return d1.ToFailure<CommanderPlayer>();
+        var d2 = CreatePlayerInputProvider();
+        if (d2.IsFailure) return d2.ToFailure<CommanderPlayer>();
 
-            var card = CreateCard(PresetCards.Name(commf.Value, $"Name{i}"));
-            if (card.IsFailure) return card.ToFailure<ICommanderDeck>();
+        return CommanderPlayer.Create(name, life, d1.Value, d2.Value);
+    }
 
-            cards.AddRange(card.Value);
-        }
-
+    public static Result<ICommanderDeck> CreateCommanderDeck(List<ICard> comms)
+    {
+        var cards = CreateFillerCards(comms);
         var args = new CommanderDeckCreationArgs
         {
-            //TODO auch dummies?
-            Cards = cards,
+            Cards = cards.Value,
             Tokens = [],
-            Commander = comm.Value,
+            Commander = comms,
         };
 
         return CommanderDeckFactory.Create(args);
+    }
+
+    private static Result<List<ICard>> CreateFillerCards(List<ICard> comms)
+    {
+        var mt = comms.Aggregate(ManaType.None, (current, card) => current | card.ColorIdentity);
+        var cards = new List<ICard>();
+        for (int i = 0; i < 99; i++)
+        {
+            var cardArgs = PresetCardData.CreateFillerCardArgs($"Name{i}", mt);
+            var carda = CardFactory.Create(cardArgs);
+            cards.AddRange(carda.Value);
+        }
+
+        return Result<List<ICard>>.Success(cards);
     }
 
     private static Result<List<ICardFace>> CreateCardFace(CardFaceCreationArgs args)
@@ -53,26 +62,11 @@ public class DummyFactory
         return Result<List<ICardFace>>.Success([cf.Value]);
     }
 
-    public static Result<List<ICard>> CreateCard(CardCreationArgs args)
+    private static Result<List<ICard>> CreateCard(CardCreationArgs args)
     {
         var c = CardFactory.Create(args);
         if (c.IsFailure) return c.ToFailure<List<ICard>>();
         return Result<List<ICard>>.Success([c.Value]);
-    }
-
-    private static Result<ICard> CreateCommander(CardCreationArgs args)
-    {
-        return CardFactory.Create(args);
-    }
-
-    public static Result<CommanderPlayer> CreateCommanderPlayer(string name = "TestPlayer", int life = 40)
-    {
-        var d1 = CreateCommanderDeck();
-        if (d1.IsFailure) return d1.ToFailure<CommanderPlayer>();
-        var d2 = CreatePlayerInputProvider();
-        if (d2.IsFailure) return d2.ToFailure<CommanderPlayer>();
-
-        return CommanderPlayer.Create(name, life, d1.Value, d2.Value);
     }
 
     public static Result<IPlayerInputProvider> CreatePlayerInputProvider()

@@ -4,10 +4,6 @@ namespace MTG.Core.Cards;
 
 public interface ICard
 {
-    //Merged Face Properties
-    string Name { get; }
-    string TypeLine { get; }
-
     //Core
     Guid Id { get; }
     string Lang { get; }
@@ -16,9 +12,13 @@ public interface ICard
     //Related Card Objects
     IReadOnlyList<CardRef> AllParts { get; }
 
-    //Gameplay
+    //Face Stuff
     IReadOnlyList<ICardFace> Faces { get; }
-    ICardFace MainFace => Faces[0];
+    ICardFace MainFace { get; }
+    string MainFaceName { get; }
+    string MainFaceTypeLine { get; }
+
+    //Gameplay
     ManaType ColorIdentity { get; }
     bool IsToken { get; }
     IReadOnlyDictionary<Format, Legality> Legalities { get; }
@@ -44,7 +44,7 @@ public interface ICard
     bool IsMultifaced() => Faces.Count > 1;
 
     //ToStrings
-    string ToString();
-    string ToStringConsole();
+    //string ToString();
+    //string ToStringConsole();
 
 }

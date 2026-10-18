@@ -28,17 +28,19 @@ public partial class CardNode : PanelContainer
         MouseFilter = MouseFilterEnum.Stop;
 
         // Base Styling for Card Frame
-        _panelStyle = new StyleBoxFlat();
-        _panelStyle.BgColor = new Color(0.1f, 0.12f, 0.16f, 0.96f);
-        _panelStyle.BorderWidthBottom = 2;
-        _panelStyle.BorderWidthLeft = 2;
-        _panelStyle.BorderWidthRight = 2;
-        _panelStyle.BorderWidthTop = 2;
-        _panelStyle.BorderColor = new Color(0.8f, 0.65f, 0.25f); // Golden frame
-        _panelStyle.CornerRadiusBottomLeft = 8;
-        _panelStyle.CornerRadiusBottomRight = 8;
-        _panelStyle.CornerRadiusTopLeft = 8;
-        _panelStyle.CornerRadiusTopRight = 8;
+        _panelStyle = new StyleBoxFlat
+        {
+            BgColor = new Color(0.1f, 0.12f, 0.16f, 0.96f),
+            BorderWidthBottom = 2,
+            BorderWidthLeft = 2,
+            BorderWidthRight = 2,
+            BorderWidthTop = 2,
+            BorderColor = new Color(0.8f, 0.65f, 0.25f), // Golden frame
+            CornerRadiusBottomLeft = 8,
+            CornerRadiusBottomRight = 8,
+            CornerRadiusTopLeft = 8,
+            CornerRadiusTopRight = 8
+        };
         AddThemeStyleboxOverride("panel", _panelStyle);
 
         var marginContainer = new MarginContainer();
@@ -151,12 +153,12 @@ public partial class CardNode : PanelContainer
         if (CardInstance?.CardData == null) return;
 
         var card = CardInstance.CardData;
-        _nameLabel.Text = card.Name;
-        _typeLabel.Text = card.TypeLine;
+        _nameLabel.Text = card.MainFaceName;
+        _typeLabel.Text = card.MainFaceTypeLine;
 
         // Oracle text
         _oracleLabel.Clear();
-        _oracleLabel.AppendText($"[color=gainsboro]{card.ToString()}[/color]");
+        _oracleLabel.AppendText($"[color=gainsboro]{card}[/color]");
 
         // Tapped State
         _isTapped = CardInstance.IsTapped;
@@ -224,7 +226,7 @@ public partial class CardNode : PanelContainer
         previewNode.AddThemeStyleboxOverride("panel", style);
 
         var label = new Label();
-        label.Text = CardInstance.CardData?.Name ?? "Card";
+        label.Text = CardInstance.CardData?.MainFaceName ?? "Card";
         label.HorizontalAlignment = HorizontalAlignment.Center;
         label.VerticalAlignment = VerticalAlignment.Center;
         previewNode.AddChild(label);

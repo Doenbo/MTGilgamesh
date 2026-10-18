@@ -9,6 +9,7 @@ using MTG.Engine.Tests.Dummy;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static MTG.Engine.Tests.Dummy.PresetCardData;
 
 namespace MTG.Engine.Tests;
 
@@ -17,20 +18,14 @@ public class TestStates
     [Fact]
     public async Task Test1()
     {
-        var cref = new CardRef() { Name = "Karametra, God of Harvests" };
-        var cres = await new CardCreator().GetByExactName(cref); //TODO Dummy (in all tests)
+        var cres = DummyFactory.CreatePresetCard(PresetCard.Six); //TODO Dummy (in all tests)
         cres.IsSuccess.Should().BeTrue(cres.Error);
 
-        var dummy = DummyFactory.CreateCommanderPlayer();
-        dummy.IsSuccess.Should().BeTrue(dummy.Error);
+        var dcomm = DummyFactory.CreateCommanderPlayer([cres.Value]);
+        dcomm.IsSuccess.Should().BeTrue(dcomm.Error);
 
-        var ci = CardInstance.Create(cres.Value, dummy.Value);
+        var ci = CardInstance.Create(cres.Value, dcomm.Value);
         ci.IsSuccess.Should().BeTrue(ci.Error);
-
-        var cc = CreatureComponent.Create("6", "7");
-        cc.IsSuccess.Should().BeTrue(cc.Error);
-
-        ci.Value.AddState(new CreatureState(cc.Value));
 
         var res = cres.Value.MainFace.TryGetComponent<CreatureComponent>(out var cc2);
         res.Should().BeTrue();
@@ -39,5 +34,6 @@ public class TestStates
         var cs = ci.Value.GetState<CreatureState>();
         cs.Should().NotBeNull();
         cs.CurrentPower.Should().Be(cc2.Power);
+        cs.CurrentToughness.Should().Be(cc2.Toughness);
     }
 }

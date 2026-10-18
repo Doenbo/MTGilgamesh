@@ -99,7 +99,7 @@ public class ConsoleInputProvider : IPlayerInputProvider
             string casterName = topStackCard.Owner.Name;
 
             context.Display.LogInfo(
-                $"{ENV.NewLine}[{casterName}] has casted {topStackCard.CardData.Name}." +
+                $"{ENV.NewLine}[{casterName}] has casted {topStackCard.CardData.MainFaceName}." +
                 $"[{player.Name}] How do you react?" +
                 $"{ENV.NewLine}1: Play a Card from your Hand | {CIS.f_passp}");
 
@@ -183,7 +183,7 @@ public class ConsoleInputProvider : IPlayerInputProvider
         for (int i = 0; i < player.Hand.Count; i++)
         {
             var c = player.Hand.Cards[i];
-            text += $"{i + 1}: {c.CardData.Name} | ";
+            text += $"{i + 1}: {c.CardData.MainFaceName} | ";
         }
         text += CIS.f_retur;
 
@@ -229,7 +229,7 @@ public class ConsoleInputProvider : IPlayerInputProvider
         for (int i = 0; i < playerBoard.Count(); i++)
         {
             var c = playerBoard.ElementAt(i);
-            text += $"{i + 1}: {c.CardData.Name} | ";
+            text += $"{i + 1}: {c.CardData.MainFaceName} | ";
         }
         text += CIS.f_retur;
 

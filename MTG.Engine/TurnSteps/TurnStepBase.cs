@@ -67,7 +67,7 @@ public abstract class TurnStepBase : ITurnStep
         {
             if (!CanPlaySorcerySpeed(context, player) || context.StackCount > 0)
             {
-                context.Display.LogError($"Cannot play land {card.CardData.Name} right now (Requires main phase & empty stack).");
+                context.Display.LogError($"Cannot play land {card.CardData.MainFaceName} right now (Requires main phase & empty stack).");
                 return;
             }
 
@@ -80,7 +80,7 @@ public abstract class TurnStepBase : ITurnStep
             context.HasPlayedLandThisTurn = true;
             player.RemoveFromHand(card);
             context.MoveToBattlefield(card);
-            context.Display.LogInfo($"{player.Name} plays land: {card.CardData.Name}");
+            context.Display.LogInfo($"{player.Name} plays land: {card.CardData.MainFaceName}");
             context.OnPlayerTookAction();
             return;
         }
@@ -89,7 +89,7 @@ public abstract class TurnStepBase : ITurnStep
         bool isSorcerySpeed = !card.CardData.IsInstant() && !card.CardData.IsLand();
         if (isSorcerySpeed && (!CanPlaySorcerySpeed(context, player) || context.StackCount > 0))
         {
-            context.Display.LogError($"Cannot cast {card.CardData.Name} right now (Sorcery timing rule).");
+            context.Display.LogError($"Cannot cast {card.CardData.MainFaceName} right now (Sorcery timing rule).");
             return;
         }
 
@@ -105,7 +105,7 @@ public abstract class TurnStepBase : ITurnStep
         var payResult = mps.TryPay(mcc.ManaCost, player.ManaPool);
         if (payResult.IsFailure)
         {
-            context.Display.LogError($"Cannot cast {card.CardData.Name}: {payResult.Error}");
+            context.Display.LogError($"Cannot cast {card.CardData.MainFaceName}: {payResult.Error}");
             return;
         }
 

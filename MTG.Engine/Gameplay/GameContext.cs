@@ -231,7 +231,7 @@ public class GameContext
 
         player.RemoveFromHand(card);
         PushToStack(card);
-        Display.LogInfo($"{player.Name} casts {card.CardData.Name} (Object is on the STACK!)");
+        Display.LogInfo($"{player.Name} casts {card.CardData.MainFaceName} (Object is on the STACK!)");
 
         PriorityPlayer = player;
         ConsecutivePasses = 0;
@@ -240,17 +240,17 @@ public class GameContext
     public void ResolveTopStackObject()
     {
         var resolvedCard = PopFromStack();
-        Display.LogInfo($"\n=== RESOLVING: {resolvedCard.CardData.Name} ===");
+        Display.LogInfo($"\n=== RESOLVING: {resolvedCard.CardData.MainFaceName} ===");
 
         if (resolvedCard.CardData.IsPermanent())
         {
             MoveToBattlefield(resolvedCard);
-            Display.LogInfo($"{resolvedCard.CardData.Name} enters the battlefield.");
+            Display.LogInfo($"{resolvedCard.CardData.MainFaceName} enters the battlefield.");
         }
         else
         {
             resolvedCard.Owner.AddToGraveyard(resolvedCard);
-            Display.LogInfo($"{resolvedCard.CardData.Name} finishes resolving and goes to Graveyard.");
+            Display.LogInfo($"{resolvedCard.CardData.MainFaceName} finishes resolving and goes to Graveyard.");
         }
 
         PriorityPlayer = ActivePlayer;
@@ -312,7 +312,7 @@ public class GameContext
             sb.AppendLine($"[{group.Key}]");
             foreach (var card in group.ToList())
             {
-                sb.Append($"{card.CardData.Name}");
+                sb.Append($"{card.CardData.MainFaceName}");
                 if (card.IsTapped) sb.Append("[Tapped]");
                 sb.AppendLine();
             }
@@ -331,7 +331,7 @@ public class GameContext
         sb.AppendLine($"/------------------------------------\\");
         foreach (var c in _stack.ToList())
         {
-            sb.AppendLine($"{c.CardData.Name} [{c.Owner.Name}]");
+            sb.AppendLine($"{c.CardData.MainFaceName} [{c.Owner.Name}]");
         }
         sb.AppendLine($"\\------------------------------------/");
         return sb.ToString();
@@ -348,7 +348,7 @@ public class GameContext
             sb.AppendLine($"[{p.Name}]");
             foreach (var card in p.Hand.Cards.ToList())
             {
-                sb.Append($"{card.CardData.Name}");
+                sb.Append($"{card.CardData.MainFaceName}");
                 if (card.IsTapped) sb.Append("[Tapped]");
                 sb.AppendLine();
             }
@@ -369,7 +369,7 @@ public class GameContext
             sb.AppendLine($"[{p.Name}]");
             foreach (var card in p.Library.Cards.ToList())
             {
-                sb.Append($"{card.CardData.Name}");
+                sb.Append($"{card.CardData.MainFaceName}");
                 if (card.IsTapped) sb.Append("[Tapped]");
                 sb.AppendLine();
             }

@@ -31,13 +31,11 @@ public static class CardFactory
         if (args.CardFaces.Count == 0)
             return Result<ICard>.Failure("A card must have at least one CardFace!");
 
-        if(args.ColorIdentity == ManaType.None)
+        if (args.ColorIdentity == ManaType.None)
             return Result<ICard>.Failure("A card's Color Identity cannot be None!");
 
-        return Result<ICard>.Success(new Card()
+        return Result<ICard>.Success(new Card(args.Name, args.TypeLine)
         {
-            Name = args.Name,
-            TypeLine = args.TypeLine,
             ColorIdentity = args.ColorIdentity,
             Faces = args.CardFaces,
             AllParts = args.AllParts,
@@ -54,16 +52,20 @@ public static class CardFactory
 
     private class Card : ICard
     {
-        public Card() { }
+        public Card(string name, string typeline) { Name = name; TypeLine = typeline; }
 
+        //Merged Face Properties - just to hold the data
+        private string Name { get; init; }
+        private string TypeLine { get; init; }
 
-        //Merged Face Properties
-        public required string Name { get; init; }
-        public required string TypeLine { get; init; }
-
-        //Gameplay
+        //Face Stuff
         public required IReadOnlyList<ICardFace> Faces { get; init; } = [];
         public ICardFace MainFace => Faces[0];
+        public string MainFaceName => Faces[0].Name;
+        public string MainFaceTypeLine => Faces[0].TypeLine.ToString();
+
+
+        //Gameplay
         public required ManaType ColorIdentity { get; init; }
         public required IReadOnlyList<CardRef> AllParts { get; init; }
         public bool IsToken { get; init; } = false;
@@ -82,8 +84,8 @@ public static class CardFactory
         public Rarity Rarity { get; init; }
 
         //ToStrings
-        public override string ToString() => $"{Name} - {Set.ToUpper()}({CollectorNumber})";
+        //public override string ToString() => $"{Name} - {Set.ToUpper()}({CollectorNumber})";
 
-        public string ToStringConsole() => MainFace.ToString();
+        //public string ToStringConsole() => MainFace.ToString();
     }
 }

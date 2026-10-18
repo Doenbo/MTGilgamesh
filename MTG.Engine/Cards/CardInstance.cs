@@ -14,7 +14,6 @@ public class CardInstance
 
     public ICard CardData { get; init; }
 
-    public ICardFace CurrentFace { get; set; }
     public CommanderPlayer Owner { get; set; }
     public CommanderPlayer Controller { get; set; }
 
@@ -94,8 +93,5 @@ public class CardInstance
     }
 
     //ToStrings
-    public override string ToString()
-    {
-        return CardData.Name;
-    }
+    public override string ToString() => CardData.MainFaceName;
 }
