@@ -1,27 +1,24 @@
 ﻿using FluentAssertions;
 using MTG.Core.Cards;
 using MTG.Core.Components;
+using MTG.Core.Tests.Dummy;
 using MTG.Creator;
 using MTG.Engine.Cards;
 using MTG.Engine.Gameplay;
 using MTG.Engine.States;
 using MTG.Engine.Tests.Dummy;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using static MTG.Engine.Tests.Dummy.PresetCardData;
 
 namespace MTG.Engine.Tests;
 
 public class TestStates
 {
     [Fact]
-    public async Task Test1()
+    public async Task TestSix()
     {
-        var cres = DummyFactory.CreatePresetCard(PresetCard.Six); //TODO Dummy (in all tests)
+        var cres = CoreDummyFactory.CreatePresetCard(PresetCard.Six); //TODO Dummy (in all tests)
         cres.IsSuccess.Should().BeTrue(cres.Error);
 
-        var dcomm = DummyFactory.CreateCommanderPlayer([cres.Value]);
+        var dcomm = EngineDummyFactory.CreateCommanderPlayer([cres.Value]);
         dcomm.IsSuccess.Should().BeTrue(dcomm.Error);
 
         var ci = CardInstance.Create(cres.Value, dcomm.Value);

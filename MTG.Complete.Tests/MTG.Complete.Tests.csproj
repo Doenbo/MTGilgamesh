@@ -23,8 +23,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\MTG.Core.Tests\MTG.Core.Tests.csproj" />
     <ProjectReference Include="..\MTG.Core\MTG.Core.csproj" />
     <ProjectReference Include="..\MTG.DB\MTG.DB.csproj" />
+    <ProjectReference Include="..\MTG.Engine.Tests\MTG.Engine.Tests.csproj" />
     <ProjectReference Include="..\MTG.Engine\MTG.Engine.csproj" />
     <ProjectReference Include="..\MTG.Frontend\MTG.Frontend.csproj" />
     <ProjectReference Include="..\MTG.Opponent\MTG.Opponent.csproj" />

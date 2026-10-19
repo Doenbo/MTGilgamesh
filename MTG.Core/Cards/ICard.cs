@@ -30,6 +30,10 @@ public interface ICard
     IReadOnlyDictionary<ImageSize, Uri> ImageUris { get; }
     Rarity Rarity { get; }
 
+    //Methods
+    string GetFullName();
+    string GetFullTypeLine();
+
     //Simple Yes/No Checks
     bool IsArtifact() => MainFace.IsArtifact();
     bool IsBasic() => MainFace.IsBasic();
@@ -42,9 +46,4 @@ public interface ICard
     bool IsPermanent() => MainFace.IsPermanent();
     bool IsPlaneswalker() => MainFace.IsPlaneswalker();
     bool IsMultifaced() => Faces.Count > 1;
-
-    //ToStrings
-    //string ToString();
-    //string ToStringConsole();
-
 }

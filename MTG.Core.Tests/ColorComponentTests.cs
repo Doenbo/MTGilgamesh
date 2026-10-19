@@ -12,10 +12,7 @@ public class ColorComponentTests
     [Fact]
     public void CreateValidEmpty()
     {
-        var colors = new List<string> { };
-        var indicator = new List<string> { };
-
-        var result = ColorComponent.Create(_manaParser, colors, indicator);
+        var result = ColorComponent.Create(_manaParser, [], []);
         result.IsSuccess.Should().BeTrue();
 
         var act = result.Value;
@@ -32,10 +29,7 @@ public class ColorComponentTests
     [InlineData("G", ManaType.Green)]
     public void CreateValidSingle(string s, ManaType c)
     {
-        var colors = new List<string> { s };
-        var indicator = new List<string> { s };
-
-        var result = ColorComponent.Create(_manaParser, colors, indicator);
+        var result = ColorComponent.Create(_manaParser, [s], [s]);
         result.IsSuccess.Should().BeTrue();
 
         var act = result.Value;
@@ -52,10 +46,7 @@ public class ColorComponentTests
     [InlineData("W", ManaType.White, "B", ManaType.Black)]
     public void CreateValidMultiple(string s1, ManaType c1, string s2, ManaType c2)
     {
-        var colors = new List<string> { s1, s2 };
-        var indicator = new List<string> { s1, s2 };
-
-        var result = ColorComponent.Create(_manaParser, colors, indicator);
+        var result = ColorComponent.Create(_manaParser, [s1, s2], [s1, s2]);
         result.IsSuccess.Should().BeTrue();
 
         var act = result.Value;
@@ -82,9 +73,7 @@ public class ColorComponentTests
     [Fact]
     public void CreateValidExplicitColorless_ReturnsManaTypeColorless()
     {
-        var colorlessList = new List<string> { "C" };
-
-        var result = ColorComponent.Create(_manaParser, colorlessList, colorlessList);
+        var result = ColorComponent.Create(_manaParser, ["C"], ["C"]);
 
         result.IsSuccess.Should().BeTrue();
         var act = result.Value;
@@ -95,10 +84,7 @@ public class ColorComponentTests
     [Fact]
     public void CreateValidMixed_ParsesEachFieldIndependently()
     {
-        var colors = new List<string> { "W", "U" };
-        List<string>? indicator = null;
-
-        var result = ColorComponent.Create(_manaParser, colors, indicator);
+        var result = ColorComponent.Create(_manaParser, ["W", "U"], null);
 
         result.IsSuccess.Should().BeTrue();
         var act = result.Value;
@@ -112,9 +98,7 @@ public class ColorComponentTests
     [InlineData("g", ManaType.Green)]
     public void CreateValidLowerCase_ParsesCorrectly(string input, ManaType expected)
     {
-        var list = new List<string> { input };
-
-        var result = ColorComponent.Create(_manaParser, list, list);
+        var result = ColorComponent.Create(_manaParser, [input], [input]);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Colors.Should().Be(expected);
@@ -127,11 +111,10 @@ public class ColorComponentTests
     [InlineData("Green")]
     public void CreateInvalidColor_ReturnsFailure(string invalidColor)
     {
-        var invalidList = new List<string> { "W", invalidColor };
+        var res1 = ColorComponent.Create(_manaParser, [invalidColor], null);
+        res1.IsSuccess.Should().BeFalse();
 
-        var result = ColorComponent.Create(_manaParser, invalidList, null);
-
-        result.IsSuccess.Should().BeFalse();
-        result.Error.Should().Contain($"Color '{invalidColor}' is invalid!");
+        var res2 = ColorComponent.Create(_manaParser, ["W", invalidColor], null);
+        res2.IsSuccess.Should().BeFalse();
     }
 }

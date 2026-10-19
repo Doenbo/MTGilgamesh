@@ -6,6 +6,7 @@ using MTG.Core.Components;
 using MTG.Core.Components.OracleText;
 using MTG.Core.Enums;
 using MTG.Core.Properties;
+using MTG.Core.Tests.Dummy;
 using MTG.Core.Types;
 using MTG.Creator;
 
@@ -14,13 +15,12 @@ namespace MTG.Complete.Tests;
 public class TestMyFavoriteCards
 {
     [Fact]
-    public async Task CreateEmmaraValid()
+    public void CreateEmmaraValid()
     {
-        var cref = new CardRef() { Name = "Emmara, Soul of the Accord" };
-        var res = await new CardCreator().GetByExactName(cref);
-        res.IsSuccess.Should().BeTrue(res.Error);
+        var cres = CoreDummyFactory.CreatePresetCard(PresetCard.Emmara);
+        cres.IsSuccess.Should().BeTrue(cres.Error);
 
-        var card = res.Value;
+        var card = cres.Value;
         AssertCardTypes(card, false, false, false, true, true, false, false, true, true, false, false);
 
         card.ColorIdentity.Should().Be(ManaType.Green | ManaType.White);
@@ -40,19 +40,18 @@ public class TestMyFavoriteCards
 
         card.AllParts.ShouldContainSingle(c => c.Id == new Guid("45907b16-af17-4237-ab38-9d7537fd30e8"), out var tref);
 
-        var tres = await new CardCreator().GetById(tref);
+        var tres = CoreDummyFactory.CreatePresetToken(PresetToken.SoldierTokenTGRN2);
         tres.IsSuccess.Should().BeTrue(tres.Error);
-        var token = tres.Value;
+        card.AllParts.ShouldContainSingle(c => c is not null && c.Id == tres.Value.Id, out var _);
 
         card.MainFace.TryGetComponent<TriggeredAbilityComponent>(out var c3).Should().BeTrue();
         c3.Should().NotBeNull();
     }
 
     [Fact]
-    public async Task CreateEmmaraTokenValid()
+    public void CreateEmmaraTokenValid()
     {
-        var cref = new CardRef() { Name = "Emmara, Soul of the Accord" };
-        var cres = await new CardCreator().GetByExactName(cref);
+        var cres = CoreDummyFactory.CreatePresetCard(PresetCard.Emmara);
         cres.IsSuccess.Should().BeTrue(cres.Error);
 
         var card = cres.Value;
@@ -61,7 +60,7 @@ public class TestMyFavoriteCards
         card.AllParts.Count.Should().Be(1);
         card.AllParts.ShouldContainSingle(c => c.Id == new Guid("45907b16-af17-4237-ab38-9d7537fd30e8"), out var tref);
 
-        var tres = await new CardCreator().GetById(tref);
+        var tres = CoreDummyFactory.CreatePresetToken(PresetToken.SoldierTokenTGRN2);
         tres.IsSuccess.Should().BeTrue(tres.Error);
         var token = tres.Value;
 
@@ -85,13 +84,12 @@ public class TestMyFavoriteCards
     }
 
     [Fact]
-    public async Task CreateYshtolaValid()
+    public void CreateYshtolaValid()
     {
-        var cref = new CardRef() { Name = "Y'shtola, Night's Blessed" };
-        var res = await new CardCreator().GetByExactName(cref);
-        res.IsSuccess.Should().BeTrue(res.Error);
+        var cres = CoreDummyFactory.CreatePresetCard(PresetCard.Yshtola);
+        cres.IsSuccess.Should().BeTrue(cres.Error);
 
-        var card = res.Value;
+        var card = cres.Value;
         AssertCardTypes(card, false, false, false, true, true, false, false, true, true, false, false);
 
         card.ColorIdentity.Should().Be(ManaType.White | ManaType.Blue | ManaType.Black);
@@ -118,13 +116,12 @@ public class TestMyFavoriteCards
     }
 
     [Fact]
-    public async Task CreateHulkValid()
+    public void CreateHulkValid()
     {
-        var cref = new CardRef() { Name = "Bruce Banner // The Incredible Hulk" };
-        var res = await new CardCreator().GetByExactName(cref);
-        res.IsSuccess.Should().BeTrue(res.Error);
+        var cres = CoreDummyFactory.CreatePresetCard(PresetCard.BruceBannerTheIncredibleHulk);
+        cres.IsSuccess.Should().BeTrue(cres.Error);
 
-        var card = res.Value;
+        var card = cres.Value;
         AssertCardTypes(card, false, false, false, true, true, false, false, true, true, false, true);
 
         card.ColorIdentity.Should().Be(ManaType.Blue | ManaType.Red | ManaType.Green);

@@ -233,8 +233,6 @@ public class ScryfallCardConverter(IOracleTextParser oracleTextParser, IManaSymb
 
         var args = new CardCreationArgs
         {
-            Name = dto.Name,
-            TypeLine = dto.TypeLine,
             ColorIdentity = identityResult.Value,
             CardFaces = cardFaces,
             AllParts = allParts,

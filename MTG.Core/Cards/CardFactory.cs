@@ -1,12 +1,11 @@
 ﻿using MTG.Core.Enums;
 using MTG.Core.Helper;
+using System.Text;
 
 namespace MTG.Core.Cards;
 
 public record CardCreationArgs
 {
-    public required string Name { get; init; }
-    public required string TypeLine { get; init; }
     public required ManaType ColorIdentity { get; init; }
     public required IReadOnlyList<ICardFace> CardFaces { get; init; }
     public required IReadOnlyList<CardRef> AllParts { get; init; } = [];
@@ -34,7 +33,7 @@ public static class CardFactory
         if (args.ColorIdentity == ManaType.None)
             return Result<ICard>.Failure("A card's Color Identity cannot be None!");
 
-        return Result<ICard>.Success(new Card(args.Name, args.TypeLine)
+        return Result<ICard>.Success(new Card()
         {
             ColorIdentity = args.ColorIdentity,
             Faces = args.CardFaces,
@@ -52,18 +51,11 @@ public static class CardFactory
 
     private class Card : ICard
     {
-        public Card(string name, string typeline) { Name = name; TypeLine = typeline; }
-
-        //Merged Face Properties - just to hold the data
-        private string Name { get; init; }
-        private string TypeLine { get; init; }
-
         //Face Stuff
         public required IReadOnlyList<ICardFace> Faces { get; init; } = [];
         public ICardFace MainFace => Faces[0];
         public string MainFaceName => Faces[0].Name;
         public string MainFaceTypeLine => Faces[0].TypeLine.ToString();
-
 
         //Gameplay
         public required ManaType ColorIdentity { get; init; }
@@ -74,7 +66,7 @@ public static class CardFactory
         public required Guid Id { get; init; }
         public required string Lang { get; init; }
         public required Layout Layout { get; init; }
-        public IReadOnlyDictionary<Format, Legality> Legalities { get; init; }
+        public required IReadOnlyDictionary<Format, Legality> Legalities { get; init; }
 
         //Print
         public required string CollectorNumber { get; init; }
@@ -83,9 +75,8 @@ public static class CardFactory
         public required IReadOnlyDictionary<ImageSize, Uri> ImageUris { get; init; }
         public Rarity Rarity { get; init; }
 
-        //ToStrings
-        //public override string ToString() => $"{Name} - {Set.ToUpper()}({CollectorNumber})";
-
-        //public string ToStringConsole() => MainFace.ToString();
+        //Methods
+        public string GetFullName() => string.Join(" // ", Faces.Select(f => f.Name));
+        public string GetFullTypeLine() => string.Join(" // ", Faces.Select(f => f.TypeLine));
     }
 }

@@ -2,16 +2,14 @@
 using MTG.Core.Decks;
 using MTG.Core.Enums;
 using MTG.Core.Helper;
-using MTG.Engine.Gameplay;
-using System.Xml.Linq;
 
-namespace MTG.Engine.Tests.Dummy;
+namespace MTG.Core.Tests.Dummy;
 
-public class DummyFactory
+public class CoreDummyFactory
 {
     public static Result<ICard> CreatePresetCard(PresetCard pc)
     {
-        var faceArgsResult = PresetCardData.Faces[pc]();
+        var faceArgsResult = PresetCardData.CardFaces[pc]();
         if (faceArgsResult.IsFailure) return faceArgsResult.ToFailure<ICard>();
 
         var cardFaces = new List<ICardFace>();
@@ -27,14 +25,22 @@ public class DummyFactory
         return CardFactory.Create(cardArgs);
     }
 
-    public static Result<CommanderPlayer> CreateCommanderPlayer(List<ICard> comms, string name = "TestPlayer", int life = 40)
+    public static Result<ICard> CreatePresetToken(PresetToken pt)
     {
-        var d1 = CreateCommanderDeck(comms);
-        if (d1.IsFailure) return d1.ToFailure<CommanderPlayer>();
-        var d2 = CreatePlayerInputProvider();
-        if (d2.IsFailure) return d2.ToFailure<CommanderPlayer>();
+        var faceArgsResult = PresetCardData.TokenFaces[pt]();
+        if (faceArgsResult.IsFailure) return faceArgsResult.ToFailure<ICard>();
 
-        return CommanderPlayer.Create(name, life, d1.Value, d2.Value);
+        var cardFaces = new List<ICardFace>();
+        foreach (var args in faceArgsResult.Value)
+        {
+            var faceResult = CardFaceFactory.Create(args);
+            if (faceResult.IsFailure) return faceResult.ToFailure<ICard>();
+
+            cardFaces.Add(faceResult.Value);
+        }
+
+        var cardArgs = PresetCardData.Tokens[pt](cardFaces);
+        return CardFactory.Create(cardArgs);
     }
 
     public static Result<ICommanderDeck> CreateCommanderDeck(List<ICard> comms)
@@ -76,18 +82,5 @@ public class DummyFactory
         var c = CardFactory.Create(args);
         if (c.IsFailure) return c.ToFailure<List<ICard>>();
         return Result<List<ICard>>.Success([c.Value]);
-    }
-
-    public static Result<IPlayerInputProvider> CreatePlayerInputProvider()
-    {
-        return Result<IPlayerInputProvider>.Success(new DummyInputProvider());
-    }
-
-    private class DummyInputProvider : IPlayerInputProvider
-    {
-        public Task<PlayerAction> GetNextAction(GameContext context, CommanderPlayer player)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
