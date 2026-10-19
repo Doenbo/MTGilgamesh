@@ -23,12 +23,13 @@ public static class PresetCardData
             Components = [CreatureComponent.Create("2", "2").Value]
         };
 
-        ICardFace face = CardFaceFactory.Create(faceArgs).Value; //TODO is this cool?
+        var face = CardFaceFactory.Create(faceArgs);
+        if (face.IsFailure) return face.ToFailure<ICard>();
 
         var cardArgs = new CardCreationArgs
         {
             ColorIdentity = mt,
-            CardFaces = [face],
+            CardFaces = [face.Value],
             AllParts = [],
             Set = "tst",
             CollectorNumber = "1",
@@ -171,8 +172,8 @@ public static class PresetCardData
                 CollectorNumber = "169",
                 Lang = "en",
                 SetName = "Modern Horizons 3",
-                Id = new Guid("f9246b68-580f-4f53-883d-7900880e4b0d"),
-                Layout = Layout.Normal,
+                Id = new Guid("e0dbbdcf-84e1-494f-8b8c-0a094f603fa9"),
+                Layout = Layout.ModalDfc,
                 Rarity = Rarity.Rare,
                 Legalities = new Dictionary<Format, Legality>(),
                 ImageUris = new Dictionary<ImageSize, Uri>()
