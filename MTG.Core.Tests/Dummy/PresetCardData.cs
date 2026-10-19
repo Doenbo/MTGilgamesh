@@ -1,87 +1,30 @@
-﻿using MTG.Core.Abilities;
-using MTG.Core.Cards;
-using MTG.Core.Components;
+﻿using MTG.Core.Cards;
 using MTG.Core.Enums;
 using MTG.Core.Helper;
-using MTG.Core.OracleTextParsers;
-using MTG.Core.Properties;
+
+using PCL = MTG.Core.Tests.Dummy.PresetCardLogic;
 
 namespace MTG.Core.Tests.Dummy;
 
 public static class PresetCardData
 {
-    //Filler
-    public static Result<ICard> CreateFillerCard(string cardName, ManaType mt)
-    {
-        var faceArgs = new CardFaceCreationArgs
-        {
-            Name = cardName,
-            TypeLine = TypeLine.Create("Creature — Bear").Value,
-            OracleText = string.Empty,
-            Components = [CreatureComponent.Create("2", "2").Value]
-        };
-
-        var face = CardFaceFactory.Create(faceArgs);
-        if (face.IsFailure) return face.ToFailure<ICard>();
-
-        var cardArgs = new CardCreationArgs
-        {
-            ColorIdentity = mt,
-            CardFaces = [face.Value],
-            AllParts = [],
-            Set = "tst",
-            CollectorNumber = "1",
-            Lang = "en",
-            SetName = "Test Set",
-            Id = Guid.NewGuid(),
-            Layout = Layout.Normal,
-            Rarity = Rarity.Common,
-            Legalities = new Dictionary<Format, Legality>(),
-            ImageUris = new Dictionary<ImageSize, Uri>()
-        };
-
-        return CardFactory.Create(cardArgs);
-    }
-
-    private static Result<IReadOnlyList<CardFaceCreationArgs>> SingleFace(Result<CardFaceCreationArgs> faceResult)
-    {
-        if (faceResult.IsFailure)
-            return faceResult.ToFailure<IReadOnlyList<CardFaceCreationArgs>>();
-
-        return Result<IReadOnlyList<CardFaceCreationArgs>>.Success([faceResult.Value]);
-    }
-
-    private static Result<IReadOnlyList<CardFaceCreationArgs>> MultiFace(params Result<CardFaceCreationArgs>[] faceResults)
-    {
-        var list = new List<CardFaceCreationArgs>();
-        foreach (var res in faceResults)
-        {
-            if (res.IsFailure)
-                return res.ToFailure<IReadOnlyList<CardFaceCreationArgs>>();
-
-            list.Add(res.Value);
-        }
-
-        return Result<IReadOnlyList<CardFaceCreationArgs>>.Success(list);
-    }
-
     //Enums
     public static readonly IReadOnlyDictionary<PresetCard, Func<Result<IReadOnlyList<CardFaceCreationArgs>>>> CardFaces =
         new Dictionary<PresetCard, Func<Result<IReadOnlyList<CardFaceCreationArgs>>>>
         {
-            [PresetCard.Emmara] = () => SingleFace(BuildEmmaraFace()),
-            [PresetCard.Yshtola] = () => SingleFace(BuildYshtolaFace()),
-            [PresetCard.BruceBannerTheIncredibleHulk] = () => MultiFace(BuildBruceBannerFace(), BuildTheIncredibleHulkFace()),
-            [PresetCard.Six] = () => SingleFace(BuildSixFace()),
+            [PresetCard.Emmara] = () => PCL.SingleFace(BuildEmmaraFace()),
+            [PresetCard.Yshtola] = () => PCL.SingleFace(BuildYshtolaFace()),
+            [PresetCard.BruceBannerTheIncredibleHulk] = () => PCL.MultiFace(BuildBruceBannerFace(), BuildTheIncredibleHulkFace()),
+            [PresetCard.Six] = () => PCL.SingleFace(BuildSixFace()),
         };
 
     public static readonly IReadOnlyDictionary<PresetToken, Func<Result<IReadOnlyList<CardFaceCreationArgs>>>> TokenFaces =
         new Dictionary<PresetToken, Func<Result<IReadOnlyList<CardFaceCreationArgs>>>>
         {
-            [PresetToken.SoldierTokenTGRN2] = () => SingleFace(BuildEmmaraTokenFace()),
+            [PresetToken.SoldierTokenTGRN2] = () => PCL.SingleFace(BuildEmmaraTokenFace()),
         };
 
-    private static Result<CardFaceCreationArgs> BuildEmmaraFace() => BuildFace(
+    private static Result<CardFaceCreationArgs> BuildEmmaraFace() => PCL.BuildFace(
         name: "Emmara, Soul of the Accord",
         typeLineStr: "Legendary Creature — Elf Cleric",
         oracleText: "Whenever Emmara becomes tapped, create a 1/1 white Soldier creature token with lifelink.",
@@ -90,7 +33,7 @@ public static class PresetCardData
         colors: ["G", "W"]
     );
 
-    private static Result<CardFaceCreationArgs> BuildEmmaraTokenFace() => BuildFace(
+    private static Result<CardFaceCreationArgs> BuildEmmaraTokenFace() => PCL.BuildFace(
         name: "Soldier",
         typeLineStr: "Token Creature — Soldier",
         oracleText: "Lifelink",
@@ -99,7 +42,7 @@ public static class PresetCardData
         colors: ["W"]
     );
 
-    private static Result<CardFaceCreationArgs> BuildYshtolaFace() => BuildFace(
+    private static Result<CardFaceCreationArgs> BuildYshtolaFace() => PCL.BuildFace(
         name: "Y'shtola, Night's Blessed",
         typeLineStr: "Legendary Creature — Cat Warlock",
         oracleText: "Vigilance\nAt the beginning of each end step, if a player lost 4 or more life this turn, you draw a card.\nWhenever you cast a noncreature spell with mana value 3 or greater, Y'shtola deals 2 damage to each opponent and you gain 2 life.",
@@ -108,7 +51,7 @@ public static class PresetCardData
         colors: ["W", "U", "B"]
     );
 
-    private static Result<CardFaceCreationArgs> BuildBruceBannerFace() => BuildFace(
+    private static Result<CardFaceCreationArgs> BuildBruceBannerFace() => PCL.BuildFace(
         name: "Bruce Banner",
         typeLineStr: "Legendary Creature — Human Scientist Hero",
         oracleText: "",
@@ -117,7 +60,7 @@ public static class PresetCardData
         colors: ["U"]
     );
 
-    private static Result<CardFaceCreationArgs> BuildTheIncredibleHulkFace() => BuildFace(
+    private static Result<CardFaceCreationArgs> BuildTheIncredibleHulkFace() => PCL.BuildFace(
         name: "The Incredible Hulk",
         typeLineStr: "Legendary Creature — Gamma Berserker Hero",
         oracleText: "",
@@ -126,7 +69,7 @@ public static class PresetCardData
         colors: ["R", "G"]
     );
 
-    private static Result<CardFaceCreationArgs> BuildSixFace() => BuildFace(
+    private static Result<CardFaceCreationArgs> BuildSixFace() => PCL.BuildFace(
         name: "Six",
         typeLineStr: "Legendary Creature — Treefolk",
         oracleText: "Reach\nWhenever Six attacks, mill three cards. You may put a land card from among them into your hand.\nDuring your turn, nonland permanent cards in your graveyard have retrace. (You may cast permanent cards from your graveyard by discarding a land card in addition to paying their other costs.)",
@@ -219,40 +162,4 @@ public static class PresetCardData
                 ImageUris = new Dictionary<ImageSize, Uri>()
             },
         };
-
-    private static Result<CardFaceCreationArgs> BuildFace(
-    string name, string typeLineStr, string oracleText, string power, string toughness,
-    List<string> colors)
-    {
-        var typeLineResult = TypeLine.Create(typeLineStr);
-        if (typeLineResult.IsFailure)
-            return typeLineResult.ToFailure<CardFaceCreationArgs>();
-
-        var creatureResult = CreatureComponent.Create(power, toughness);
-        if (creatureResult.IsFailure)
-            return creatureResult.ToFailure<CardFaceCreationArgs>();
-
-        var colorResult = ColorComponent.Create(new ManaSymbolParser(), colors, null);
-        if (colorResult.IsFailure)
-            return colorResult.ToFailure<CardFaceCreationArgs>();
-
-        var components = new List<ICardComponent> { creatureResult.Value, colorResult.Value };
-
-        if (!string.IsNullOrWhiteSpace(oracleText))
-        {
-            var parseResult = new OracleTextParser().Parse(oracleText, new CardContext(name));
-            if (parseResult.IsFailure)
-                return parseResult.ToFailure<CardFaceCreationArgs>();
-
-            components.AddRange(parseResult.Value);
-        }
-
-        return Result<CardFaceCreationArgs>.Success(new CardFaceCreationArgs
-        {
-            Name = name,
-            TypeLine = typeLineResult.Value,
-            OracleText = oracleText,
-            Components = components
-        });
-    }
 }
