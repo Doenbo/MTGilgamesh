@@ -16,6 +16,7 @@ public static class PresetCardData
             [PresetCard.Yshtola] = () => PCL.SingleFace(BuildYshtolaFace()),
             [PresetCard.BruceBannerTheIncredibleHulk] = () => PCL.MultiFace(BuildBruceBannerFace(), BuildTheIncredibleHulkFace()),
             [PresetCard.Six] = () => PCL.SingleFace(BuildSixFace()),
+            [PresetCard.WallOfOmens] = () => PCL.SingleFace(BuildWallOfOmensFace()),
         };
 
     public static readonly IReadOnlyDictionary<PresetToken, Func<Result<IReadOnlyList<CardFaceCreationArgs>>>> TokenFaces =
@@ -78,6 +79,15 @@ public static class PresetCardData
         colors: ["G"]
     );
 
+    private static Result<CardFaceCreationArgs> BuildWallOfOmensFace() => PCL.BuildFace(
+        name: "Wall of Omens",
+        typeLineStr: "Creature — Wall",
+        oracleText: "Defender\nWhen this creature enters, draw a card.",
+        power: "0",
+        toughness: "4",
+        colors: ["W"]
+    );
+
     public static readonly IReadOnlyDictionary<PresetCard, Func<IReadOnlyList<ICardFace>, CardCreationArgs>> Cards =
         new Dictionary<PresetCard, Func<IReadOnlyList<ICardFace>, CardCreationArgs>>
         {
@@ -138,6 +148,21 @@ public static class PresetCardData
                 Id = new Guid("f9246b68-580f-4f53-883d-7900880e4b0d"),
                 Layout = Layout.Normal,
                 Rarity = Rarity.Rare,
+                Legalities = new Dictionary<Format, Legality>(),
+                ImageUris = new Dictionary<ImageSize, Uri>()
+            },
+            [PresetCard.WallOfOmens] = faces => new CardCreationArgs
+            {
+                ColorIdentity = ManaType.White,
+                CardFaces = faces,
+                AllParts = [],
+                Set = "tdc",
+                CollectorNumber = "138",
+                Lang = "en",
+                SetName = "Tarkir: Dragonstorm Commander",
+                Id = new Guid("3d134bb2-17ec-4e65-976e-f06fa983f3fb"),
+                Layout = Layout.Normal,
+                Rarity = Rarity.Uncommon,
                 Legalities = new Dictionary<Format, Legality>(),
                 ImageUris = new Dictionary<ImageSize, Uri>()
             },

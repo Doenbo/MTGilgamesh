@@ -3,6 +3,7 @@ using MTG.Core.Abilities;
 using MTG.Core.Cards;
 using MTG.Core.Components.OracleText;
 using MTG.Core.Enums;
+using MTG.Core.Tests.Dummy;
 using MTG.Core.Types;
 using MTG.Creator;
 
@@ -13,11 +14,10 @@ public class TestMechanics
     [Fact]
     public async Task EnterTheBattlefieldValid()
     {
-        var cref = new CardRef() { Name = "Wall of Omens" };
-        var res = await new CardCreator().GetByExactName(cref);
-        res.IsSuccess.Should().BeTrue(res.Error);
+        var cres = CoreDummyFactory.CreatePresetCard(PresetCard.WallOfOmens);
+        cres.IsSuccess.Should().BeTrue(cres.Error);
 
-        var card = res.Value;
+        var card = cres.Value;
         card.MainFace.TryGetComponent<TriggeredAbilityComponent>(out var c1).Should().BeTrue();
         c1.Should().NotBeNull();
 
