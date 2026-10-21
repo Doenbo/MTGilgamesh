@@ -1,14 +1,14 @@
 using Microsoft.EntityFrameworkCore;
-using MTG.Core;
 using MTG.Core.Enums;
 using MTG.Core.Helper;
 using MTG.Core.Types;
+using MTG.Engine.Cards;
+using MTG.Engine.Cheating;
 using MTG.Engine.Enums;
 using MTG.Engine.Gameplay;
-
-using ENV = System.Environment;
+using System.Numerics;
 using CIS = MTG.Run.ConsoleInputStrings;
-using MTG.Engine.Cards;
+using ENV = System.Environment;
 
 namespace MTG.Run;
 
@@ -41,7 +41,7 @@ public class ConsoleInputProvider : IPlayerInputProvider
             context.Display.LogInfo(
                 $"{ENV.NewLine}[{context.TurnStep}] {context.PriorityPlayer.Name}, it's your main phase. What do you do?" +
                 $"{ENV.NewLine}1: Play a Card from your Hand | 2: Tap Land for Mana | 3: Activate Ability | " +
-                $"{(Cheats.CanSeeOtherPlayersStuff ? CIS.s_cheat + " | " : "")}" +
+                $"{(player.HasCheat(Cheats.CanSeeOtherPlayersStuff) ? CIS.s_cheat + " | " : "")}" +
                 $"{CIS.f_endph}");
 
             var input = Console.ReadLine(); //TODO? via other class?
@@ -74,7 +74,7 @@ public class ConsoleInputProvider : IPlayerInputProvider
                     return new PlayerAction(player, ActionType.PlayCard, chosenCard.Value);
 
                 case "C":
-                    ChooseCheat(context);
+                    ChooseCheat(context, player);
                     continue;
 
                 case "0":
@@ -261,13 +261,13 @@ public class ConsoleInputProvider : IPlayerInputProvider
         }
     }
 
-    private static void ChooseCheat(GameContext context)
+    private static void ChooseCheat(GameContext context, CommanderPlayer player)
     {
         while (true)
         {
             context.Display.LogInfo(
                 $"{ENV.NewLine}[{context.TurnStep}] {context.PriorityPlayer.Name}, it's your cheat phase. What do you do?" +
-                $"{ENV.NewLine}{(Cheats.CanSeeOtherPlayersStuff ? CIS.f_ocheat + " | " : "")}" +
+                $"{ENV.NewLine}{(player.HasCheat(Cheats.CanSeeOtherPlayersStuff) ? CIS.f_ocheat + " | " : "")}" +
                 $"{CIS.o_endph}");
 
             string? input = Console.ReadLine();
@@ -314,21 +314,21 @@ public class ConsoleInputProvider : IPlayerInputProvider
 
     private static bool AnyCheatSkipActive(GameContext context, CommanderPlayer player)
     {
-        if (Cheats.SkipUpkeepAndDraw &&
+        if (player.HasCheat(Cheats.SkipUpkeepAndDraw) &&
            (context.TurnStep == TurnStep.Upkeep || context.TurnStep == TurnStep.Draw))
             return true;
 
-        if (Cheats.SkipCompleteCombatPhase &&
+        if (player.HasCheat(Cheats.SkipCompleteCombatPhase) &&
            (context.TurnStep == TurnStep.CombatBegin || context.TurnStep == TurnStep.DeclareAttackers ||
             context.TurnStep == TurnStep.DeclareBlockers || context.TurnStep == TurnStep.CombatDamage ||
             context.TurnStep == TurnStep.EndOfCombat))
             return true;
 
-        if (Cheats.SkipEndStep &&
+        if (player.HasCheat(Cheats.SkipEndStep) &&
            (context.TurnStep == TurnStep.EndStep || context.TurnStep == TurnStep.CleanupStep))
             return true;
 
-        if (Cheats.SkipPrio &&
+        if (player.HasCheat(Cheats.SkipPrio) &&
            (context.StackCount > 0 || context.ActivePlayer != player))
             return true;
 

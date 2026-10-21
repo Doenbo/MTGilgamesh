@@ -1,7 +1,7 @@
-using MTG.Core;
 using MTG.Core.Components;
 using MTG.Core.Components.OracleText;
 using MTG.Core.Enums;
+using MTG.Engine.Cheating;
 using MTG.Engine.Enums;
 using MTG.Engine.Events;
 using MTG.Engine.Gameplay;
@@ -71,7 +71,7 @@ public abstract class TurnStepBase : ITurnStep
                 return;
             }
 
-            if (!Cheats.CanPlayInfiniteLands && context.HasPlayedLandThisTurn)
+            if (!action.Player.HasCheat(Cheats.CanPlayInfiniteLands) && context.HasPlayedLandThisTurn)
             {
                 context.Display.LogError("You can only play one land each turn!");
                 return;
@@ -102,7 +102,7 @@ public abstract class TurnStepBase : ITurnStep
             return;
         }
 
-        var payResult = mps.TryPay(mcc.ManaCost, player.ManaPool);
+        var payResult = mps.TryPay(mcc.ManaCost, player.ManaPool, player);
         if (payResult.IsFailure)
         {
             context.Display.LogError($"Cannot cast {card.CardData.MainFaceName}: {payResult.Error}");
@@ -121,7 +121,7 @@ public abstract class TurnStepBase : ITurnStep
         var card = action.TargetCardInstance;
         var player = action.Player;
 
-        if (card == null || (card.IsTapped && !Cheats.CanTapLandsInfiniteTimes))
+        if (card == null || (card.IsTapped && !action.Player.HasCheat(Cheats.CanTapLandsInfiniteTimes)))
         {
             context.Display.LogError($"Cannot tap card for Mana!");
             return;

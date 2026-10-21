@@ -2,8 +2,11 @@
 using MTG.Core;
 using MTG.Core.Abilities;
 using MTG.Core.Enums;
+using MTG.Core.Tests.Dummy;
+using MTG.Engine.Cheating;
 using MTG.Engine.Gameplay;
 using MTG.Engine.Services;
+using MTG.Engine.Tests.Dummy;
 
 namespace MTG.Engine.Tests;
 
@@ -39,16 +42,20 @@ public class ManaPayServiceTests
     [InlineData("{4}{G}{G}", 0, 0, 0, 0, 6, 0)]
     public void TestCanAfford(string mana, int w, int u, int b, int r, int g, int c)
     {
-        Cheats.CanPlaySpellsWithoutPaying = false;
-
         var cost = ManaCost.Create(mana);
         cost.IsSuccess.Should().BeTrue();
 
         var pool = new ManaPool();
         AddMana(pool, w, u, b, r, g, c);
 
+        var cres = CoreDummyFactory.CreatePresetCard(PresetCard.Six);
+        cres.IsSuccess.Should().BeTrue(cres.Error);
+
+        var player = EngineDummyFactory.CreateCommanderPlayer([cres.Value]);
+        player.IsSuccess.Should().BeTrue(player.Error);
+
         var mps = new ManaPayService();
-        mps.CanAfford(cost.Value, pool).IsSuccess.Should().BeTrue();
+        mps.CanAfford(cost.Value, pool, player.Value).IsSuccess.Should().BeTrue();
     }
 
     [Theory]
@@ -62,16 +69,20 @@ public class ManaPayServiceTests
     [InlineData("{2}{R}", 0, 0, 0, 1, 0, 0)]
     public void TestCantAfford(string mana, int w, int u, int b, int r, int g, int c)
     {
-        Cheats.CanPlaySpellsWithoutPaying = false;
-
         var cost = ManaCost.Create(mana);
         cost.IsSuccess.Should().BeTrue();
 
         var pool = new ManaPool();
         AddMana(pool, w, u, b, r, g, c);
 
+        var cres = CoreDummyFactory.CreatePresetCard(PresetCard.Six);
+        cres.IsSuccess.Should().BeTrue(cres.Error);
+
+        var player = EngineDummyFactory.CreateCommanderPlayer([cres.Value]);
+        player.IsSuccess.Should().BeTrue(player.Error);
+
         var mps = new ManaPayService();
-        mps.CanAfford(cost.Value, pool).IsFailure.Should().BeTrue();
+        mps.CanAfford(cost.Value, pool, player.Value).IsFailure.Should().BeTrue();
     }
 
     private static void AddMana(ManaPool pool, int w, int u, int b, int r, int g, int c)

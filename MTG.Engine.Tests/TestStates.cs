@@ -15,7 +15,7 @@ public class TestStates
     [Fact]
     public async Task TestSix()
     {
-        var cres = CoreDummyFactory.CreatePresetCard(PresetCard.Six); //TODO Dummy (in all tests)
+        var cres = CoreDummyFactory.CreatePresetCard(PresetCard.Six);
         cres.IsSuccess.Should().BeTrue(cres.Error);
 
         var dcomm = EngineDummyFactory.CreateCommanderPlayer([cres.Value]);

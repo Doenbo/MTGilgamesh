@@ -6,6 +6,7 @@ using MTG.Creator;
 using MTG.Engine.Cards;
 using MTG.Engine.Zones;
 using MTG.Resources.Enums;
+using MTG.Engine.Cheating;
 
 namespace MTG.Engine.Gameplay;
 
@@ -13,6 +14,7 @@ public class CommanderPlayer
 {
     private readonly IPlayerInputProvider _inputProvider;
     private static readonly ILogger<CommanderPlayer> _logger = LogManager.GetLogger<CommanderPlayer>();
+    private Cheats Cheats { get; init; }
 
     public string Name { get; init; }
     public int LifeTotal { get; set; }
@@ -33,25 +35,24 @@ public class CommanderPlayer
     public CommandZone CommandZone { get; init; } = new();
 
 
-    private CommanderPlayer(string name, int life, ICommanderDeck cd, IPlayerInputProvider pip)
+    private CommanderPlayer(string name, int life, ICommanderDeck cd, IPlayerInputProvider pip, Cheats c)
     {
         Name = name;
         LifeTotal = life;
         Deck = cd;
         _inputProvider = pip;
         ManaPool = new ManaPool();
+        Cheats = c;
     }
 
-    //TODO ICOMMANDERDECK
-    public static Result<CommanderPlayer> Create(string name, int life, ICommanderDeck deck, IPlayerInputProvider pip)
+    //TODO ICOMMANDERDECK?
+    public static Result<CommanderPlayer> Create(
+        string name, int life, ICommanderDeck deck, IPlayerInputProvider pip, Cheats c)
     {
-        //TODO pip null??
+        if (string.IsNullOrWhiteSpace(name) || life < 1 || deck is null || pip is null)
+            return Result<CommanderPlayer>.Failure("Commander Player Params can't be null or empty!");
 
-        //var deck = await DeckCreator.CreateCommanderDeckFromText(path);
-        //if (deck.IsFailure)
-        //    return deck.ToFailure<CommanderPlayer>();
-
-        var player = new CommanderPlayer(name, life, deck, pip);
+        var player = new CommanderPlayer(name, life, deck, pip, c);
 
         var res = player.InitializeCardInstances(deck);
         if (res.IsFailure) return res.ToFailure<CommanderPlayer>();
@@ -62,15 +63,17 @@ public class CommanderPlayer
         return Result<CommanderPlayer>.Success(player);
     }
 
-    public static async Task<Result<CommanderPlayer>> Create(string name, int life, CommanderPrecon cp, IPlayerInputProvider pip)
+    public static async Task<Result<CommanderPlayer>> Create(
+        string name, int life, CommanderPrecon cp, IPlayerInputProvider pip, Cheats c)
     {
-        //TODO pip null??
+        if (string.IsNullOrWhiteSpace(name) || life < 1 || pip is null)
+            return Result<CommanderPlayer>.Failure("Commander Player Params can't be null or empty!");
 
         var deck = await DeckCreator.CreateCommanderPrecon(cp);
         if (deck.IsFailure)
             return deck.ToFailure<CommanderPlayer>();
 
-        return Create(name, life, deck.Value, pip);
+        return Create(name, life, deck.Value, pip, c);
     }
 
     private Result InitializeCardInstances(ICommanderDeck deck)
@@ -156,6 +159,8 @@ public class CommanderPlayer
     }
 
     public Task<PlayerAction> GetNextAction(GameContext gc) => _inputProvider.GetNextAction(gc, this);
+
+    public bool HasCheat(Cheats c) => Cheats.HasFlag(c);
 
     public override string ToString() => $"{Name} ({LifeTotal})";
 }

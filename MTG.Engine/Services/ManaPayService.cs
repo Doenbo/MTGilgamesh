@@ -1,21 +1,21 @@
 ﻿using MTG.Core;
 using MTG.Core.Helper;
+using MTG.Engine.Cheating;
 using MTG.Engine.Gameplay;
 
 namespace MTG.Engine.Services;
 
 public class ManaPayService : IManaPayService
 {
-    public Result CanAfford(ManaCost cost, ManaPool pool)
+    public Result CanAfford(ManaCost cost, ManaPool pool, CommanderPlayer cp)
     {
-        var payResult = TryPay(cost, pool);
+        var payResult = TryPay(cost, pool, cp);
         return payResult.IsSuccess ? Result.Success() : Result.Failure(payResult.Error);
     }
 
-    public Result<ManaPool> TryPay(ManaCost cost, ManaPool pool)
+    public Result<ManaPool> TryPay(ManaCost cost, ManaPool pool, CommanderPlayer cp)
     {
-        if (Cheats.CanPlaySpellsWithoutPaying ||
-           cost.Symbols.Count == -1) //so compiler shuts up
+        if (cp.HasCheat(Cheats.All) || cp.HasCheat(Cheats.Infinites))
             return Result<ManaPool>.Success(pool);
 
         if (cost == null || pool == null)

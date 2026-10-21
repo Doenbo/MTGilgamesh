@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
-using MTG.Core;
 using MTG.Core.Cards;
 using MTG.Core.Helper;
 using MTG.Creator;
+using MTG.Engine.Cheating;
 using MTG.Engine.Gameplay;
 using MTG.Opponent;
 
@@ -12,8 +12,6 @@ public class Program
 {
     public static async Task Main()
     {
-        Cheats.EnableAll();
-
         LogManager.Factory = LoggerFactory.Create(builder =>
         {
             builder.AddConsole();

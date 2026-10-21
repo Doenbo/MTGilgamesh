@@ -1,7 +1,7 @@
 using Godot;
-using MTG.Core;
 using MTG.Core.Enums;
 using MTG.Engine.Cards;
+using MTG.Engine.Cheating;
 using MTG.Engine.Enums;
 using MTG.Engine.Gameplay;
 using System;
@@ -45,21 +45,21 @@ public class GodotGuiInputProvider : IPlayerInputProvider
 
     private static bool AnyCheatSkipActive(GameContext context, CommanderPlayer player)
     {
-        if (Cheats.SkipUpkeepAndDraw &&
+        if (player.HasCheat(Cheats.SkipUpkeepAndDraw) &&
            (context.TurnStep == TurnStep.Upkeep || context.TurnStep == TurnStep.Draw))
             return true;
 
-        if (Cheats.SkipCompleteCombatPhase &&
+        if (player.HasCheat(Cheats.SkipCompleteCombatPhase) &&
            (context.TurnStep == TurnStep.CombatBegin || context.TurnStep == TurnStep.DeclareAttackers ||
             context.TurnStep == TurnStep.DeclareBlockers || context.TurnStep == TurnStep.CombatDamage ||
             context.TurnStep == TurnStep.EndOfCombat))
             return true;
 
-        if (Cheats.SkipEndStep &&
+        if (player.HasCheat(Cheats.SkipEndStep) &&
            (context.TurnStep == TurnStep.EndStep || context.TurnStep == TurnStep.CleanupStep))
             return true;
 
-        if (Cheats.SkipPrio &&
+        if (player.HasCheat(Cheats.SkipPrio) &&
            (context.StackCount > 0 || context.ActivePlayer != player))
             return true;
 

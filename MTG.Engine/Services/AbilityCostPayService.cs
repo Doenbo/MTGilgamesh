@@ -26,7 +26,7 @@ public class AbilityCostPayService : IAbilityCostPayService
                 ? Result.Failure("Not enough life to pay cost.")
                 : Result.Success(),
 
-            ManaCostData mana => _manaPayService.CanAfford(mana.Mana, player.ManaPool).IsSuccess
+            ManaCostData mana => _manaPayService.CanAfford(mana.Mana, player.ManaPool, player).IsSuccess
                 ? Result.Success()
                 : Result.Failure("Not enough mana in pool."),
 
@@ -53,7 +53,7 @@ public class AbilityCostPayService : IAbilityCostPayService
                 return Result.Success();
 
             case ManaCostData mana:
-                var payResult = _manaPayService.TryPay(mana.Mana, player.ManaPool);
+                var payResult = _manaPayService.TryPay(mana.Mana, player.ManaPool, player);
                 if (payResult.IsFailure)
                 {
                     return Result.Failure(payResult.Error);
