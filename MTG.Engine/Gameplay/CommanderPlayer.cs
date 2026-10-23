@@ -89,7 +89,7 @@ public class CommanderPlayer
         {
             var ci = CardInstance.Create(card, this);
             if (ci.IsFailure) return ci;
-            Library.Add(ci.Value);
+            Library.AddCard(ci.Value);
         }
 
         Library.Shuffle();
@@ -117,7 +117,7 @@ public class CommanderPlayer
             if (drawnCard == null)
                 return Result.Failure("Cannot draw a card: Library is empty!");
 
-            Hand.Add(drawnCard);
+            Hand.AddCard(drawnCard);
         }
 
         return Result.Success();
@@ -125,32 +125,32 @@ public class CommanderPlayer
 
     public void AddToHand(CardInstance card)
     {
-        Hand.Add(card);
+        Hand.AddCard(card);
     }
 
     public void RemoveFromHand(CardInstance card)
     {
-        Hand.Remove(card);
+        Hand.RemoveCard(card);
     }
 
     public void AddToGraveyard(CardInstance card)
     {
-        Graveyard.Add(card);
+        Graveyard.AddCard(card);
     }
 
     public void RemoveFromGraveyard(CardInstance card)
     {
-        Graveyard.Remove(card);
+        Graveyard.RemoveCard(card);
     }
 
     public void AddToExile(CardInstance card)
     {
-        Exile.Add(card);
+        Exile.AddCard(card);
     }
 
     public void RemoveFromExile(CardInstance card)
     {
-        Exile.Remove(card);
+        Exile.RemoveCard(card);
     }
 
     public Result<List<ManaType>> GetDeckColors()

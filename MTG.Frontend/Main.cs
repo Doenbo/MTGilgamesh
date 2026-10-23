@@ -674,16 +674,16 @@ public partial class Main : Node2D
 			child.QueueFree();
 		}
 
-		bool hasStack = _context.StackCount > 0;
+		bool hasStack = _context.Stack.Count > 0;
 		_stackPanel.Visible = hasStack;
 
 		if (hasStack)
 		{
-			foreach (var card in _context.Stack.ToList())
+			foreach (var card in _context.Stack.Objects.ToList())
 			{
 				var lbl = new Label
 				{
-					Text = $"• {card.CardData.MainFaceName} ({card.Owner.Name})"
+					Text = $"• {card.Name} ({card.Controller.Name})"
 				};
 				lbl.AddThemeFontSizeOverride("font_size", 10);
 				_stackListVBox.AddChild(lbl);

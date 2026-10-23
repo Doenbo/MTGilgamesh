@@ -8,7 +8,7 @@ using MTG.Engine.States;
 
 namespace MTG.Engine.Cards;
 
-public class CardInstance
+public class CardInstance 
 {
     private readonly List<ICardState> _states = [];
 

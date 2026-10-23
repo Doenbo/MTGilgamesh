@@ -1,10 +1,12 @@
 using Microsoft.Extensions.Logging;
+using MTG.Core.Cards;
 using MTG.Core.Enums;
 using MTG.Core.Helper;
 using MTG.Core.Types;
 using MTG.Engine.Cards;
 using MTG.Engine.Cheating;
 using MTG.Engine.TurnSteps;
+using MTG.Engine.Zones;
 using MTG.Resources.Enums;
 using System.Text;
 
@@ -20,16 +22,11 @@ public class GameContext
     private readonly List<CommanderPlayer> _players = [];
     public IReadOnlyList<CommanderPlayer> Players => _players;
 
-    //Battlefield
-    private readonly List<CardInstance> _battlefield = [];
-    public IReadOnlyList<CardInstance> Battlefield => _battlefield;
+    //Zones
+    public BattlefieldZone Battlefield { get; } = new();
+    public StackZone Stack { get; } = new();
 
-    //Stack
-    private readonly Stack<CardInstance> _stack = [];
-    public IEnumerable<CardInstance> Stack => _stack;
-    public int StackCount => _stack.Count;
-
-
+    //Context
     public TurnStep TurnStep { get; set; } = TurnStep.Untap;
     public CommanderPlayer ActivePlayer { get; set; }
     public CommanderPlayer PriorityPlayer { get; set; }
@@ -83,8 +80,8 @@ public class GameContext
 
     public IEnumerable<CardInstance> GetBoardOf(CommanderPlayer player, CardType filter = CardType.None)
         => filter == CardType.None
-        ? Battlefield.Where(card => card.Controller == player)
-        : Battlefield.Where(card => card.Controller == player && card.CardData.MainFace.IsCardType(filter));
+        ? Battlefield.Cards.Where(card => card.Controller == player)
+        : Battlefield.Cards.Where(card => card.Controller == player && card.CardData.MainFace.IsCardType(filter));
 
     public void AddPlayer(CommanderPlayer player)
     {
@@ -93,23 +90,32 @@ public class GameContext
 
     public void MoveToBattlefield(CardInstance card)
     {
-        _battlefield.Add(card);
+        Battlefield.AddCard(card);
         card.HasSummoningSickness = true;
     }
 
-    public void PushToStack(CardInstance card)
+    public Result<SpellOnStack> PushToStack(CardInstance card, CommanderPlayer controller)
     {
-        _stack.Push(card);
+        if (card is null || controller is null)
+            return Result<SpellOnStack>.Failure("Arguments cannot be null.");
+
+        var spell = new SpellOnStack(card, controller, [/*TODO*/]);
+
+        var pushResult = Stack.Push(spell);
+        if (pushResult.IsFailure)
+            return Result<SpellOnStack>.Failure(pushResult.Error);
+
+        return Result<SpellOnStack>.Success(spell);
     }
 
-    public CardInstance PopFromStack()
+    public Result<IStackObject> PopFromStack()
     {
-        return _stack.Pop();
+        return Stack.Pop();
     }
 
-    public CardInstance PeekStack()
+    public Result<IStackObject> PeekStack()
     {
-        return _stack.Peek();
+        return Stack.Peek();
     }
 
     public int GetPlayerIndex(CommanderPlayer player)
@@ -125,7 +131,7 @@ public class GameContext
         {
             ConsecutivePasses = 0;
 
-            if (StackCount > 0)
+            if (Stack.Count > 0)
             {
                 ResolveTopStackObject();
                 PriorityPlayer = ActivePlayer;
@@ -231,53 +237,47 @@ public class GameContext
         if (card == null) return;
 
         player.RemoveFromHand(card);
-        PushToStack(card);
+        PushToStack(card, player);
         Display.LogInfo($"{player.Name} casts {card.CardData.MainFaceName} (Object is on the STACK!)");
 
         PriorityPlayer = player;
         ConsecutivePasses = 0;
     }
 
-    public void ResolveTopStackObject()
+    public Result ResolveTopStackObject()
     {
-        var resolvedCard = PopFromStack();
-        Display.LogInfo($"\n=== RESOLVING: {resolvedCard.CardData.MainFaceName} ===");
+        var popResult = PopFromStack();
+        if (popResult.IsFailure)
+            return Result.Failure(popResult.Error);
 
-        if (resolvedCard.CardData.IsPermanent())
+        var stackObject = popResult.Value;
+
+        if (stackObject is SpellOnStack spell)
         {
-            MoveToBattlefield(resolvedCard);
-            Display.LogInfo($"{resolvedCard.CardData.MainFaceName} enters the battlefield.");
+            CardInstance card = spell.Card;
+            Display.LogInfo($"\n=== RESOLVING: {spell.Name} ===");
+
+            if (card.CardData.IsPermanent())
+            {
+                MoveToBattlefield(card);
+                Display.LogInfo($"{card.CardData.MainFaceName} enters the battlefield.");
+            }
+            else
+            {
+                card.Owner.AddToGraveyard(card);
+                Display.LogInfo($"{card.CardData.MainFaceName} finishes resolving and goes to Graveyard.");
+            }
         }
         else
         {
-            resolvedCard.Owner.AddToGraveyard(resolvedCard);
-            Display.LogInfo($"{resolvedCard.CardData.MainFaceName} finishes resolving and goes to Graveyard.");
+            Display.LogInfo($"\n=== RESOLVING ABILITY: {stackObject.Name} ===");
         }
 
         PriorityPlayer = ActivePlayer;
         ConsecutivePasses = 0;
+
+        return Result.Success();
     }
-
-    //public List<ManaType> GetAvailableManaOptions(ProduceManaComponent component, CommanderPlayer player)
-    //{
-    //    if (component.DynamicMana == DynamicManaType.CommanderColorIdentity)
-    //        return player.GetDeckColors().Value;
-
-    //    if (component.DynamicMana == DynamicManaType.AnyColor)
-    //        return new List<ManaType>
-    //        {
-    //            ManaType.White,
-    //            ManaType.Blue,
-    //            ManaType.Black,
-    //            ManaType.Red,
-    //            ManaType.Green
-    //        };
-
-    //    if (component.IsChoice)
-    //        return component.ChoseMana.ToList();
-
-    //    return component.FixedMana.ToList();
-    //}
 
     public void AdvanceToNextPlayersTurn()
     {
@@ -297,14 +297,14 @@ public class GameContext
         TransitionTo(new UntapStep());
     }
 
-    public void RemovePlayerFromGame(CommanderPlayer p)
+    public void RemovePlayerFromGame(CommanderPlayer player)
     {
-        _battlefield.RemoveAll(card => card.Owner == p);
+        Battlefield.RemoveAllCards(player);
     }
 
     public string ToConsoleBattlefield()
     {
-        var groupedItems = _battlefield.GroupBy(item => item.Owner);
+        var groupedItems = Battlefield.Cards.GroupBy(item => item.Owner);
         var sb = new StringBuilder();
         sb.AppendLine($"{ENV.NewLine}");
         sb.AppendLine($"/------------------------------------\\");
@@ -330,9 +330,9 @@ public class GameContext
         var sb = new StringBuilder();
         sb.AppendLine($"{ENV.NewLine}");
         sb.AppendLine($"/------------------------------------\\");
-        foreach (var c in _stack.ToList())
+        foreach (var c in Stack.Objects.ToList())
         {
-            sb.AppendLine($"{c.CardData.MainFaceName} [{c.Owner.Name}]");
+            sb.AppendLine($"{c.Name} [{c.Controller.Name}]");
         }
         sb.AppendLine($"\\------------------------------------/");
         return sb.ToString();

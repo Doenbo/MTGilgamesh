@@ -65,7 +65,7 @@ public abstract class TurnStepBase : ITurnStep
         // --- LAND LOGIC ---
         if (card.CardData.IsLand())
         {
-            if (!CanPlaySorcerySpeed(context, player) || context.StackCount > 0)
+            if (!CanPlaySorcerySpeed(context, player) || context.Stack.Count > 0)
             {
                 context.Display.LogError($"Cannot play land {card.CardData.MainFaceName} right now (Requires main phase & empty stack).");
                 return;
@@ -87,7 +87,7 @@ public abstract class TurnStepBase : ITurnStep
 
         // --- SPELL LOGIC ---
         bool isSorcerySpeed = !card.CardData.IsInstant() && !card.CardData.IsLand();
-        if (isSorcerySpeed && (!CanPlaySorcerySpeed(context, player) || context.StackCount > 0))
+        if (isSorcerySpeed && (!CanPlaySorcerySpeed(context, player) || context.Stack.Count > 0))
         {
             context.Display.LogError($"Cannot cast {card.CardData.MainFaceName} right now (Sorcery timing rule).");
             return;

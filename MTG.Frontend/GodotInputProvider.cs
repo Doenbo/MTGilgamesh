@@ -1,9 +1,12 @@
 using Godot;
 using MTG.Core.Enums;
+using MTG.Core.Helper;
 using MTG.Engine.Cards;
 using MTG.Engine.Enums;
 using MTG.Engine.Gameplay;
+using MTG.Engine.Zones;
 using System;
+using System.IO.Pipelines;
 using System.Threading.Tasks;
 
 namespace MTG.Frontend;
@@ -38,11 +41,13 @@ public class GodotInputProvider : IPlayerInputProvider
             return new PlayerAction(player, ActionType.PassPriority);
         }
 
-        bool holdsStackPriority = context.StackCount > 0;
+        bool holdsStackPriority = context.Stack.Count > 0;
 
         if (holdsStackPriority)
         {
-            return await GetCastSpellReactionAsync(context, player);
+            var a = await GetCastSpellReactionAsync(context, player);
+            //TODO Result
+            return a.Value;
         }
 
         if (player == context.ActivePlayer && (context.TurnStep == TurnStep.Main1 || context.TurnStep == TurnStep.Main2))
@@ -86,14 +91,15 @@ public class GodotInputProvider : IPlayerInputProvider
         }
     }
 
-    private async Task<PlayerAction> GetCastSpellReactionAsync(GameContext context, CommanderPlayer player)
+    private async Task<Result<PlayerAction>> GetCastSpellReactionAsync(GameContext context, CommanderPlayer player)
     {
         while (true)
         {
             var topStackCard = context.PeekStack();
-            string casterName = topStackCard.Owner.Name;
+            if (topStackCard.IsFailure)
+                return Result<PlayerAction>.Failure(topStackCard.Error);
 
-            LogUi($"\n[color=magenta]⚡ [{casterName}] casted {topStackCard.CardData.MainFaceName}[/color]\n" +
+            LogUi($"\n[color=magenta]⚡ [{topStackCard.Value.Controller.Name}] casted {topStackCard.Value.Name}[/color]\n" +
                   $"[color=yellow][{player.Name}] How do you react?[/color]\n" +
                   $"[color=gray]1: Play a Card from Hand | 2: Show Stack | 3: Pass Priority[/color]\n");
 
@@ -105,7 +111,7 @@ public class GodotInputProvider : IPlayerInputProvider
                     var selectedCard = await ChooseHandCardAsync(context, player);
                     if (selectedCard != null)
                     {
-                        return new PlayerAction(player, ActionType.PlayCard, selectedCard);
+                        return Result<PlayerAction>.Success(new PlayerAction(player, ActionType.PlayCard, selectedCard));
                     }
                     continue;
 
@@ -114,7 +120,7 @@ public class GodotInputProvider : IPlayerInputProvider
                     continue;
 
                 case "3":
-                    return new PlayerAction(player, ActionType.PassPriority);
+                    return Result<PlayerAction>.Success(new PlayerAction(player, ActionType.PassPriority));
 
                 default:
                     LogUi("[color=orange]Invalid selection. Type 1, 2, or 3.[/color]\n");

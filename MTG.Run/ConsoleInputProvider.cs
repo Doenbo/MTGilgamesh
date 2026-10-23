@@ -6,6 +6,8 @@ using MTG.Engine.Cards;
 using MTG.Engine.Cheating;
 using MTG.Engine.Enums;
 using MTG.Engine.Gameplay;
+using MTG.Engine.Zones;
+using System.IO.Pipelines;
 using System.Numerics;
 using CIS = MTG.Run.ConsoleInputStrings;
 using ENV = System.Environment;
@@ -16,13 +18,13 @@ public class ConsoleInputProvider : IPlayerInputProvider
 {
     public async Task<PlayerAction> GetNextAction(GameContext context, CommanderPlayer player)
     {
-        bool holdsStackPriority = context.StackCount > 0;
+        bool holdsStackPriority = context.Stack.Count > 0;
 
         if (context.TurnStep == TurnStep.Untap)
             return new PlayerAction(player, ActionType.PassPriority);
 
         if (holdsStackPriority)
-            return GetCastSpellReaction(context, player);
+            return GetCastSpellReaction(context, player).Value; //TODO Result
 
         if (player == context.ActivePlayer && (context.TurnStep == TurnStep.Main1 || context.TurnStep == TurnStep.Main2))
             return GetMainStepAction(context, player);
@@ -87,19 +89,21 @@ public class ConsoleInputProvider : IPlayerInputProvider
         }
     }
 
-    private static PlayerAction GetCastSpellReaction(GameContext context, CommanderPlayer player)
+    private static Result<PlayerAction> GetCastSpellReaction(GameContext context, CommanderPlayer player)
     {
         if (AnyCheatSkipActive(context, player))
-            return new PlayerAction(player, ActionType.PassPriority);
+            return Result<PlayerAction>.Success(new PlayerAction(player, ActionType.PassPriority));
 
         Result<CardInstance> chosenCard;
         while (true)
         {
             var topStackCard = context.PeekStack();
-            string casterName = topStackCard.Owner.Name;
+
+            if (topStackCard.IsFailure)
+                return Result<PlayerAction>.Failure(topStackCard.Error);
 
             context.Display.LogInfo(
-                $"{ENV.NewLine}[{casterName}] has casted {topStackCard.CardData.MainFaceName}." +
+                $"{ENV.NewLine}[{topStackCard.Value.Controller.Name}] has casted {topStackCard.Value.Name}." +
                 $"[{player.Name}] How do you react?" +
                 $"{ENV.NewLine}1: Play a Card from your Hand | {CIS.f_passp}");
 
@@ -114,7 +118,7 @@ public class ConsoleInputProvider : IPlayerInputProvider
                     if (chosenCard.IsFailure)
                         continue;
 
-                    return new PlayerAction(player, ActionType.PlayCard, chosenCard.Value);
+                    return Result<PlayerAction>.Success(new PlayerAction(player, ActionType.PlayCard, chosenCard.Value));
 
                 case "2":
                     chosenCard = ChooseCardFromOwnBoard(context, player);
@@ -122,10 +126,10 @@ public class ConsoleInputProvider : IPlayerInputProvider
                     if (chosenCard.IsFailure)
                         continue;
 
-                    return new PlayerAction(player, ActionType.PlayCard, chosenCard.Value);
+                    return Result<PlayerAction>.Success(new PlayerAction(player, ActionType.PlayCard, chosenCard.Value));
 
                 case "0":
-                    return new PlayerAction(player, ActionType.PassPriority);
+                    return Result<PlayerAction>.Success(new PlayerAction(player, ActionType.PassPriority));
 
                 default:
                     context.Display.LogError(CIS.s_error);
@@ -329,7 +333,7 @@ public class ConsoleInputProvider : IPlayerInputProvider
             return true;
 
         if (player.HasCheat(Cheats.SkipPrio) &&
-           (context.StackCount > 0 || context.ActivePlayer != player))
+           (context.Stack.Count > 0 || context.ActivePlayer != player))
             return true;
 
         return false;

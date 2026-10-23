@@ -10,10 +10,12 @@ public class OpponentInputProvider : IPlayerInputProvider
     {
         context.Display.IsLoggingErrors = false;
 
+        foreach (var card in context.Battlefield.GetAllCardsFrom(player).Where(c => c.CardData.IsLand()))
+        {
+            context.HandleIncomingAction(new PlayerAction(player, ActionType.TapLandForMana, card));
+        }
         foreach (var card in player.Hand.Cards.ToList())
         {
-            //TODO
-            context.HandleIncomingAction(new PlayerAction(player, ActionType.TapLandForMana, card));
             context.HandleIncomingAction(new PlayerAction(player, ActionType.PlayCard, card));
         }
 

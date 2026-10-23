@@ -1,9 +1,11 @@
 ﻿using MTG.Core.Enums;
+using MTG.Core.Helper;
 using MTG.Engine.Cards;
+using MTG.Engine.Gameplay;
 
 namespace MTG.Engine.Zones;
 
-public abstract class BaseZone
+public abstract class BaseZone : IGameZone
 {
     protected readonly List<CardInstance> _cards = [];
 
@@ -13,15 +15,25 @@ public abstract class BaseZone
     public int Count => _cards.Count;
     public IReadOnlyList<CardInstance> Cards => _cards.AsReadOnly();
 
-    public virtual void Add(CardInstance card)
+    //Methods
+    public virtual Result AddCard(CardInstance card)
     {
         _cards.Add(card);
+        return Result.Success();
     }
 
-    public virtual bool Remove(CardInstance card)
+    public virtual Result<bool> RemoveCard(CardInstance card)
     {
-        return _cards.Remove(card);
+        return Result<bool>.Success(_cards.Remove(card));
     }
 
-    public bool Contains(CardInstance card) => _cards.Contains(card);
+    public virtual Result<int> RemoveAllCards(CommanderPlayer player)
+    {
+        return Result<int>.Success(_cards.RemoveAll(card => card.Owner == player));
+    }
+
+    public Result<bool> ContainsCard(CardInstance card)
+    {
+        return Result<bool>.Success(_cards.Contains(card));
+    }
 }

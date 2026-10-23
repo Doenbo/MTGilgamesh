@@ -30,7 +30,7 @@ public class GodotGuiInputProvider : IPlayerInputProvider
 
         Callable.From(() =>
         {
-            _mainScene.SetPriorityPrompt(player, context.TurnStep, context.StackCount > 0);
+            _mainScene.SetPriorityPrompt(player, context.TurnStep, context.Stack.Count > 0);
         }).CallDeferred();
 
         var action = await _actionTcs.Task;
@@ -60,7 +60,7 @@ public class GodotGuiInputProvider : IPlayerInputProvider
             return true;
 
         if (player.HasCheat(Cheats.SkipPrio) &&
-           (context.StackCount > 0 || context.ActivePlayer != player))
+           (context.Stack.Count > 0 || context.ActivePlayer != player))
             return true;
 
         return false;

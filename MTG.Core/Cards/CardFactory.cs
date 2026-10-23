@@ -30,9 +30,6 @@ public static class CardFactory
         if (args.CardFaces.Count == 0)
             return Result<ICard>.Failure("A card must have at least one CardFace!");
 
-        if (args.ColorIdentity == ManaType.None)
-            return Result<ICard>.Failure("A card's Color Identity cannot be None!");
-
         return Result<ICard>.Success(new Card()
         {
             ColorIdentity = args.ColorIdentity,
