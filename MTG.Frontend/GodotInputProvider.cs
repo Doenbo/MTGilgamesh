@@ -34,11 +34,11 @@ public class GodotInputProvider : IPlayerInputProvider
         Callable.From(() => _playerInput?.GrabFocus()).CallDeferred();
     }
 
-    public async Task<PlayerAction> GetNextAction(GameContext context, CommanderPlayer player)
+    public async Task<Result<PlayerAction>> GetNextAction(GameContext context, CommanderPlayer player)
     {
         if (context.TurnStep == TurnStep.Untap)
         {
-            return new PlayerAction(player, ActionType.PassPriority);
+            return Result<PlayerAction>.Success(new PlayerAction(player, ActionType.PassPriority));
         }
 
         bool holdsStackPriority = context.Stack.Count > 0;
@@ -47,15 +47,15 @@ public class GodotInputProvider : IPlayerInputProvider
         {
             var a = await GetCastSpellReactionAsync(context, player);
             //TODO Result
-            return a.Value;
+            return Result<PlayerAction>.Success(a.Value);
         }
 
         if (player == context.ActivePlayer && (context.TurnStep == TurnStep.Main1 || context.TurnStep == TurnStep.Main2))
         {
-            return await GetMainStepActionAsync(context, player);
+            return Result<PlayerAction>.Success(await GetMainStepActionAsync(context, player));
         }
 
-        return await GetPriorityActionAsync(context, player);
+        return Result<PlayerAction>.Success(await GetPriorityActionAsync(context, player));
     }
 
     private async Task<PlayerAction> GetMainStepActionAsync(GameContext context, CommanderPlayer player)

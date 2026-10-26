@@ -28,7 +28,9 @@ public class Program
 
         var engine = new GameEngine(context.Value, consoleDisplay);
 
-        engine.StartGameLoop();
+        var end = await engine.StartGameLoop();
+        if (end.IsFailure)
+            Console.WriteLine(end.Error);
     }
 
     private static void WriteAndExitIfFailure<T>(Result<T> t)

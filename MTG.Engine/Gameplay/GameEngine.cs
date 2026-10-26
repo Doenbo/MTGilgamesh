@@ -1,4 +1,5 @@
-﻿using MTG.Engine.Cards;
+﻿using MTG.Core.Helper;
+using MTG.Engine.Cards;
 using MTG.Engine.Events;
 using MTG.Engine.TurnSteps;
 using System.Security.Policy;
@@ -16,7 +17,7 @@ public class GameEngine
         _display = display;
     }
 
-    public async void StartGameLoop()
+    public async Task<Result> StartGameLoop()
     {
         _context.ActivePlayer = _context.Players[0];
         _context.PriorityPlayer = _context.Players[0];
@@ -28,9 +29,13 @@ public class GameEngine
         while (!IsGameOver())
         {
             var action = await _context.PriorityPlayer.GetNextAction(_context);
-            _context.HandleIncomingAction(action);
+            if (action.IsFailure)
+                return Result.Failure(action.Error);
+
+            _context.HandleIncomingAction(action.Value);
             CheckStateBasedActions();
         }
+        return Result.Success();
     }
 
     private bool IsGameOver() => _context.Players.Count(p => !p.IsEliminated) <= 1;

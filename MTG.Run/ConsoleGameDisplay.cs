@@ -9,85 +9,93 @@ public class ConsoleGameDisplay : IGameDisplay
 {
     public bool IsLoggingErrors { get; set; } = true;
 
-    public void LogInfo(string message) => Console.WriteLine(message);
+    private void WriteColoredLine(string message, ConsoleColor cc)
+    {
+        Console.ForegroundColor = cc;
+        Console.WriteLine(message);
+        Console.ResetColor();
+    }
 
-    public void LogError(string message) { if (IsLoggingErrors) Console.WriteLine(message); }
+    public void LogInfo(string message)
+    {
+        WriteColoredLine(message, ConsoleColor.White);
+    }
+
+    public void LogError(string message)
+    {
+        if (IsLoggingErrors)
+            WriteColoredLine(message, ConsoleColor.Red);
+    }
 
     public void LogGameEvent(IGameEvent gameEvent)
     {
         switch (gameEvent)
         {
             case StepTransitionEvent step:
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine($"\n=== {step.Description} ===");
+                WriteColoredLine($"\n=== {step.Description} ===", ConsoleColor.Yellow);
                 break;
 
             case SpellCastEvent spell:
-                Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.WriteLine($"[CAST] {spell.PlayerName} played {spell.SpellName}");
+                WriteColoredLine($"[CAST] {spell.PlayerName} played {spell.SpellName}", ConsoleColor.Cyan);
                 break;
 
             case DamageDealtEvent damage:
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"[DAMAGE] {damage.Source} -> {damage.Target}: {damage.Amount}");
+                WriteColoredLine($"[DAMAGE] {damage.Source} -> {damage.Target}: {damage.Amount}", ConsoleColor.DarkRed);
                 break;
 
             default:
-                Console.ForegroundColor = ConsoleColor.Gray;
-                Console.WriteLine(gameEvent.Description);
+                WriteColoredLine(gameEvent.Description, ConsoleColor.Gray);
                 break;
         }
-
-        Console.ResetColor();
     }
 
     public void RenderBattlefield(GameContext context)
     {
-        Console.WriteLine($"{context.ToConsoleBattlefield()}");
+        WriteColoredLine($"{context.ToConsoleBattlefield()}", ConsoleColor.White);
     }
 
     public void RenderManaPool(GameContext context)
     {
-        Console.WriteLine($"{context.ToConsoleManaPool()}");
+        WriteColoredLine($"{context.ToConsoleManaPool()}", ConsoleColor.White);
     }
 
     public void RenderStack(GameContext context)
     {
-        Console.WriteLine($"{context.ToConsoleStack()}");
+        WriteColoredLine($"{context.ToConsoleStack()}", ConsoleColor.Gray);
     }
 
     public void RenderOpponentsHands(GameContext context)
     {
-        Console.WriteLine($"{context.ToConsoleOpponentsHands()}");
+        WriteColoredLine($"{context.ToConsoleOpponentsHands()}", ConsoleColor.White);
     }
 
     public void RenderOpponentsLibraries(GameContext context)
     {
-        Console.WriteLine($"{context.ToConsoleOpponentsLibraries()}");
+        WriteColoredLine($"{context.ToConsoleOpponentsLibraries()}", ConsoleColor.White);
     }
 
     public void OnCardPlayed(CommanderPlayer player, ICard card)
     {
-        throw new NotImplementedException();
+        WriteColoredLine("TODO", ConsoleColor.White);
     }
 
     public void OnCardTapped(ICard card, bool isTapped)
     {
-        throw new NotImplementedException();
+        WriteColoredLine("TODO", ConsoleColor.White);
     }
 
     public void OnLifeTotalChanged(CommanderPlayer player, int oldLife, int newLife)
     {
-        throw new NotImplementedException();
+        WriteColoredLine("TODO", ConsoleColor.White);
     }
 
     public void OnCardMovedZone(ICard card, PlayZone fromZone, PlayZone toZone)
     {
-        throw new NotImplementedException();
+        WriteColoredLine("TODO", ConsoleColor.White);
     }
 
     public void InitializeVisuals(GameContext context)
     {
-        throw new NotImplementedException();
+        WriteColoredLine("TODO", ConsoleColor.White);
     }
 }

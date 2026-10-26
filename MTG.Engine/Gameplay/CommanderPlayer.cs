@@ -45,7 +45,6 @@ public class CommanderPlayer
         Cheats = c;
     }
 
-    //TODO ICOMMANDERDECK?
     public static Result<CommanderPlayer> Create(
         string name, int life, ICommanderDeck deck, IPlayerInputProvider pip, Cheats c)
     {
@@ -107,7 +106,6 @@ public class CommanderPlayer
         ManaPool = mp;
     }
 
-    //Puts a Card from the Library into the Hand
     public Result DrawCard(int amount = 1)
     {
         for (int i = 0; i < amount; i++)
@@ -158,7 +156,7 @@ public class CommanderPlayer
         throw new NotImplementedException();
     }
 
-    public Task<PlayerAction> GetNextAction(GameContext gc) => _inputProvider.GetNextAction(gc, this);
+    public Task<Result<PlayerAction>> GetNextAction(GameContext gc) => _inputProvider.GetNextAction(gc, this);
 
     public bool HasCheat(Cheats c) => Cheats.HasFlag(c);
 

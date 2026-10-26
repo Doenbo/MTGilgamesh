@@ -27,9 +27,9 @@ public class EngineDummyFactory
 
     private class DummyInputProvider : IPlayerInputProvider
     {
-        public async Task<PlayerAction> GetNextAction(GameContext context, CommanderPlayer player)
+        public async Task<Result<PlayerAction>> GetNextAction(GameContext context, CommanderPlayer player)
         {
-            return new PlayerAction(player, ActionType.PassPriority);
+            return Result<PlayerAction>.Success(new PlayerAction(player, ActionType.PassPriority));
         }
     }
 }

@@ -22,7 +22,7 @@ public class ConsoleInputStrings
 
     // Cheats
     public const string s_cheat = "C: Show Cheats";
-    public static readonly string[] cheatCommands = { "OH", "OL" };
+    public static readonly string[] cheatCommands = ["OH", "OL"];
     public const string s_ohand = "OH: Show Opponents Hands";
     public const string s_olibr = "OL: Show Opponents Libraries";
     public const string f_ocheat = $"{s_ohand} | {s_olibr}";

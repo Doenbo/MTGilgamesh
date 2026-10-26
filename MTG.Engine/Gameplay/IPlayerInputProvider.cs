@@ -1,6 +1,8 @@
-﻿namespace MTG.Engine.Gameplay;
+﻿using MTG.Core.Helper;
+
+namespace MTG.Engine.Gameplay;
 
 public interface IPlayerInputProvider
 {
-    Task<PlayerAction> GetNextAction(GameContext context, CommanderPlayer player);
+    Task<Result<PlayerAction>> GetNextAction(GameContext context, CommanderPlayer player);
 }

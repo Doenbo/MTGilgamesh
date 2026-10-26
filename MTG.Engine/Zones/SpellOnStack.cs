@@ -15,7 +15,7 @@ public class SpellOnStack : IStackObject
     public CommanderPlayer Controller { get; }
     public IReadOnlyList<ITarget> Targets { get; }
 
-    public string Name => throw new NotImplementedException();
+    public string Name => Card.CardData.MainFaceName;
 
     public SpellOnStack(CardInstance card, CommanderPlayer controller, List<ITarget> targets)
     {

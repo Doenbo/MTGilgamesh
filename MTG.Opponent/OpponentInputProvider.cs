@@ -1,4 +1,5 @@
-﻿using MTG.Engine.Cheating;
+﻿using MTG.Core.Helper;
+using MTG.Engine.Cheating;
 using MTG.Engine.Enums;
 using MTG.Engine.Gameplay;
 
@@ -6,7 +7,7 @@ namespace MTG.Opponent;
 
 public class OpponentInputProvider : IPlayerInputProvider
 {
-    public async Task<PlayerAction> GetNextAction(GameContext context, CommanderPlayer player)
+    public async Task<Result<PlayerAction>> GetNextAction(GameContext context, CommanderPlayer player)
     {
         context.Display.IsLoggingErrors = false;
 
@@ -14,6 +15,7 @@ public class OpponentInputProvider : IPlayerInputProvider
         {
             context.HandleIncomingAction(new PlayerAction(player, ActionType.TapLandForMana, card));
         }
+
         foreach (var card in player.Hand.Cards.ToList())
         {
             context.HandleIncomingAction(new PlayerAction(player, ActionType.PlayCard, card));
@@ -21,6 +23,6 @@ public class OpponentInputProvider : IPlayerInputProvider
 
         context.Display.IsLoggingErrors = true;
 
-        return new PlayerAction(player, ActionType.PassPriority);
+        return Result<PlayerAction>.Success(new PlayerAction(player, ActionType.PassPriority));
     }
 }

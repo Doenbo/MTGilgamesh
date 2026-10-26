@@ -1,5 +1,6 @@
 using Godot;
 using MTG.Core.Enums;
+using MTG.Core.Helper;
 using MTG.Engine.Cards;
 using MTG.Engine.Cheating;
 using MTG.Engine.Enums;
@@ -19,11 +20,11 @@ public class GodotGuiInputProvider : IPlayerInputProvider
         _mainScene = mainScene ?? throw new ArgumentNullException(nameof(mainScene));
     }
 
-    public async Task<PlayerAction> GetNextAction(GameContext context, CommanderPlayer player)
+    public async Task<Result<PlayerAction>> GetNextAction(GameContext context, CommanderPlayer player)
     {
         if (context.TurnStep == TurnStep.Untap || AnyCheatSkipActive(context, player))
         {
-            return new PlayerAction(player, ActionType.PassPriority);
+            return Result<PlayerAction>.Success(new PlayerAction(player, ActionType.PassPriority));
         }
 
         _actionTcs = new TaskCompletionSource<PlayerAction>();
@@ -40,7 +41,7 @@ public class GodotGuiInputProvider : IPlayerInputProvider
             _mainScene.ClearPriorityPrompt();
         }).CallDeferred();
 
-        return action;
+        return Result<PlayerAction>.Success(action);
     }
 
     private static bool AnyCheatSkipActive(GameContext context, CommanderPlayer player)
